@@ -362,27 +362,6 @@ public abstract class BasicSparkBase extends BasicMotor {
         applyConfig();
     }
 
-    @Override
-    protected void setMotorPosition(double position) {
-        if (!(getMeasurements() instanceof MeasurementsREVRelative encoder)) {
-            DriverStation.reportWarning(
-                    "motor: "
-                            + name
-                            + " does not use anymore an encoder that supports setting position,so the position cannot be set",
-                    false);
-            return;
-        }
-
-        encoder.setEncoderPosition(position);
-
-        motor.getClosedLoopController().setIAccum(0);
-    }
-
-    @Override
-    protected void updateMainLoopTiming(MotorManager.ControllerLocation location) {
-        configurePeriodicFrames(location.getHZ());
-    }
-
     /**
      * Configures the periodic frames according to the main loop frequency.
      * Also applies the sensor loop frequency.

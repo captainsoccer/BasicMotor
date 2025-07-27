@@ -9,6 +9,7 @@ version = "2.0.0"
 val wpilibVersion = "2025.3.2"
 val advantageKitVersion = "4.1.2"
 val phoenix6Version = "25.4.0"
+val phoneix5Verison = "5.35.1"
 val revLibVersion = "2025.0.3"
 
 java {
@@ -64,6 +65,8 @@ dependencies {
     implementation("edu.wpi.first.wpiunits:wpiunits-java:${wpilibVersion}")
     implementation("org.littletonrobotics.akit:akit-java:${advantageKitVersion}")
     implementation("com.ctre.phoenix6:wpiapi-java:${phoenix6Version}")
+    implementation("com.ctre.phoenix:api-java:${phoneix5Verison}")
+    implementation("com.ctre.phoenix:wpiapi-java:${phoneix5Verison}")
     implementation(("com.revrobotics.frc:REVLib-java:${revLibVersion}"))
     implementation("us.hebi.quickbuf:quickbuf-runtime:1.3.3")
 

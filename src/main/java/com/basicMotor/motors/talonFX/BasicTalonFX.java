@@ -346,11 +346,6 @@ public class BasicTalonFX extends BasicMotor {
     }
 
     @Override
-    protected void setMotorPosition(double position) {
-        motor.setPosition(position);
-    }
-
-    @Override
     protected void stopRecordingMeasurements() {
         if (getMeasurements() instanceof MeasurementsTalonFX measurements) {
             measurements.setUpdateFrequency(0);

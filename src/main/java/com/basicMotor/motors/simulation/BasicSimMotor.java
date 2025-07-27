@@ -97,9 +97,4 @@ public class BasicSimMotor extends BasicSimSystem {
   protected Measurements getDefaultMeasurements() {
     return defaultMeasurements;
   }
-
-  @Override
-  protected void setMotorPosition(double position) {
-    motor.setAngle(Units.rotationsToRadians(position));
-  }
 }

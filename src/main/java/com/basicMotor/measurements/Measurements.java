@@ -188,4 +188,11 @@ public abstract class Measurements {
      * @return The new acceleration of the motor in the raw units (e.g., rotations per second squared, radians per second squared).
      */
     protected abstract double getUpdatedAcceleration();
+
+    /**
+     * This sets the position of the measurements.
+     * Units are native units (Most cases are rotations).
+     * @param position The new position of the measurements in native units.
+     */
+    public abstract void setPosition(double position);
 }

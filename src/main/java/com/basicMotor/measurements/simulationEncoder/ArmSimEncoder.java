@@ -71,4 +71,10 @@ public class ArmSimEncoder extends Measurements {
     protected double getUpdatedAcceleration() {
         return acceleration;
     }
+
+    @Override
+    public void setPosition(double position) {
+        double angleInRadians = Units.rotationsToRadians(position);
+        armSim.setState(angleInRadians, armSim.getVelocityRadPerSec());
+    }
 }

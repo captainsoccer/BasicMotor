@@ -60,4 +60,9 @@ public class FlyWheelSimEncoder extends Measurements {
     protected double getUpdatedAcceleration() {
         return flywheelSim.getAngularAcceleration().in(Units.RotationsPerSecondPerSecond);
     }
+
+    @Override
+    public void setPosition(double position) {
+        //Does nothing as the flywheel sim does not support setting position directly.
+    }
 }

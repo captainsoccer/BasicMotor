@@ -70,13 +70,8 @@ public class MeasurementsREVRelative extends Measurements {
         return acceleration;
     }
 
-    /**
-     * Sets the position of the encoder. This is useful for resetting the encoder position.
-     * This should be in the encoders native units (encoder rotations).
-     *
-     * @param position The position to set the encoder to, in rotations.
-     */
-    public void setEncoderPosition(double position) {
+    @Override
+    public void setPosition(double position) {
         encoder.setPosition(position);
     }
 }

@@ -51,4 +51,9 @@ public class MotorSimEncoder extends Measurements {
   protected double getUpdatedAcceleration() {
     return motor.getAngularAcceleration().in(Units.RotationsPerSecondPerSecond);
   }
+
+  @Override
+  public void setPosition(double position) {
+    motor.setAngle(edu.wpi.first.math.util.Units.rotationsToRadians(position));
+  }
 }

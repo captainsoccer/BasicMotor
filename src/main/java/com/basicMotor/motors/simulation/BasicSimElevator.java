@@ -109,9 +109,4 @@ public class BasicSimElevator extends BasicSimSystem {
   protected Measurements getDefaultMeasurements() {
     return defaultMeasurements;
   }
-
-  @Override
-  protected void setMotorPosition(double position) {
-    elevator.setState(position, elevator.getVelocityMetersPerSecond());
-  }
 }

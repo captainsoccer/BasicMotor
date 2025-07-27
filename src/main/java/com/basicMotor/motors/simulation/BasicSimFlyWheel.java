@@ -91,10 +91,4 @@ public class BasicSimFlyWheel extends BasicSimSystem {
   protected Measurements getDefaultMeasurements() {
     return defaultMeasurements;
   }
-
-  @Override
-  protected void setMotorPosition(double position) {
-    // nothing to do here, position doesn't matter for flywheels
-    //flywheel sim does not have a set position method
-  }
 }

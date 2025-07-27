@@ -225,4 +225,9 @@ public class MeasurementsCANCoder extends Measurements {
     protected double getUpdatedAcceleration() {
         return acceleration;
     }
+
+    @Override
+    public void setPosition(double position) {
+        //Does nothing, CANCoder does not support setting position directly.
+    }
 }

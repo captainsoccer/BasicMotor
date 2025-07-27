@@ -65,4 +65,9 @@ public class ElevatorSimEncoder extends Measurements {
     protected double getUpdatedAcceleration() {
         return acceleration;
     }
+
+    @Override
+    public void setPosition(double position) {
+        elevator.setState(position, elevator.getVelocityMetersPerSecond());
+    }
 }

@@ -109,10 +109,4 @@ public class BasicSimArm extends BasicSimSystem {
   protected Measurements getDefaultMeasurements() {
     return defaultMeasurements;
   }
-
-  @Override
-  protected void setMotorPosition(double position) {
-    double angle = Units.rotationsToRadians(position);
-    armSim.setState(angle, armSim.getVelocityRadPerSec());
-  }
 }

@@ -151,6 +151,14 @@ public class BasicVictorSPX extends BasicMotor {
     }
 
     @Override
+    protected double getInternalPIDLoopTime() {
+        return 0.001; // TalonSRX has a fixed internal loop time of 1ms
+        // Also doesn't matter as the victorSPX does not support PID gains directly.
+        //According to a chief delphi post:
+        // https://www.chiefdelphi.com/t/control-loop-timing-of-various-motor-controllers/370356/4
+    }
+
+    @Override
     protected void setMotorFollow(BasicMotor master, boolean inverted) {
         BasicVictorSPX motor = (BasicVictorSPX) master;
 

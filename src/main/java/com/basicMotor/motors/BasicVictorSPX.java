@@ -39,10 +39,14 @@ public class BasicVictorSPX extends BasicMotor {
      * You can add a measurements object later using the {@link #setMeasurements(Measurements)} method.
      * @param id The ID of the VictorSPX motor controller
      * @param name The name of the motor controller
+     * @param location The location of the pid loop of the controller.
+     *                 In this case, If you are not planning on using the pid loop, use the MOTOR location.
+     *                 If you are planning on using an external measurement source for the pid loop,
+     *                 use the RIO location.
      * @see #BasicVictorSPX(int, String, Measurements, ControllerGains)
      */
-    public BasicVictorSPX(int id, String name) {
-        super(new ControllerGains(), name, MotorManager.ControllerLocation.RIO);
+    public BasicVictorSPX(int id, String name, MotorManager.ControllerLocation location) {
+        super(new ControllerGains(), name, location);
 
         motor = new VictorSPX(id);
         motor.configFactoryDefault();
@@ -50,6 +54,19 @@ public class BasicVictorSPX extends BasicMotor {
         motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
 
         defaultMeasurements = new EmptyMeasurements();
+    }
+
+    /**
+     * Creates a BasicVictorSPX instance with the provided motor ID and name.
+     * Since no measurements are provided, it will use the default empty measurements.
+     * That means that any closed loop control will not work.
+     * You can add a measurements object later using the {@link #setMeasurements(Measurements)} method.
+     * @param id The ID of the VictorSPX motor controller
+     * @param name The name of the motor controller
+     * @see #BasicVictorSPX(int, String, Measurements, ControllerGains)
+     */
+    public BasicVictorSPX(int id, String name) {
+        this(id, name, MotorManager.ControllerLocation.RIO);
     }
 
     /**

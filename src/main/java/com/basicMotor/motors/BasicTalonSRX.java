@@ -171,7 +171,7 @@ public class BasicTalonSRX extends BasicMotor {
 
         this.motor.configAllSettings(motorConfig);
 
-        defaultMeasurements =new MeasurementsTalonSRX(motor, config.encoderConfig.tickPerRevolution,
+        defaultMeasurements = new MeasurementsTalonSRX(motor, config.encoderConfig.tickPerRevolution,
                 config.motorConfig.gearRatio, config.motorConfig.unitConversion);
 
         setCurrentLimits(config.currentLimitConfig.toCurrentLimits());

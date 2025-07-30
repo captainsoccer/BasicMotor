@@ -1,4 +1,4 @@
-package com.basicMotor.motors.victorSPX;
+package com.basicMotor.motors;
 
 import com.basicMotor.BasicMotor;
 import com.basicMotor.LogFrame;

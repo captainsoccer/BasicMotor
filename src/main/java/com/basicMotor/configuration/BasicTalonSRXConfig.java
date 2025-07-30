@@ -1,7 +1,7 @@
 package com.basicMotor.configuration;
 
 import com.basicMotor.gains.currentLimits.CurrentLimitsTalonSRX;
-import com.basicMotor.motors.talonSRX.BasicTalonSRX;
+import com.basicMotor.motors.BasicTalonSRX;
 
 /**
  * This class represents the configuration for a basic TalonSRX motor controller.

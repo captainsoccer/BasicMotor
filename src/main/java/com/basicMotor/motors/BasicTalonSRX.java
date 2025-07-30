@@ -1,4 +1,4 @@
-package com.basicMotor.motors.talonSRX;
+package com.basicMotor.motors;
 
 import com.basicMotor.BasicMotor;
 import com.basicMotor.LogFrame;

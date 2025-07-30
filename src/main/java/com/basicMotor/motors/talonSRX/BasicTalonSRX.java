@@ -282,6 +282,11 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     @Override
+    protected void updateMainLoopTiming(MotorManager.ControllerLocation location) {
+        //Does nothing as the TalonSRX does not support changing timings of can bus signals
+    }
+
+    @Override
     protected void setMotorFollow(BasicMotor master, boolean inverted) {
         BasicTalonSRX maserMotor = (BasicTalonSRX) master;
 

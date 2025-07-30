@@ -151,6 +151,14 @@ public class BasicVictorSPX extends BasicMotor {
     }
 
     @Override
+    protected void updateMainLoopTiming(MotorManager.ControllerLocation location) {
+        //Does nothing, as the victorSPX does not support main loop timing.
+        if(location == MotorManager.ControllerLocation.MOTOR){
+            DriverStation.reportError("motor: " + this.name + " does not support closed loop control on motor", true);
+        }
+    }
+
+    @Override
     protected double getInternalPIDLoopTime() {
         return 0.001; // TalonSRX has a fixed internal loop time of 1ms
         // Also doesn't matter as the victorSPX does not support PID gains directly.

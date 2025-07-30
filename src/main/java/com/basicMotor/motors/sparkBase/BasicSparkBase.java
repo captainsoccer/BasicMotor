@@ -362,6 +362,11 @@ public abstract class BasicSparkBase extends BasicMotor {
         applyConfig();
     }
 
+    @Override
+    protected void updateMainLoopTiming(MotorManager.ControllerLocation location) {
+        configurePeriodicFrames(location.getHZ());
+    }
+
     /**
      * Configures the periodic frames according to the main loop frequency.
      * Also applies the sensor loop frequency.

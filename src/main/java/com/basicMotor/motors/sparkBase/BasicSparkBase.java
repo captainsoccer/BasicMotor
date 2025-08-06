@@ -174,7 +174,7 @@ public abstract class BasicSparkBase extends BasicMotor {
     }
 
     @Override
-    protected LogFrame.SensorData getSensorData() {
+    protected LogFrame.SensorData getLatestSensorData() {
         double voltage = motor.getBusVoltage();
         double current = motor.getOutputCurrent();
         double temperature = motor.getMotorTemperature();

@@ -153,7 +153,7 @@ public abstract class BasicSimSystem extends BasicMotor {
   protected abstract void setInputVoltage(double voltage);
 
   @Override
-  protected LogFrame.SensorData getSensorData() {
+  protected LogFrame.SensorData getLatestSensorData() {
     double voltageInput = RobotController.getBatteryVoltage();
     double voltageOutput = this.voltageOutput;
 

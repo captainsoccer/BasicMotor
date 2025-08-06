@@ -525,6 +525,25 @@ public abstract class BasicMotor {
     }
 
     /**
+     * Gets the latest sensor data from the motor.
+     * The sensor data holds the following data:
+     * <ul>
+     *   <li>output current (Amps)</li>
+     *   <li>current draw (Amps)</li>
+     *   <li>voltage input (Volts)</li>
+     *   <li>voltage output (Volts)</li>
+     *   <li>power output (Watts)</li>
+     *   <li>power draw (Watts)</li>
+     *   <li>temperature (°C)</li>
+     *   <li>duty cycle (ratio)</li>
+     * </ul>
+     * @return The latest sensor data from the motor.
+     */
+    public LogFrame.SensorData getSensorData() {
+        return logFrame.sensorData;
+    }
+
+    /**
      * If the motor is at the requested setpoint.
      * This will check if the error is within the defined tolerance of the controller.
      * This is only impossible if the motor is using a closed loop control mode (like position or velocity control).
@@ -807,7 +826,7 @@ public abstract class BasicMotor {
      */
     private void updateSensorData() {
         if (!initialized) return;
-        logFrame.sensorData = getSensorData();
+        logFrame.sensorData = getLatestSensorData();
 
         if (controllerLocation == ControllerLocation.MOTOR) logFrame.pidOutput = getPIDLatestOutput();
 
@@ -851,7 +870,7 @@ public abstract class BasicMotor {
      *
      * @return The latest sensor data from the motor.
      */
-    protected abstract LogFrame.SensorData getSensorData();
+    protected abstract LogFrame.SensorData getLatestSensorData();
 
     /**
      * Gets the latest PID output from the motor.

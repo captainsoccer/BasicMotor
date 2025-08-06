@@ -7,11 +7,11 @@
   "mavenUrls": [
     "https://jitpack.io"
   ],
-  "jsonUrl": "https://captainsoccer.github.io/MotorUtils/BasicMotor.json",
+  "jsonUrl": "https://captainsoccer.github.io/BasicMotor/BasicMotor.json",
   "javaDependencies": [
     {
       "groupId": "com.github.captainsoccer",
-      "artifactId": "MotorUtils",
+      "artifactId": "BasicMotor",
       "version": "v1.2.0"
     }
   ],

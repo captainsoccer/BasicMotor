@@ -311,7 +311,7 @@ public abstract class BasicMotor {
      * Stops the motor.
      * Sets a new command to the controller to stop the motor.
      */
-    public void stopMotor() {
+    public void stop() {
         controller.setControl(new Controller.ControllerRequest());
     }
 

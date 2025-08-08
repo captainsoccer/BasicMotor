@@ -399,6 +399,9 @@ public abstract class BasicMotor {
             throw new IllegalArgumentException("Controller location cannot be null");
         }
 
+        // if the controller location is the same as the current one, then we don't need to do anything
+        if(controllerLocation == this.controllerLocation) return;
+
         this.controllerLocation = controllerLocation;
         MotorManager.getInstance().setControllerLocation(name, controllerLocation);
 

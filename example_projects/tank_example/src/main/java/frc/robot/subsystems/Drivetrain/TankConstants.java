@@ -1,8 +1,10 @@
 package frc.robot.subsystems.Drivetrain;
 
 import com.basicMotor.BasicMotor;
+import com.basicMotor.BasicMotor.IdleMode;
 import com.basicMotor.configuration.BasicMotorConfig;
 import com.basicMotor.configuration.BasicSparkBaseConfig;
+import com.basicMotor.configuration.BasicTalonFXConfig;
 import com.basicMotor.configuration.BasicMotorConfig.FeedForwardConfig;
 import com.basicMotor.configuration.BasicMotorConfig.PIDConfig;
 import com.basicMotor.gains.ControllerFeedForwards;
@@ -157,5 +159,25 @@ public enum TankConstants {
 
         followerMotorConfig.motorConfig.id = followID;
         followerMotorConfig.motorConfig.name = this.name() + " Follower Motor";
+    }
+
+
+    public static final BasicMotorConfig FLY_WHEEL_MOTOR_CONFIG = new BasicTalonFXConfig();
+
+    static {
+        var config = (BasicTalonFXConfig)FLY_WHEEL_MOTOR_CONFIG;
+
+        config.motorConfig.id = 5;
+        config.motorConfig.name = "Fly wheel";
+        config.motorConfig.gearRatio = 10;
+        config.motorConfig.idleMode = IdleMode.COAST;
+        config.motorConfig.motorType = DCMotor.getFalcon500(1);
+        
+        config.pidConfig.kP = 4; // kp of 4 volts per rotation per second
+        config.pidConfig.kD = 0.1; //kd of 0.1 volts per rotation
+        config.pidConfig.tolerance = 1; // tolerance of 1 Rotation per second
+
+        config.feedForwardConfig.setpointFeedForward = 0.2; //The kv of the motor, 0.2 volts per rotation per second
+        config.feedForwardConfig.frictionFeedForward = 0.3; //A feedforward of 0.3 volts towards the direction of travel
     }
 }

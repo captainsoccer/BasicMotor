@@ -82,7 +82,7 @@ public abstract class BasicMotor {
      * The location of the pid controller.
      * This is used to determine if the pid controller is on the motor or on the RIO.
      */
-    private volatile ControllerLocation controllerLocation;
+    private volatile ControllerLocation controllerLocation = ControllerLocation.MOTOR;
 
     /**
      * The state of the motor.
@@ -145,11 +145,10 @@ public abstract class BasicMotor {
      *
      * @param controllerGains    The gains of the controller.
      * @param name               The name of the motor (used for logging).
-     * @param controllerLocation The location of the pid controller (RIO or motor controller).
      */
-    public BasicMotor(ControllerGains controllerGains, String name, ControllerLocation controllerLocation) {
+    public BasicMotor(ControllerGains controllerGains, String name) {
         // config is null due to the constructor being used for the bare minimum configuration
-        this(controllerGains, name, controllerLocation, null);
+        this(controllerGains, name, null);
     }
 
     /**
@@ -158,24 +157,20 @@ public abstract class BasicMotor {
      * @param config The configuration for the motor controller.
      */
     public BasicMotor(BasicMotorConfig config) {
-        this(config.getControllerGains(), config.motorConfig.name, config.motorConfig.location, config);
+        this(config.getControllerGains(), config.motorConfig.name, config);
     }
 
     /**
-     * Creates the motor with the given controller gains, name, controller location, and configuration.
+     * Creates the motor with the given controller gains, name, and configuration.
      *
      * @param controllerGains    The gains of the controller (used for PID control, feedforward, and constraints).
      * @param name               The name of the motor (used for logging and debugging).
-     * @param controllerLocation The location of the pid controller (RIO or motor controller).
      * @param config             The configuration for the motor controller. (used for idle mode, inverted, and current limits)
      */
-    private BasicMotor(ControllerGains controllerGains, String name, ControllerLocation controllerLocation, BasicMotorConfig config) {
+    private BasicMotor(ControllerGains controllerGains, String name, BasicMotorConfig config) {
         // checking for null values
         Objects.requireNonNull(controllerGains);
         Objects.requireNonNull(name);
-        Objects.requireNonNull(controllerLocation);
-
-        this.controllerLocation = controllerLocation;
 
         Runnable setHasPIDGainsChanged = () -> hasPIDGainsChanged = true;
         Runnable setHasConstraintsChanged = () -> hasConstraintsChanged = true;
@@ -187,7 +182,7 @@ public abstract class BasicMotor {
 
         //register the motor with the motor manager
         MotorManager.getInstance()
-                .registerMotor(name, controllerLocation, this::run, this::updateSensorData, this::getLatestFrame);
+                .registerMotor(name, this::run, this::updateSensorData, this::getLatestFrame);
     }
 
     /**
@@ -239,8 +234,27 @@ public abstract class BasicMotor {
      * @param measurements The new measurements source for the motor.
      */
     public void setMeasurements(Measurements measurements) {
+        setMeasurements(measurements, true);
+    }
+
+    /**
+     * Sets a new measurements source for the motor.
+     * Use this when you want the motor to use an external measurements source.
+     * Check the specific motor documentation to check if it supports on motor external measurements source.
+     * This effects the motor only if the pid controller is on the robo rio {@link ControllerLocation#RIO}.
+     * If you regret setting the measurements, you can call {@link #setDefaultMeasurements()} to reset it to the default measurements.
+     *
+     * @param measurements The new measurements source for the motor.
+     * @param throughRIO If the measurements should be set through the RIO or directly on the motor controller.
+     */
+    protected void setMeasurements(Measurements measurements, boolean throughRIO){
         stopRecordingMeasurements();
         this.measurements = measurements;
+
+        if(throughRIO)
+            setControllerLocation(ControllerLocation.RIO);
+        else
+            setControllerLocation(ControllerLocation.MOTOR);
     }
 
     /**
@@ -250,6 +264,8 @@ public abstract class BasicMotor {
     public void setDefaultMeasurements() {
         this.measurements = getDefaultMeasurements();
         startRecordingMeasurements(controllerLocation.getHZ());
+
+        setControllerLocation(ControllerLocation.MOTOR);
     }
 
     /**

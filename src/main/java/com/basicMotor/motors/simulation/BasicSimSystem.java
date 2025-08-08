@@ -28,7 +28,8 @@ public abstract class BasicSimSystem extends BasicMotor {
    * @param gains The controller gains to use for the motor simulation
    */
   public BasicSimSystem(String name, ControllerGains gains) {
-    super(gains, name, ControllerLocation.RIO);
+    super(gains, name);
+    setControllerLocation(ControllerLocation.RIO);
   }
 
   /**
@@ -38,15 +39,8 @@ public abstract class BasicSimSystem extends BasicMotor {
    * @param config The configuration for the motor simulation
    */
   public BasicSimSystem(BasicMotorConfig config) {
-    super(checkConfig(config));
-  }
-
-  /**
-   * Forces the controller location to RIO in the provided configuration.
-   */
-  private static BasicMotorConfig checkConfig(BasicMotorConfig config) {
-    config.motorConfig.location = ControllerLocation.RIO;
-    return config;
+    super(config);
+    setControllerLocation(ControllerLocation.RIO);
   }
 
   @Override

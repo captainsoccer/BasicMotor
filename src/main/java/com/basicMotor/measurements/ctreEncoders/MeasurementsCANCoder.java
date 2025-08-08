@@ -1,6 +1,7 @@
 package com.basicMotor.measurements.ctreEncoders;
 
 import com.basicMotor.measurements.Measurements;
+import com.basicMotor.motorManager.MotorManager;
 import com.basicMotor.motors.talonFX.TalonFXSensors;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -74,8 +75,6 @@ public class MeasurementsCANCoder extends Measurements {
      *                                 In most cases, this will be 1.
      * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
      *                                 See {@link MotorConfig#unitConversion} for more information.
-     * @param refreshHZ                The refresh rate of the signals (how often to update the signals)
-     *                                 (should be the same Hz as the thread running the measurements)
      * @param timeSync               If true, the measurements will wait for all signals to update before returning the values.
      *                                 Use this only if you have a licensed version of Phoenix Pro connected to a canivore.
      *                                 Otherwise, it will slow down the robot code significantly.
@@ -84,7 +83,6 @@ public class MeasurementsCANCoder extends Measurements {
                                 StatusSignal<AngularVelocity> velocitySignal,
                                 double canCoderToMechanismRatio,
                                 double unitConversion,
-                                double refreshHZ,
                                 boolean timeSync) {
 
         super(canCoderToMechanismRatio, unitConversion);
@@ -93,6 +91,8 @@ public class MeasurementsCANCoder extends Measurements {
 
         motorPosition = positionSignal;
         motorVelocity = velocitySignal;
+
+        double refreshHZ = MotorManager.ControllerLocation.MOTOR.getHZ();
 
         positionSignal.setUpdateFrequency(refreshHZ);
         velocitySignal.setUpdateFrequency(refreshHZ);
@@ -119,7 +119,7 @@ public class MeasurementsCANCoder extends Measurements {
                                 double canCoderToMechanismRatio,
                                 double unitConversion,
                                 double refreshHZ) {
-        this(positionSignal, velocitySignal, canCoderToMechanismRatio, unitConversion, refreshHZ, false);
+        this(positionSignal, velocitySignal, canCoderToMechanismRatio, unitConversion, false);
     }
 
     /**
@@ -131,14 +131,12 @@ public class MeasurementsCANCoder extends Measurements {
      *                                 In most cases, this will be 1.
      * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
      *                                 See {@link MotorConfig#unitConversion} for more information.
-     * @param refreshHZ                The refresh rate of the signals (how often to update the signals)
-     *                                 (should be the same Hz as the thread running the measurements)
      * @param timeSync               If true, the measurements will wait for all signals to update before returning the values.
      *                                 Use this only if you have a licensed version of Phoenix Pro connected to a canivore.
      *                                 Otherwise, it will slow down the robot code significantly.
      */
-    public MeasurementsCANCoder(CANcoder cancoder, double canCoderToMechanismRatio, double unitConversion, double refreshHZ, boolean timeSync) {
-        this(cancoder.getPosition(false), cancoder.getVelocity(false), canCoderToMechanismRatio, unitConversion, refreshHZ, timeSync);
+    public MeasurementsCANCoder(CANcoder cancoder, double canCoderToMechanismRatio, double unitConversion, boolean timeSync) {
+        this(cancoder.getPosition(false), cancoder.getVelocity(false), canCoderToMechanismRatio, unitConversion, timeSync);
     }
 
     /**
@@ -150,11 +148,9 @@ public class MeasurementsCANCoder extends Measurements {
      *                                 In most cases, this will be 1.
      * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
      *                                 See {@link MotorConfig#unitConversion} for more information.
-     * @param refreshHZ                The refresh rate of the signals (how often to update the signals)
-     *                                 (should be the same Hz as the thread running the measurements)
      */
-    public MeasurementsCANCoder(CANcoder cancoder, double canCoderToMechanismRatio, double unitConversion, double refreshHZ) {
-        this(cancoder, canCoderToMechanismRatio, unitConversion, refreshHZ, false);
+    public MeasurementsCANCoder(CANcoder cancoder, double canCoderToMechanismRatio, double unitConversion) {
+        this(cancoder, canCoderToMechanismRatio, unitConversion, false);
     }
 
     @Override

@@ -119,14 +119,12 @@ public class MotorManager {
      * Use only once per motor.
      *
      * @param name               The name of the motor. (will be used in the logs)
-     * @param location           The location of the pid loop. (RIO or Motor Controller).
      * @param run                The function to run for the main loop.
      * @param sensorLoopFunction The function to run for the sensor loop.
      * @param frameSupplier      The function to get the latest frame for the motor.
      */
     public void registerMotor(
             String name,
-            ControllerLocation location,
             Runnable run,
             Runnable sensorLoopFunction,
             Supplier<LogFrame.LogFrameAutoLogged> frameSupplier) {
@@ -141,7 +139,7 @@ public class MotorManager {
         motorMap.put(name, functions);
 
         functions.sensorLoop.startPeriodic(1 / config.SENSOR_LOOP_HZ);
-        functions.mainLoop.startPeriodic(location.getSeconds());
+        functions.mainLoop.startPeriodic(ControllerLocation.MOTOR.getSeconds());
     }
 
     /**

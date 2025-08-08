@@ -38,8 +38,7 @@ public class SwerveModuleReal extends SwerveModuleIO{
 
         canCoder = configureCanCoder(constants);
 
-        var canCoderMeasurements = new MeasurementsCANCoder(canCoder, 1, 1,
-            constants.STEER_MOTOR_CONFIG.motorConfig.location.getHZ());
+        var canCoderMeasurements = new MeasurementsCANCoder(canCoder, 1, 1);
 
         canCoder.getMagnetHealth(false).setUpdateFrequency(4);
 

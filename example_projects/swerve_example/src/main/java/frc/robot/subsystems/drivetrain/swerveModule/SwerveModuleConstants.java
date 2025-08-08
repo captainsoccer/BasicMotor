@@ -15,7 +15,6 @@ import com.basicMotor.configuration.BasicMotorConfig.PIDConfig;
 import com.basicMotor.gains.ControllerConstraints;
 import com.basicMotor.gains.ControllerFeedForwards;
 import com.basicMotor.gains.PIDGains;
-import com.basicMotor.motorManager.MotorManager;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 
@@ -112,7 +111,6 @@ public enum SwerveModuleConstants {
 
         config.motorConfig.gearRatio = 12.75; // Adjust based on your gear ratio
         config.motorConfig.idleMode = BasicMotor.IdleMode.BRAKE;
-        config.motorConfig.location = MotorManager.ControllerLocation.RIO; //For the cancoder to be used directly
         config.motorConfig.motorType = DCMotor.getNEO(1); // Adjust based on your motor type
 
         config.currentLimitConfig.freeSpeedCurrentLimit = 40; // Adjust based on your motor's current limit

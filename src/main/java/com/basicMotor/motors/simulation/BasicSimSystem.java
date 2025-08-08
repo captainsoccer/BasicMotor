@@ -8,6 +8,7 @@ import com.basicMotor.gains.ControllerGains;
 import com.basicMotor.gains.currentLimits.CurrentLimits;
 import com.basicMotor.gains.PIDGains;
 import com.basicMotor.LogFrame;
+import com.basicMotor.measurements.Measurements;
 import com.basicMotor.motorManager.MotorManager.ControllerLocation;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
@@ -97,6 +98,11 @@ public abstract class BasicSimSystem extends BasicMotor {
   @Override
   public void setControllerLocation(ControllerLocation location){
     throw new UnsupportedOperationException("Can't change controller location for simulation systems.");
+  }
+
+  @Override
+  public void setMeasurements(Measurements measurements, boolean throughRIO) {
+      throw new UnsupportedOperationException("Can't change measurements for simulation systems.");
   }
 
   @Override

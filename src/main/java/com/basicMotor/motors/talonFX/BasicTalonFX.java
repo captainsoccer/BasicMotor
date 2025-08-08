@@ -91,24 +91,17 @@ public class BasicTalonFX extends BasicMotor {
      *                           This will be desired units per rotation.
      *                           This will be multiplied after the gear ratio is applied.
      * @param name               The name of the motor controller (used for logging and debugging).
-     * @param controllerLocation The location of the pid controller (RIO or MOTOR).
      */
-    public BasicTalonFX(
-            ControllerGains controllerGains,
-            int id,
-            double gearRatio,
-            double unitConversion,
-            String name,
-            MotorManager.ControllerLocation controllerLocation) {
+    public BasicTalonFX(ControllerGains controllerGains, int id, double gearRatio, double unitConversion, String name) {
 
-        super(controllerGains, name, controllerLocation);
+        super(controllerGains, name);
 
         motor = new TalonFX(id);
         config = new TalonFXConfiguration();
 
         applyConfig();
 
-        defaultMeasurements = new MeasurementsTalonFX(motor, controllerLocation.getHZ(), gearRatio, unitConversion);
+        defaultMeasurements = new MeasurementsTalonFX(motor, gearRatio, unitConversion);
 
         sensors = new TalonFXSensors(motor, super::getControllerLocation);
 
@@ -125,15 +118,13 @@ public class BasicTalonFX extends BasicMotor {
      *                           A value larger than 1 means the motor is geared down,
      *                           e.g., a 10 gear ratio means the motor turns 10 times for every rotation of the mechanism.
      * @param name               The name of the motor controller (used for logging and debugging).
-     * @param controllerLocation The location of the pid controller (RIO or MOTOR).
      */
     public BasicTalonFX(
             ControllerGains controllerGains,
             int id,
             double gearRatio,
-            String name,
-            MotorManager.ControllerLocation controllerLocation) {
-        this(controllerGains, id, gearRatio, 1, name, controllerLocation);
+            String name) {
+        this(controllerGains, id, gearRatio, 1, name);
     }
 
     /**
@@ -154,8 +145,7 @@ public class BasicTalonFX extends BasicMotor {
 
         applyConfig();
 
-        defaultMeasurements =
-                new MeasurementsTalonFX(motor, getControllerLocation().getHZ(), config.motorConfig.gearRatio, config.motorConfig.unitConversion);
+        defaultMeasurements = new MeasurementsTalonFX(motor, config.motorConfig.gearRatio, config.motorConfig.unitConversion);
 
         sensors = new TalonFXSensors(motor, super::getControllerLocation);
 
@@ -454,8 +444,7 @@ public class BasicTalonFX extends BasicMotor {
         config.Feedback.FeedbackSensorSource = feedbackSensorSource;
         applyConfig();
 
-        setMeasurements(
-                new MeasurementsCANCoder(canCoder, getControllerLocation().getHZ(), mechanismToSensorRatio, unitConversion));
+        setMeasurements(new MeasurementsCANCoder(canCoder, mechanismToSensorRatio, unitConversion), false);
     }
 
     /**

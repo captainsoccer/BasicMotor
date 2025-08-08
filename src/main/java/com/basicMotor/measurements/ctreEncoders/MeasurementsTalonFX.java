@@ -1,6 +1,7 @@
 package com.basicMotor.measurements.ctreEncoders;
 
 import com.basicMotor.measurements.Measurements;
+import com.basicMotor.motorManager.MotorManager;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -60,15 +61,15 @@ public class MeasurementsTalonFX extends Measurements {
      * @param unitConversion The value that will be multiplied by to convert the measurements to the desired units.
      *                       This will be desired units per rotation.
      *                       More info at {@link MotorConfig#unitConversion}.
-     * @param refreshHZ      The refresh rate of the signals (how often to update the signals)
-     *                       (should be the same Hz as the thread running the measurements)
      */
-    public MeasurementsTalonFX(TalonFX motor, double gearRatio, double unitConversion, double refreshHZ) {
+    public MeasurementsTalonFX(TalonFX motor, double gearRatio, double unitConversion) {
         super(gearRatio, unitConversion);
 
         motorPosition = motor.getPosition(false);
         motorVelocity = motor.getVelocity(false);
         motorAcceleration = motor.getAcceleration(false);
+
+        double refreshHZ = MotorManager.ControllerLocation.MOTOR.getHZ();
 
         motorPosition.setUpdateFrequency(refreshHZ);
         motorVelocity.setUpdateFrequency(refreshHZ);

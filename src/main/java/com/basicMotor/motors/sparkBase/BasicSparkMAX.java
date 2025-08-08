@@ -27,15 +27,13 @@ public class BasicSparkMAX extends BasicSparkBase {
      * @param unitConversion The conversion factor for the motor's position units.
      *                       This will be multiplied by the motor's rotation to get the position with the desired units.
      *                       The unit for this value is desired position unit per rotation.
-     * @param location       The location of the pid controller (RIO or MOTOR).
      */
     public BasicSparkMAX(
             ControllerGains gains,
             int id,
             String name,
             double gearRatio,
-            double unitConversion,
-            MotorManager.ControllerLocation location) {
+            double unitConversion) {
 
         super(
                 // creates a new SparkMax motor controller with the given id and type
@@ -44,8 +42,7 @@ public class BasicSparkMAX extends BasicSparkBase {
                 gains,
                 name,
                 gearRatio,
-                unitConversion,
-                location);
+                unitConversion);
     }
 
     /**
@@ -55,16 +52,14 @@ public class BasicSparkMAX extends BasicSparkBase {
      * @param id             The id of the motor controller
      * @param name           The name of the motor controller (used for logging and debugging)
      * @param gearRatio      The gear ratio of the motor controller (how many rotations of the motor are a rotation of the mechanism)
-     * @param location       The location of the pid controller (RIO or MOTOR).
      */
     public BasicSparkMAX(
             ControllerGains gains,
             int id,
             String name,
-            double gearRatio,
-            MotorManager.ControllerLocation location) {
+            double gearRatio) {
 
-        this(gains, id, name, gearRatio, 1, location);
+        this(gains, id, name, gearRatio, 1);
     }
 
     /**

@@ -64,7 +64,6 @@ public abstract class BasicSparkBase extends BasicMotor {
      * @param gearRatio      The gear ratio of the motor controller.
      * @param unitConversion The conversion factor for the motor's position units.
      *                       This will be multiplied by the motor's rotation to get the position with the desired units.
-     * @param location       The location of the pid controller (RIO or motor).
      */
     public BasicSparkBase(
             SparkBase motor,
@@ -72,17 +71,16 @@ public abstract class BasicSparkBase extends BasicMotor {
             ControllerGains gains,
             String name,
             double gearRatio,
-            double unitConversion,
-            MotorManager.ControllerLocation location) {
+            double unitConversion) {
 
-        super(gains, name, location);
+        super(gains, name);
 
         this.motor = motor;
         this.config = config.voltageCompensation(MotorManager.config.motorIdealVoltage); // set the voltage compensation to the idle voltage
         // all configs should be stored in code and not on motor
         applyConfig();
 
-        configurePeriodicFrames(location.getHZ());
+        configurePeriodicFrames(MotorManager.ControllerLocation.MOTOR.getHZ());
 
         defaultMeasurements =
                 new MeasurementsREVRelative(motor.getEncoder(), gearRatio, unitConversion);
@@ -106,7 +104,7 @@ public abstract class BasicSparkBase extends BasicMotor {
         // all configs should be stored in code and not on motor
         applyConfig();
 
-        configurePeriodicFrames(motorConfig.motorConfig.location.getHZ());
+        configurePeriodicFrames(MotorManager.ControllerLocation.MOTOR.getHZ());
 
         defaultMeasurements = new MeasurementsREVRelative(
                 motor.getEncoder(),
@@ -531,7 +529,7 @@ public abstract class BasicSparkBase extends BasicMotor {
         // sets the feedback sensor for the closed loop controller
         config.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder);
 
-        int periodMs = (int) ((1 / getControllerLocation().getHZ()) * 1000); // convert to milliseconds
+        int periodMs = (int) (MotorManager.ControllerLocation.MOTOR.getSeconds() * 1000); // convert to milliseconds
         // sets the period for the absolute encoder position and velocity
         // (the default encoder period is automatically disabled)
         config.signals.absoluteEncoderPositionPeriodMs(periodMs);
@@ -541,9 +539,7 @@ public abstract class BasicSparkBase extends BasicMotor {
         applyConfig();
 
         // set the measurements to the absolute encoder measurements
-        setMeasurements(
-                new MeasurementsREVAbsolute(
-                        motor.getAbsoluteEncoder(), unitConversion));
+        setMeasurements(new MeasurementsREVAbsolute(motor.getAbsoluteEncoder(), unitConversion), false);
     }
 
     /**
@@ -649,7 +645,7 @@ public abstract class BasicSparkBase extends BasicMotor {
 
         configExternalEncoder(inverted, sensorToMotorRatio);
 
-        int periodMs = (int) ((1 / getControllerLocation().getHZ()) * 1000); // convert to milliseconds
+        int periodMs = (int) (MotorManager.ControllerLocation.MOTOR.getSeconds() * 1000); // convert to milliseconds
         // sets the period for the absolute encoder position and velocity
         // (the default encoder period is automatically disabled)
         config.signals.externalOrAltEncoderPosition(periodMs);
@@ -659,8 +655,7 @@ public abstract class BasicSparkBase extends BasicMotor {
         applyConfig();
 
         // set the measurements to the absolute encoder measurements
-        setMeasurements(
-                new MeasurementsREVRelative(getExternalEncoder(), mechanismToSensorRatio, unitConversion));
+        setMeasurements(new MeasurementsREVRelative(getExternalEncoder(), mechanismToSensorRatio, unitConversion), false);
     }
 
     /**

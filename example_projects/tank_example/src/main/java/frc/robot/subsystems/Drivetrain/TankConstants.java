@@ -1,10 +1,8 @@
 package frc.robot.subsystems.Drivetrain;
 
 import com.basicMotor.BasicMotor;
-import com.basicMotor.BasicMotor.IdleMode;
 import com.basicMotor.configuration.BasicMotorConfig;
 import com.basicMotor.configuration.BasicSparkBaseConfig;
-import com.basicMotor.configuration.BasicTalonFXConfig;
 import com.basicMotor.configuration.BasicMotorConfig.FeedForwardConfig;
 import com.basicMotor.configuration.BasicMotorConfig.PIDConfig;
 import com.basicMotor.gains.ControllerFeedForwards;

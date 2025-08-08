@@ -43,8 +43,6 @@ public class TankIOBasic implements TankIO{
             leadLeftMotor = new BasicSimMotor(TankConstants.LEFT.leadMotorConfig);
             leadRightMotor = new BasicSimMotor(TankConstants.RIGHT.leadMotorConfig);
         }
-
-        followerMotor.follow(masterMotor);
     }
 
 

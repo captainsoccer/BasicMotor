@@ -22,7 +22,7 @@ public class BasicMotorConfig {
 
   /**
    * The basic parameters of the motor controller
-   * (id, name, gear ratio, unit conversion, pid controller location, inverted, idle mode, motor type)
+   * (id, name, gear ratio, unit conversion, inverted, idle mode, motor type)
    */
   public MotorConfig motorConfig = new MotorConfig();
   /**
@@ -133,17 +133,6 @@ public class BasicMotorConfig {
      * when not powered BRAKE means the motor will try to hold its position when not powered
      */
     public BasicMotor.IdleMode idleMode = BasicMotor.IdleMode.COAST;
-    /**
-     * The location of the motor controller
-     *
-     * <p>This is the location of the PID Controller of the motor.
-     * The default is MOTOR, which means the PID Controller is on the motor controller itself.
-     * This is simpler and more efficient.
-     * <p>If you want to use the PID Controller on the RIO, set this to RIO.
-     * This will allow you to set a custom measurement source and have more control over the PID Controller.
-     * But it will cost more cpu and CANBUS usage.
-     */
-    public MotorManager.ControllerLocation location = MotorManager.ControllerLocation.MOTOR;
 
     /**
      * The type of motor that the controller is connected to.

@@ -7,7 +7,7 @@ import com.basicMotor.gains.currentLimits.CurrentLimitsSparkBase;
  * It extends the BasicMotorConfig class and provides specific configurations for spark base motors.
  * Use this class to use a spark max or a spark flex motor controller.
  * (Neo 1.1, Neo 550, Neo vortex).
- * See the <a href="https://github.com/captainsoccer/MotorUtils/wiki">wiki</a> //TODO: add wiki link
+ * See the <a href="https://github.com/captainsoccer/BasicMotor/wiki/Usage-Spark-Base">wiki</a>
  * for more information on how to use this class.
  */
 public class BasicSparkBaseConfig extends BasicMotorConfig {

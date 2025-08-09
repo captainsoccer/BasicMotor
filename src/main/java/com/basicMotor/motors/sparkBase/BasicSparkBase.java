@@ -121,7 +121,7 @@ public abstract class BasicSparkBase extends BasicMotor {
         if (sparkBaseConfig.externalEncoderConfig.useExternalEncoder
                 && sparkBaseConfig.absoluteEncoderConfig.useAbsoluteEncoder) {
             //spark max (and maybe other future Spark Base motors)
-            // cannot use both an absolute encoder and an external encoder at the same time
+            // cannot use both an absolute encoder and an external encoder at the same time,
             // so we will not configure the encoders and let the derived class handle this
             return;
         }
@@ -511,8 +511,6 @@ public abstract class BasicSparkBase extends BasicMotor {
      *                             multiplied by to get the motor output.
      *                             This does not include unit conversion.
      *                             This will be larger than 1.0 if the sensor is in a reduction to the motor.
-     * @param unitConversion       The value that will be multiplied by to convert the measurements to the
-     *                             desired units.
      *                             This is not affected by sensorToMotorRatio.
      * @param absoluteEncoderRange The range that the absolute encoder should report.
      *                             This will be in the encoders rotations.
@@ -522,7 +520,6 @@ public abstract class BasicSparkBase extends BasicMotor {
             boolean inverted,
             double zeroOffset,
             double sensorToMotorRatio,
-            double unitConversion,
             AbsoluteEncoderRange absoluteEncoderRange) {
         // sets the absolute encoder configuration
         setAbsoluteEncoderConfig(inverted, zeroOffset, sensorToMotorRatio, absoluteEncoderRange);
@@ -539,31 +536,7 @@ public abstract class BasicSparkBase extends BasicMotor {
         applyConfig();
 
         // set the measurements to the absolute encoder measurements
-        setMeasurements(new MeasurementsREVAbsolute(motor.getAbsoluteEncoder(), unitConversion), false);
-    }
-
-    /**
-     * Configures the motor controller to use an absolute encoder connected directly to the motor controller.
-     *
-     * @param inverted             If the absolute encoder is inverted.
-     *                             The default positive direction of the encoder is clockwise.
-     *                             This is opposite to the default positive direction of a motor.
-     * @param zeroOffset           The position the encoder reports that should be considered zero.
-     *                             This is affected by the absoluteEncoderRange.
-     * @param sensorToMotorRatio   The number which the reading of the absolute encoder should be
-     *                             multiplied by to get the motor output.
-     *                             This does not include unit conversion.
-     *                             This will be larger than 1.0 if the sensor is in a reduction to the motor.
-     * @param absoluteEncoderRange The range that the absolute encoder should report.
-     *                             This will be in the encoders rotations.
-     *                             (0 to 1, -0.5 to 0.5, etc.)
-     */
-    public void useAbsoluteEncoder(
-            boolean inverted,
-            double zeroOffset,
-            double sensorToMotorRatio,
-            AbsoluteEncoderRange absoluteEncoderRange) {
-        useAbsoluteEncoder(inverted, zeroOffset, sensorToMotorRatio, 1, absoluteEncoderRange);
+        setMeasurements(new MeasurementsREVAbsolute(motor.getAbsoluteEncoder(), 1), false);
     }
 
     /**

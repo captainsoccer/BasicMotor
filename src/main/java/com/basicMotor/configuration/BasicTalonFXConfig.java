@@ -7,7 +7,7 @@ import com.basicMotor.gains.currentLimits.CurrentLimitsTalonFX;
  * It extends the BasicMotorConfig class and provides specific configurations for TalonFX motors.
  * Use this class when using a TalonFX motor controller.
  * (Falcon 500, Kraken X60, Kraken X44).
- * See the <a href="https://github.com/captainsoccer/MotorUtils/wiki">wiki</a> //TODO: add wiki link
+ * See the <a href="https://github.com/captainsoccer/BasicMotor/wiki/Usage-TalonFX">wiki</a>
  * for more information on how to use this class.
  */
 public class BasicTalonFXConfig extends  BasicMotorConfig {

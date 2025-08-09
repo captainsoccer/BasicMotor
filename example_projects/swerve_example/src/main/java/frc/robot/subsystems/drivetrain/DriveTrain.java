@@ -92,13 +92,11 @@ public class DriveTrain extends SubsystemBase {
      * Creates a new DriveTrain.
      */
     public DriveTrain() {
+        boolean isReal = RobotBase.isReal();
+
         for (int i = 0; i < 4; i++) {
-            if(RobotBase.isReal()){
-                io[i] = new SwerveModuleReal(SwerveModuleConstants.values()[i]);
-            }
-            else{
-                io[i] = new SwerveModuleSim(SwerveModuleConstants.values()[i]);
-            }
+            var constants = SwerveModuleConstants.values()[i];
+            io[i] = new SwerveModuleIOBasic(constants, isReal);
 
             modulePositions[i] = new SwerveModulePosition();
 

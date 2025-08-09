@@ -7,6 +7,7 @@ package frc.robot.subsystems.drivetrain.swerveModule;
 import com.basicMotor.BasicMotor;
 import com.basicMotor.controllers.Controller.ControlMode;
 import com.basicMotor.measurements.ctreEncoders.MeasurementsCANCoder;
+import com.basicMotor.motors.simulation.BasicSimMotor;
 import com.basicMotor.motors.sparkBase.BasicSparkMAX;
 import com.basicMotor.motors.talonFX.BasicTalonFX;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -17,37 +18,44 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
-/**
- * This class implements the SwerveModuleIO interface for a real swerve module.
- * It handles the actual hardware interaction for a swerve module,
- * including setting the target state,
- * updating the state and position, and updating logs.
- */
-public class SwerveModuleReal extends SwerveModuleIO{
+/** Add your docs here. */
+public class SwerveModuleIOBasic extends SwerveModuleIO{
+    private final boolean isReal;
+
     private final BasicMotor driveMotor;
     private final BasicMotor steerMotor;
 
     private final CANcoder canCoder;
 
-    public SwerveModuleReal(SwerveModuleConstants constants){
+    public SwerveModuleIOBasic(SwerveModuleConstants constants, boolean isReal){
         super(constants);
 
-        driveMotor = new BasicTalonFX(constants.DRIVE_MOTOR_CONFIG);
+        this.isReal = isReal;
 
-        steerMotor = new BasicSparkMAX(constants.STEER_MOTOR_CONFIG);
+        if(isReal){
+            driveMotor = new BasicTalonFX(constants.DRIVE_MOTOR_CONFIG);
 
-        canCoder = configureCanCoder(constants);
+            steerMotor = new BasicSparkMAX(constants.STEER_MOTOR_CONFIG);
 
-        var canCoderMeasurements = new MeasurementsCANCoder(canCoder, 1, 1);
+            canCoder = configureCanCoder(constants);
 
-        canCoder.getMagnetHealth(false).setUpdateFrequency(4);
+            var canCoderMeasurements = new MeasurementsCANCoder(canCoder, 1, 1);
 
-        canCoder.optimizeBusUtilization();
+            canCoder.getMagnetHealth(false).setUpdateFrequency(4);
 
-        steerMotor.setMeasurements(canCoderMeasurements);
+            canCoder.optimizeBusUtilization();
+
+            steerMotor.setMeasurements(canCoderMeasurements);
+        }
+        else{
+            canCoder = null;
+
+            driveMotor = new BasicSimMotor(constants.DRIVE_MOTOR_CONFIG);
+            steerMotor = new BasicSimMotor(constants.STEER_MOTOR_CONFIG);
+        }
     }
 
-    private CANcoder configureCanCoder(SwerveModuleConstants constants){
+    private static CANcoder configureCanCoder(SwerveModuleConstants constants){
         CANcoder canCoder = new CANcoder(constants.CAN_CODER_ID);
 
         var config = new CANcoderConfiguration();
@@ -67,7 +75,8 @@ public class SwerveModuleReal extends SwerveModuleIO{
 
     @Override
     public void updateLogs(SwerveModuleInputs inputs){
-        inputs.canCoderColor = canCoder.getMagnetHealth(true).getValue().name();
+        if(isReal)
+            inputs.canCoderColor = canCoder.getMagnetHealth(true).getValue().name();
     }
 
     @Override

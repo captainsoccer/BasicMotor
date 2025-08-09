@@ -178,7 +178,7 @@ public abstract class BasicMotor {
 
         this.name = name;
 
-        this.config = config;
+        this.config = config != null ? config.copy() : null;
 
         //register the motor with the motor manager
         MotorManager.getInstance()
@@ -327,7 +327,7 @@ public abstract class BasicMotor {
      * Stops the motor.
      * Sets a new command to the controller to stop the motor.
      */
-    public void stopMotor() {
+    public void stop() {
         controller.setControl(new Controller.ControllerRequest());
     }
 
@@ -398,6 +398,9 @@ public abstract class BasicMotor {
         if (controllerLocation == null) {
             throw new IllegalArgumentException("Controller location cannot be null");
         }
+
+        // if the controller location is the same as the current one, then we don't need to do anything
+        if(controllerLocation == this.controllerLocation) return;
 
         this.controllerLocation = controllerLocation;
         MotorManager.getInstance().setControllerLocation(name, controllerLocation);
@@ -538,6 +541,25 @@ public abstract class BasicMotor {
      */
     public double getVelocity() {
         return measurements.getMeasurement().velocity();
+    }
+
+    /**
+     * Gets the latest sensor data from the motor.
+     * The sensor data holds the following data:
+     * <ul>
+     *   <li>output current (Amps)</li>
+     *   <li>current draw (Amps)</li>
+     *   <li>voltage input (Volts)</li>
+     *   <li>voltage output (Volts)</li>
+     *   <li>power output (Watts)</li>
+     *   <li>power draw (Watts)</li>
+     *   <li>temperature (°C)</li>
+     *   <li>duty cycle (ratio)</li>
+     * </ul>
+     * @return The latest sensor data from the motor.
+     */
+    public LogFrame.SensorData getSensorData() {
+        return logFrame.sensorData;
     }
 
     /**
@@ -685,6 +707,7 @@ public abstract class BasicMotor {
                 // if the motor is already disabled, then we don't need to do anything
                 return false;
             }
+            stopMotorOutput();
             motorState = MotorState.DISABLED;
             return false;
         }
@@ -822,7 +845,7 @@ public abstract class BasicMotor {
      */
     private void updateSensorData() {
         if (!initialized) return;
-        logFrame.sensorData = getSensorData();
+        logFrame.sensorData = getLatestSensorData();
 
         if (controllerLocation == ControllerLocation.MOTOR) logFrame.pidOutput = getPIDLatestOutput();
 
@@ -866,7 +889,7 @@ public abstract class BasicMotor {
      *
      * @return The latest sensor data from the motor.
      */
-    protected abstract LogFrame.SensorData getSensorData();
+    protected abstract LogFrame.SensorData getLatestSensorData();
 
     /**
      * Gets the latest PID output from the motor.

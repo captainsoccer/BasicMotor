@@ -68,14 +68,13 @@ public class ControllerFeedForwards {
     /**
      * Creates a feed forward gain with the given values.
      *
-     * @param simpleFeedForward   The simple feed forward gain (volts) (Greater than or equal to zero)
+     * @param simpleFeedForward   The simple feed forward gain (volts)
      * @param frictionFeedForward The friction feed forward gain (volts) (Greater than or equal to zero)
      * @param setpointFeedForward The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
      * @param feedForwardFunction The feed forward function that takes the setpoint and returns a voltage (volts per unit of control)
      */
     public ControllerFeedForwards(double simpleFeedForward, double frictionFeedForward, double setpointFeedForward, Function<Double, Double> feedForwardFunction) {
-        if (simpleFeedForward < 0)
-            throw new IllegalArgumentException("simpleFeedForward must be greater than or equal to zero");
+        // simple feed forward can be negative, as it is a constant voltage added to the output
         this.simpleFeedForward = simpleFeedForward;
 
         if (frictionFeedForward < 0)

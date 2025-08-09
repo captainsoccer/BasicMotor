@@ -8,6 +8,7 @@ import com.basicMotor.gains.ControllerGains;
 import com.basicMotor.gains.currentLimits.CurrentLimits;
 import com.basicMotor.gains.PIDGains;
 import com.basicMotor.LogFrame;
+import com.basicMotor.measurements.Measurements;
 import com.basicMotor.motorManager.MotorManager.ControllerLocation;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
@@ -100,6 +101,11 @@ public abstract class BasicSimSystem extends BasicMotor {
   }
 
   @Override
+  public void setMeasurements(Measurements measurements, boolean throughRIO) {
+      throw new UnsupportedOperationException("Can't change measurements for simulation systems.");
+  }
+
+  @Override
   protected double getInternalPIDLoopTime(){
     return ControllerLocation.RIO.getSeconds();
     // All sim motors run their PID loop on the RoboRIO, so this is always the RIO loop time.
@@ -147,7 +153,7 @@ public abstract class BasicSimSystem extends BasicMotor {
   protected abstract void setInputVoltage(double voltage);
 
   @Override
-  protected LogFrame.SensorData getSensorData() {
+  protected LogFrame.SensorData getLatestSensorData() {
     double voltageInput = RobotController.getBatteryVoltage();
     double voltageOutput = this.voltageOutput;
 

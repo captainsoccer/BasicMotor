@@ -75,7 +75,11 @@ public class MeasurementsCANCoder extends Measurements {
      *                                 In most cases, this will be 1.
      * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
      *                                 See {@link MotorConfig#unitConversion} for more information.
-     * @param timeSync               If true, the measurements will wait for all signals to update before returning the values.
+     * @param throughRIO               If true, the canCoder will use the timings of a roboRIO pid controller,
+     *                                 else it will use the timings of a motor controller pid controller.
+     *                                 If you are using this function outside the BasicMotor library,
+     *                                 you should set this to true.
+     * @param timeSync                 If true, the measurements will wait for all signals to update before returning the values.
      *                                 Use this only if you have a licensed version of Phoenix Pro connected to a canivore.
      *                                 Otherwise, it will slow down the robot code significantly.
      */
@@ -83,6 +87,7 @@ public class MeasurementsCANCoder extends Measurements {
                                 StatusSignal<AngularVelocity> velocitySignal,
                                 double canCoderToMechanismRatio,
                                 double unitConversion,
+                                boolean throughRIO,
                                 boolean timeSync) {
 
         super(canCoderToMechanismRatio, unitConversion);
@@ -92,7 +97,8 @@ public class MeasurementsCANCoder extends Measurements {
         motorPosition = positionSignal;
         motorVelocity = velocitySignal;
 
-        double refreshHZ = MotorManager.ControllerLocation.MOTOR.getHZ();
+        double refreshHZ =
+                throughRIO ? MotorManager.ControllerLocation.RIO.getHZ() : MotorManager.ControllerLocation.MOTOR.getHZ();
 
         positionSignal.setUpdateFrequency(refreshHZ);
         velocitySignal.setUpdateFrequency(refreshHZ);
@@ -111,15 +117,17 @@ public class MeasurementsCANCoder extends Measurements {
      *                                 In most cases, this will be 1.
      * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
      *                                 See {@link MotorConfig#unitConversion} for more information.
-     * @param refreshHZ                The refresh rate of the signals (how often to update the signals)
-     *                                 (should be the same Hz as the thread running the measurements)
+     * @param throughRIO               If true, the canCoder will use the timings of a roboRIO pid controller,
+     *                                 else it will use the timings of a motor controller pid controller.
+     *                                 If you are using this function outside the BasicMotor library,
+     *                                 you should set this to true.
      */
     public MeasurementsCANCoder(StatusSignal<Angle> positionSignal,
                                 StatusSignal<AngularVelocity> velocitySignal,
                                 double canCoderToMechanismRatio,
                                 double unitConversion,
-                                double refreshHZ) {
-        this(positionSignal, velocitySignal, canCoderToMechanismRatio, unitConversion, false);
+                                boolean throughRIO) {
+        this(positionSignal, velocitySignal, canCoderToMechanismRatio, unitConversion, throughRIO, false);
     }
 
     /**
@@ -131,12 +139,34 @@ public class MeasurementsCANCoder extends Measurements {
      *                                 In most cases, this will be 1.
      * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
      *                                 See {@link MotorConfig#unitConversion} for more information.
-     * @param timeSync               If true, the measurements will wait for all signals to update before returning the values.
+     * @param throughRIO               If true, the canCoder will use the timings of a roboRIO pid controller,
+     *                                 else it will use the timings of a motor controller pid controller.
+     *                                 If you are using this function outside the BasicMotor library,
+     *                                 you should set this to true.
+     * @param timeSync                 If true, the measurements will wait for all signals to update before returning the values.
      *                                 Use this only if you have a licensed version of Phoenix Pro connected to a canivore.
      *                                 Otherwise, it will slow down the robot code significantly.
      */
-    public MeasurementsCANCoder(CANcoder cancoder, double canCoderToMechanismRatio, double unitConversion, boolean timeSync) {
-        this(cancoder.getPosition(false), cancoder.getVelocity(false), canCoderToMechanismRatio, unitConversion, timeSync);
+    public MeasurementsCANCoder(CANcoder cancoder, double canCoderToMechanismRatio, double unitConversion, boolean throughRIO, boolean timeSync) {
+        this(cancoder.getPosition(false), cancoder.getVelocity(false), canCoderToMechanismRatio, unitConversion, throughRIO, timeSync);
+    }
+
+    /**
+     * Creates a new measurements object with the given CANCoder.
+     *
+     * @param cancoder                 The CANCoder to use for the measurements.
+     * @param canCoderToMechanismRatio The ratio of the canCoder rotations to the mechanism rotations.
+     *                                 A number larger than 1 means the canCoder spins more than the mechanism.
+     *                                 In most cases, this will be 1.
+     * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
+     *                                 See {@link MotorConfig#unitConversion} for more information.
+     * @param throughRIO               If true, the canCoder will use the timings of a roboRIO pid controller,
+     *                                 else it will use the timings of a motor controller pid controller.
+     *                                 If you are using this function outside the BasicMotor library,
+     *                                 you should set this to true.
+     */
+    public MeasurementsCANCoder(CANcoder cancoder, double canCoderToMechanismRatio, double unitConversion, boolean throughRIO) {
+        this(cancoder, canCoderToMechanismRatio, unitConversion, throughRIO, false);
     }
 
     /**
@@ -150,7 +180,7 @@ public class MeasurementsCANCoder extends Measurements {
      *                                 See {@link MotorConfig#unitConversion} for more information.
      */
     public MeasurementsCANCoder(CANcoder cancoder, double canCoderToMechanismRatio, double unitConversion) {
-        this(cancoder, canCoderToMechanismRatio, unitConversion, false);
+        this(cancoder, canCoderToMechanismRatio, unitConversion, true);
     }
 
     @Override
@@ -173,6 +203,7 @@ public class MeasurementsCANCoder extends Measurements {
     /**
      * Sets the update frequency of the signals.
      * This will update the frequency of the position and velocity signals.
+     *
      * @param refreshHZ The refresh rate of the signals (how often to update the signals)
      */
     public void setUpdateFrequency(double refreshHZ) {

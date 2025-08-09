@@ -1,0 +1,21 @@
+{
+  "fileName": "BasicMotor.json",
+  "name": "BasicMotor",
+  "version": "54097ec020",
+  "uuid": "faa487b0-6832-4c4b-9d38-d6e8b4893548",
+  "frcYear": "2025",
+  "mavenUrls": [
+    "https://jitpack.io"
+  ],
+  "jsonUrl": "https://captainsoccer.github.io/MotorUtils/BasicMotor.json",
+  "javaDependencies": [
+    {
+      "groupId": "com.github.captainsoccer",
+      "artifactId": "MotorUtils",
+      "version": "54097ec020"
+    }
+  ],
+  "jniDependencies": [],
+  "nativeDependencies": [],
+  "cppDependencies": []
+}

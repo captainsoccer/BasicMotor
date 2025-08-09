@@ -310,7 +310,7 @@ public class BasicTalonFX extends BasicMotor {
     }
 
     @Override
-    protected LogFrame.SensorData getSensorData() {
+    protected LogFrame.SensorData getLatestSensorData() {
         return sensors.getSensorData();
     }
 

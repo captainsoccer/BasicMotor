@@ -17,8 +17,6 @@ import java.util.Objects;
 /**
  * This class is used to control the {@link BasicMotor}.
  * It handles the PID loop, feedforward, constraints, and profiling of the motor.
- * See the <a href="https://github.com/captainsoccer/MotorUtils/wiki">wiki</a> //TODO: add wiki link.
- * for more information on how to use this class.
  */
 public class Controller implements Sendable {
     /**

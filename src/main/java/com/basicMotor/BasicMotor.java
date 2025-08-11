@@ -17,6 +17,8 @@ import java.util.Objects;
 /**
  * The Basic motor base class.
  * It is used to generalize the motor functionality, ease of use and automatic logging.
+ * Check the <a href="https://github.com/captainsoccer/BasicMotor/wiki/Usage" >Usage wiki page</a>
+ * for more information on how to use this class.
  */
 public abstract class BasicMotor {
     /**

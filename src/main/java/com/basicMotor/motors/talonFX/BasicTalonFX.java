@@ -79,6 +79,12 @@ public class BasicTalonFX extends BasicMotor {
     private final DutyCycleOut dutyCycleRequest = new DutyCycleOut(0).withUpdateFreqHz(0);
 
     /**
+     * The torque current request for the motor controller.
+     * Used when using the built-in FOC controller of the TalonFX.
+     */
+    private final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0).withUpdateFreqHz(0);
+
+    /**
      * Constructor for the TalonFX motor controller
      *
      * @param controllerGains    The gains for the motor controller.
@@ -278,11 +284,6 @@ public class BasicTalonFX extends BasicMotor {
 
     @Override
     protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode) {
-        if (mode == Controller.ControlMode.STOP) {
-            motor.stopMotor();
-            return;
-        }
-
         StatusCode error =
                 switch (mode) {
                     case POSITION, PROFILED_POSITION -> motor.setControl(
@@ -295,7 +296,13 @@ public class BasicTalonFX extends BasicMotor {
 
                     case PRECENT_OUTPUT -> motor.setControl(dutyCycleRequest.withOutput(setpoint));
 
-                    default -> StatusCode.OK;
+                    case STOP -> {
+                        stopMotorOutput();
+                        yield StatusCode.OK; // no error when stopping the motor
+                    }
+
+                    case CURRENT, TORQUE -> motor.setControl(torqueCurrentRequest.withOutput(setpoint));
+
                 };
 
         if (error != StatusCode.OK) {

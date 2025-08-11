@@ -210,6 +210,8 @@ public abstract class BasicSparkBase extends BasicMotor {
             // set the motor output to a velocity
             case VELOCITY, PROFILED_VELOCITY -> setClosedLoopOutput(
                     setpoint, feedForward, SparkBase.ControlType.kVelocity);
+
+            case TORQUE, CURRENT -> setClosedLoopOutput(setpoint, 0, SparkBase.ControlType.kCurrent);
         }
     }
 

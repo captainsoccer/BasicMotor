@@ -660,11 +660,11 @@ public abstract class BasicMotor {
      * @return The checked motor setpoint in motor units.
      */
     private double checkMotorSetpoint(LogFrame.ControllerFrame controllerFrame) {
-        if(!(controllerFrame.mode().requiresPID()))
+        if (!controllerFrame.mode().requiresPID())
             return controllerFrame.setpoint();
 
-        if(controllerFrame.mode().isCurrentControl()){
-            if(controllerFrame.mode() == Controller.ControlMode.CURRENT)
+        if (controllerFrame.mode().isCurrentControl()){
+            if (controllerFrame.mode() == Controller.ControlMode.CURRENT)
                 return controllerFrame.setpoint();
             else
                 return getCurrentFromTorque(controllerFrame.setpoint());
@@ -766,7 +766,7 @@ public abstract class BasicMotor {
         }
 
         // if the controller is using current control, then we need to calculate the current output
-        if(controlMode.isCurrentControl()){
+        if (controlMode.isCurrentControl()){
             double currentOutput = logFrame.sensorData.currentOutput();
 
             // if using torque control, converts the current output to torque

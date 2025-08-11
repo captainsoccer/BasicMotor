@@ -647,9 +647,22 @@ public abstract class BasicMotor {
             setMotorOutput(motorOutput.totalOutput(), 0, Controller.ControlMode.VOLTAGE);
         else
             setMotorOutput(
-                    (motorOutput.setpoint() / measurements.getUnitConversion()) * measurements.getGearRatio(),
+                    checkMotorSetpoint(motorOutput),
                     motorOutput.feedForwardOutput().totalOutput(),
                     motorOutput.mode());
+    }
+
+    /**
+     * Checks the motor setpoint based on the controller frame.
+     * This will convert the setpoint to the motor units if needed.
+     * @param controllerFrame The controller frame to check the setpoint from.
+     * @return The checked motor setpoint in motor units.
+     */
+    private double checkMotorSetpoint(LogFrame.ControllerFrame controllerFrame) {
+        if(!(controllerFrame.mode().isPositionControl() || controllerFrame.mode().isVelocityControl()))
+            return controllerFrame.setpoint();
+
+        return (controllerFrame.setpoint() / measurements.getUnitConversion()) * measurements.getGearRatio();
     }
 
     /**
@@ -727,19 +740,19 @@ public abstract class BasicMotor {
 
         // cheks if motor is within the constraints
         controller.calculateConstraints(measurement, controllerRequest);
+        double goal = controllerRequest.goal().position;
 
         // if the controller is not using PID, we can just set the output directly
         if (!controllerRequest.controlMode().requiresPID()) {
             double output =
                     controllerRequest.controlMode() == Controller.ControlMode.VOLTAGE
-                            ? controllerRequest.goal().position
+                            ? goal
                             // estimates the duty cycle output
-                            : controllerRequest.goal().position * logFrame.sensorData.voltageInput();
+                            : goal * logFrame.sensorData.voltageInput();
 
             return new LogFrame.ControllerFrame(
                     output,
-                    controllerRequest.goal().position,
-                    measurement.position(),
+                    goal,
                     controllerRequest.controlMode());
         }
 
@@ -747,12 +760,14 @@ public abstract class BasicMotor {
         if (controllerRequest.controlMode().isProfiled()) controller.calculateProfile(dt);
         else controller.setSetpointToGoal();
 
+        double setpoint = controller.getSetpointAsDouble();
+
         // calculate the direction of travel
         double directionOfTravel =
                 Math.signum(
                         controllerRequest.controlMode().isPositionControl()
-                                ? controller.getSetpoint().position - measurement.position()
-                                : controller.getSetpoint().position);
+                                ? setpoint - measurement.position()
+                                : setpoint);
 
         // calculate the feedforward output
         var FFOutput = controller.calculateFeedForward(directionOfTravel);
@@ -762,7 +777,8 @@ public abstract class BasicMotor {
                 controllerRequest.controlMode().isVelocityControl()
                         ? measurement.velocity()
                         : measurement.position();
-        double error = controller.getSetpoint().position - referenceMeasurement;
+
+        double error = setpoint - referenceMeasurement;
 
         // if the controller is on the motor, then we can just return the feedforward output
         if (controllerLocation == ControllerLocation.MOTOR) {
@@ -771,10 +787,10 @@ public abstract class BasicMotor {
             return new LogFrame.ControllerFrame(
                     FFOutput.totalOutput() + totalPIDOutput,
                     FFOutput,
-                    controller.getSetpoint().position,
+                    setpoint,
                     referenceMeasurement,
                     error,
-                    controller.getRequest().goal().position,
+                    goal,
                     controllerRequest.controlMode());
         }
 
@@ -790,10 +806,10 @@ public abstract class BasicMotor {
         return new LogFrame.ControllerFrame(
                 controller.checkMotorOutput(totalOutput),
                 FFOutput,
-                controller.getSetpoint().position,
+                setpoint,
                 referenceMeasurement,
                 error,
-                controller.getRequest().goal().position,
+                goal,
                 controllerRequest.controlMode());
     }
 

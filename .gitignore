@@ -40,3 +40,28 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+.idea/runConfigurations/Build___Deploy_Robot_for_Debugging.xml
+
+.idea/runConfigurations/Build___Deploy_Robot.xml
+
+.idea/runConfigurations/Build_Robot.xml
+
+.idea/runConfigurations/Clean_Build___Deploy_Robot_for_Debugging.xml
+
+.idea/runConfigurations/Clean_Build___Deploy_Robot.xml
+
+.idea/runConfigurations/Clean_Build_Robot.xml
+
+.idea/runConfigurations/Clean.xml
+
+.idea/runConfigurations/Debug_Robot_via_IP.xml
+
+.idea/runConfigurations/Debug_Robot_via_USB.xml
+
+example_projects/swerve_example/src/main/deploy/pathplanner/autos/New Auto.auto
+
+example_projects/swerve_example/src/main/deploy/pathplanner/navgrid.json
+
+example_projects/swerve_example/src/main/deploy/pathplanner/paths/Example Path.path
+
+example_projects/swerve_example/src/main/deploy/pathplanner/settings.json

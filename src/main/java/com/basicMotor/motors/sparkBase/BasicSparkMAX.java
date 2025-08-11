@@ -3,7 +3,6 @@ package com.basicMotor.motors.sparkBase;
 import com.basicMotor.configuration.BasicMotorConfig;
 import com.basicMotor.configuration.BasicSparkBaseConfig;
 import com.basicMotor.gains.ControllerGains;
-import com.basicMotor.motorManager.MotorManager;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
@@ -86,12 +85,12 @@ public class BasicSparkMAX extends BasicSparkBase {
     }
 
     @Override
-    public void useAbsoluteEncoder(boolean inverted, double zeroOffset, double sensorToMotorRatio, double mechanismToSensorRatio, AbsoluteEncoderRange absoluteEncoderRange) {
+    public void useAbsoluteEncoder(boolean inverted, double zeroOffset, double sensorToMotorRatio, AbsoluteEncoderRange absoluteEncoderRange) {
         // sets the absolute encoder configuration
         getSparkConfig().absoluteEncoder.setSparkMaxDataPortConfig();
 
         //calls on the normal useAbsoluteEncoder method
-        super.useAbsoluteEncoder(inverted, zeroOffset, sensorToMotorRatio, mechanismToSensorRatio, absoluteEncoderRange);
+        super.useAbsoluteEncoder(inverted, zeroOffset, sensorToMotorRatio, absoluteEncoderRange);
     }
 
     @Override

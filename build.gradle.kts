@@ -31,6 +31,14 @@ publishing {
     }
 }
 
+sourceSets {
+    main {
+        java {
+            srcDirs("src/main/java")
+            exclude("**/example_projects/**")
+        }
+    }
+}
 
 repositories {
     mavenCentral()
@@ -65,4 +73,8 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.named<Jar>("sourcesJar") {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

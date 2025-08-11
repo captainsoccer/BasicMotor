@@ -199,11 +199,10 @@ public class LogFrame {
          *
          * @param outputVolts The output in volts.
          * @param output      The output in units of control.
-         * @param measurement The measurement used to calculate the error of the controller in units of control.
          * @param mode        The control mode of the controller.
          */
-        public ControllerFrame(double outputVolts, double output, double measurement, Controller.ControlMode mode) {
-            this(outputVolts, FeedForwardOutput.EMPTY, output, measurement, 0, 0, mode);
+        public ControllerFrame(double outputVolts, double output, Controller.ControlMode mode) {
+            this(outputVolts, FeedForwardOutput.EMPTY, output, 0, 0, 0, mode);
         }
     }
 

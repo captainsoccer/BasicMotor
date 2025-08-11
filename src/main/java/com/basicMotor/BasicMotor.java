@@ -9,6 +9,7 @@ import com.basicMotor.gains.currentLimits.CurrentLimits;
 import com.basicMotor.gains.PIDGains;
 import com.basicMotor.measurements.Measurements;
 import com.basicMotor.motorManager.MotorManager.ControllerLocation;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 
 import java.util.Objects;
@@ -659,8 +660,15 @@ public abstract class BasicMotor {
      * @return The checked motor setpoint in motor units.
      */
     private double checkMotorSetpoint(LogFrame.ControllerFrame controllerFrame) {
-        if(!(controllerFrame.mode().isPositionControl() || controllerFrame.mode().isVelocityControl()))
+        if(!(controllerFrame.mode().requiresPID()))
             return controllerFrame.setpoint();
+
+        if(controllerFrame.mode().isCurrentControl()){
+            if(controllerFrame.mode() == Controller.ControlMode.CURRENT)
+                return controllerFrame.setpoint();
+            else
+                return getCurrentFromTorque(controllerFrame.setpoint());
+        }
 
         return (controllerFrame.setpoint() / measurements.getUnitConversion()) * measurements.getGearRatio();
     }
@@ -738,14 +746,15 @@ public abstract class BasicMotor {
             double dt,
             Controller.ControllerRequest controllerRequest) {
 
+        var controlMode = controllerRequest.controlMode();
+
         // cheks if motor is within the constraints
         controller.calculateConstraints(measurement, controllerRequest);
         double goal = controllerRequest.goal().position;
 
         // if the controller is not using PID, we can just set the output directly
-        if (!controllerRequest.controlMode().requiresPID()) {
-            double output =
-                    controllerRequest.controlMode() == Controller.ControlMode.VOLTAGE
+        if (!controlMode.requiresPID()) {
+            double output = controlMode == Controller.ControlMode.VOLTAGE
                             ? goal
                             // estimates the duty cycle output
                             : goal * logFrame.sensorData.voltageInput();
@@ -753,11 +762,32 @@ public abstract class BasicMotor {
             return new LogFrame.ControllerFrame(
                     output,
                     goal,
-                    controllerRequest.controlMode());
+                    controlMode);
+        }
+
+        // if the controller is using current control, then we need to calculate the current output
+        if(controlMode.isCurrentControl()){
+            double currentOutput = logFrame.sensorData.currentOutput();
+
+            // if using torque control, converts the current output to torque
+            double referenceMeasurement = controlMode == Controller.ControlMode.CURRENT ?
+                    currentOutput :
+                    getTorqueFromCurrent(currentOutput);
+
+
+            return new LogFrame.ControllerFrame(
+                    logFrame.sensorData.voltageOutput(),
+                    LogFrame.FeedForwardOutput.EMPTY,
+                    goal,
+                    referenceMeasurement,
+                    goal - referenceMeasurement,
+                    goal,
+                    controlMode
+            );
         }
 
         // if using a motion profile, then calculate the profile
-        if (controllerRequest.controlMode().isProfiled()) controller.calculateProfile(dt);
+        if (controlMode.isProfiled()) controller.calculateProfile(dt);
         else controller.setSetpointToGoal();
 
         double setpoint = controller.getSetpointAsDouble();
@@ -765,7 +795,7 @@ public abstract class BasicMotor {
         // calculate the direction of travel
         double directionOfTravel =
                 Math.signum(
-                        controllerRequest.controlMode().isPositionControl()
+                        controlMode.isPositionControl()
                                 ? setpoint - measurement.position()
                                 : setpoint);
 
@@ -774,7 +804,7 @@ public abstract class BasicMotor {
 
         // calculates the error of the controller
         double referenceMeasurement =
-                controllerRequest.controlMode().isVelocityControl()
+                controlMode.isVelocityControl()
                         ? measurement.velocity()
                         : measurement.position();
 
@@ -799,7 +829,38 @@ public abstract class BasicMotor {
                 referenceMeasurement,
                 error,
                 goal,
-                controllerRequest.controlMode());
+                controlMode);
+    }
+
+    /**
+     * Converts the motor torque to current.
+     * This uses the config to convert the torque to current.
+     * If the config is null, it will report an error to the driver station.
+     * @param torque The torque to convert to current.
+     * @return The current in amps that corresponds to the given torque.
+     */
+    private double getCurrentFromTorque(double torque) {
+        if (config == null) {
+            DriverStation.reportError("motor: " + name + " Trying to convert torque and current without config set.", false);
+            return 0;
+        }
+        return config.motorConfig.motorType.getCurrent(torque);
+    }
+
+    /**
+     * Converts the current to motor torque.
+     * This uses the config to convert the current to torque.
+     * If the config is null, it will report an error to the driver station.
+     *
+     * @param current The current in amps to convert to torque.
+     * @return The torque in motor units that corresponds to the given current.
+     */
+    private double getTorqueFromCurrent(double current) {
+        if (config == null) {
+            DriverStation.reportError("motor: " + name + " Trying to convert torque and current without config set.", false);
+            return 0;
+        }
+        return config.motorConfig.motorType.getTorque(current);
     }
 
     /**

@@ -780,31 +780,20 @@ public abstract class BasicMotor {
 
         double error = setpoint - referenceMeasurement;
 
-        // if the controller is on the motor, then we can just return the feedforward output
-        if (controllerLocation == ControllerLocation.MOTOR) {
-            double totalPIDOutput = logFrame.pidOutput.totalOutput();
-
-            return new LogFrame.ControllerFrame(
-                    FFOutput.totalOutput() + totalPIDOutput,
-                    FFOutput,
-                    setpoint,
-                    referenceMeasurement,
-                    error,
-                    goal,
-                    controllerRequest.controlMode());
+        double totalOutput;
+        if(controllerLocation == ControllerLocation.MOTOR){
+            var pidOutput = logFrame.pidOutput;
+            totalOutput = pidOutput.totalOutput() + FFOutput.totalOutput();
         }
-
-        // calculate the PID output
-        var pidOutput = controller.calculatePID(referenceMeasurement, dt);
-
-        // sums the feedforward and pid output
-        double totalOutput = FFOutput.totalOutput() + pidOutput.totalOutput();
-        // updates the log frame with the pid output
-        logFrame.pidOutput = pidOutput;
+        else{
+            var pidOutput = controller.calculatePID(referenceMeasurement, dt);
+            logFrame.pidOutput = pidOutput;
+            totalOutput = controller.checkMotorOutput(FFOutput.totalOutput() + pidOutput.totalOutput());
+        }
 
         // returns the combined controller frame and cheks the motor output
         return new LogFrame.ControllerFrame(
-                controller.checkMotorOutput(totalOutput),
+                totalOutput,
                 FFOutput,
                 setpoint,
                 referenceMeasurement,

@@ -300,18 +300,17 @@ public class BasicTalonSRX extends BasicMotor {
             case VELOCITY, PROFILED_VELOCITY -> motor.set(TalonSRXControlMode.Velocity, setpoint,
                     DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.motorIdealVoltage);
 
-            case STOP -> stopMotorFollow();
+            case STOP -> stopMotorOutput();
 
             case PRECENT_OUTPUT ->  motor.set(TalonSRXControlMode.PercentOutput, setpoint);
 
             case CURRENT, TORQUE -> {
-                // Converts the current setpoint (output) to a supply current based on the motor output percent
-                double supplyCurrent = setpoint * motor.getMotorOutputPercent();
-
-                motor.set(TalonSRXControlMode.Current, supplyCurrent);
+                DriverStation.reportError("motor: " + super.name + " does not support current or torque control", false);
+                stopMotorOutput();
             }
         }
     }
+
 
     @Override
     protected void stopMotorOutput() {

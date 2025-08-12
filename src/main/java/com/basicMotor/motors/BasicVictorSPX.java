@@ -13,10 +13,8 @@ import com.basicMotor.measurements.Measurements;
 import com.basicMotor.motorManager.MotorManager;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
-import com.ctre.phoenix.motorcontrol.can.VictorSPXConfiguration;
 import edu.wpi.first.wpilibj.DriverStation;
 
 /**
@@ -29,12 +27,6 @@ public class BasicVictorSPX extends BasicMotor {
      * The VictorSPX motor controller instance used by this BasicVictorSPX.
      */
     private final VictorSPX motor;
-
-    /**
-     * The configuration for the VictorSPX motor controller.
-     * This is used to configure the motor controller with the correct settings.
-     */
-    private final VictorSPXConfiguration motorConfig = new VictorSPXConfiguration();
 
     /**
      * The default measurements for the VictorSPX motor controller.
@@ -55,8 +47,7 @@ public class BasicVictorSPX extends BasicMotor {
 
         motor = new VictorSPX(id);
         motor.configFactoryDefault();
-        motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
-        motor.configAllSettings(motorConfig);
+        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
 
         defaultMeasurements = new EmptyMeasurements();
     }
@@ -76,8 +67,7 @@ public class BasicVictorSPX extends BasicMotor {
         motor = new VictorSPX(id);
         motor.configFactoryDefault();
 
-        motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
-        motor.configAllSettings(motorConfig);
+        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
 
         if(measurements != null) {
             defaultMeasurements = measurements;
@@ -101,8 +91,7 @@ public class BasicVictorSPX extends BasicMotor {
         motor = new VictorSPX(config.motorConfig.id);
         motor.configFactoryDefault();
 
-        motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
-        motor.configAllSettings(motorConfig);
+        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
 
         if(measurements != null) {
             defaultMeasurements = measurements;
@@ -116,20 +105,7 @@ public class BasicVictorSPX extends BasicMotor {
 
     @Override
     protected void updatePIDGainsToMotor(PIDGains pidGains) {
-        var gains = pidGains.convertToDutyCycle();
-
-        motorConfig.slot0.kP = gains.getK_P();
-        motorConfig.slot0.kI = gains.getK_I();
-        motorConfig.slot0.kD = gains.getK_D();
-
-        motorConfig.slot0.allowableClosedloopError = gains.getTolerance();
-        motorConfig.slot0.integralZone = gains.getI_Zone();
-        motorConfig.slot0.maxIntegralAccumulator = gains.getI_MaxAccum();
-
-        var error = motor.configureSlot(motorConfig.slot0);
-        if (error.value != 0) {
-            DriverStation.reportWarning("issues setting pid for motor: " + super.name + ". Error: " + error.name(), false);
-        }
+        // Does nothing, as the victorSPX does not support PID gains directly.
     }
 
     @Override
@@ -214,26 +190,14 @@ public class BasicVictorSPX extends BasicMotor {
         // Because victorSPX does not have a built-in encoder and does not have a connection for an external encoder,
         // it cannot support direct PID control.
         // but it can support percent output, voltage, current, and torque control modes.
-        if(mode.requiresPID() && !mode.isCurrentControl()){
+        if(mode.requiresPID()){
             DriverStation.reportError("motor: " + this.name + " does not support direct PID control.", true);
-        }
-
-        if(mode.isCurrentControl()){
-            DriverStation.reportWarning("motor: " + this.name + " is victorSPX," +
-                    "it does not have current reporting so it is difficult to use current based control modes.", true);
         }
 
         switch (mode) {
             case PRECENT_OUTPUT -> motor.set(VictorSPXControlMode.PercentOutput, setpoint);
 
             case VOLTAGE ->  motor.set(VictorSPXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage);
-
-            case TORQUE, CURRENT -> {
-                // Converts the current setpoint (output) to a supply current based on the motor output percent
-                double supplyCurrent = setpoint * motor.getMotorOutputPercent();
-
-                motor.set(ControlMode.Current, supplyCurrent);
-            }
         }
     }
 

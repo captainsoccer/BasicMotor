@@ -13,7 +13,9 @@ import com.basicMotor.measurements.Measurements;
 import com.basicMotor.motorManager.MotorManager;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPXConfiguration;
 import edu.wpi.first.wpilibj.DriverStation;
 
 /**
@@ -28,6 +30,12 @@ public class BasicVictorSPX extends BasicMotor {
     private final VictorSPX motor;
 
     /**
+     * The configuration for the VictorSPX motor controller.
+     * This is used to configure the motor controller with the correct settings.
+     */
+    private final VictorSPXConfiguration motorConfig = new VictorSPXConfiguration();
+
+    /**
      * The default measurements for the VictorSPX motor controller.
      */
     private final Measurements defaultMeasurements;
@@ -39,34 +47,17 @@ public class BasicVictorSPX extends BasicMotor {
      * You can add a measurements object later using the {@link #setMeasurements(Measurements)} method.
      * @param id The ID of the VictorSPX motor controller
      * @param name The name of the motor controller
-     * @param location The location of the pid loop of the controller.
-     *                 In this case, If you are not planning on using the pid loop, use the MOTOR location.
-     *                 If you are planning on using an external measurement source for the pid loop,
-     *                 use the RIO location.
-     * @see #BasicVictorSPX(int, String, Measurements, ControllerGains)
-     */
-    public BasicVictorSPX(int id, String name, MotorManager.ControllerLocation location) {
-        super(new ControllerGains(), name, location);
-
-        motor = new VictorSPX(id);
-        motor.configFactoryDefault();
-
-        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
-
-        defaultMeasurements = new EmptyMeasurements();
-    }
-
-    /**
-     * Creates a BasicVictorSPX instance with the provided motor ID and name.
-     * Since no measurements are provided, it will use the default empty measurements.
-     * That means that any closed loop control will not work.
-     * You can add a measurements object later using the {@link #setMeasurements(Measurements)} method.
-     * @param id The ID of the VictorSPX motor controller
-     * @param name The name of the motor controller
      * @see #BasicVictorSPX(int, String, Measurements, ControllerGains)
      */
     public BasicVictorSPX(int id, String name) {
-        this(id, name, MotorManager.ControllerLocation.RIO);
+        super(new ControllerGains(), name);
+
+        motor = new VictorSPX(id);
+        motor.configFactoryDefault();
+        motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
+        motor.configAllSettings(motorConfig);
+
+        defaultMeasurements = new EmptyMeasurements();
     }
 
     /**
@@ -79,14 +70,22 @@ public class BasicVictorSPX extends BasicMotor {
      * @param controllerGains The controller gains to use for the motor controller
      */
     public BasicVictorSPX(int id, String name, Measurements measurements, ControllerGains controllerGains) {
-        super(controllerGains, name, MotorManager.ControllerLocation.RIO);
+        super(controllerGains, name);
 
         motor = new VictorSPX(id);
         motor.configFactoryDefault();
 
-        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
+        motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
+        motor.configAllSettings(motorConfig);
 
-        defaultMeasurements = measurements != null ? measurements : new EmptyMeasurements();
+        if(measurements != null) {
+            defaultMeasurements = measurements;
+            setControllerLocation(MotorManager.ControllerLocation.RIO);
+        }
+        else{
+            defaultMeasurements = new EmptyMeasurements();
+            DriverStation.reportWarning("provided measurements for motor: " + name + " is null", false);
+        }
     }
 
     /**
@@ -96,30 +95,40 @@ public class BasicVictorSPX extends BasicMotor {
      * @param measurements The measurements to use for the motor controller
      */
     public BasicVictorSPX(BasicMotorConfig config, Measurements measurements) {
-        super(checkConfig(config));
+        super(config);
 
         motor = new VictorSPX(config.motorConfig.id);
         motor.configFactoryDefault();
 
-        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
+        motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
+        motor.configAllSettings(motorConfig);
 
-        defaultMeasurements = measurements != null ? measurements : new EmptyMeasurements();
-    }
-
-    /**
-     * Sets the controller location to RIO in the provided configuration.
-     * This is necessary because the victorSPX does not support PID gains directly,
-     * @param config The configuration for the motor controller
-     * @return The modified configuration with the controller location set to RIO
-     */
-    private static BasicMotorConfig checkConfig(BasicMotorConfig config) {
-        config.motorConfig.location = MotorManager.ControllerLocation.RIO;
-        return config;
+        if(measurements != null) {
+            defaultMeasurements = measurements;
+            setControllerLocation(MotorManager.ControllerLocation.RIO);
+        }
+        else{
+            defaultMeasurements = new EmptyMeasurements();
+            DriverStation.reportWarning("provided measurements for motor: " + name + " is null", false);
+        }
     }
 
     @Override
     protected void updatePIDGainsToMotor(PIDGains pidGains) {
-        // Does nothing as the victorSPX does not support PID gains directly.
+        var gains = pidGains.convertToDutyCycle();
+
+        motorConfig.slot0.kP = gains.getK_P();
+        motorConfig.slot0.kI = gains.getK_I();
+        motorConfig.slot0.kD = gains.getK_D();
+
+        motorConfig.slot0.allowableClosedloopError = gains.getTolerance();
+        motorConfig.slot0.integralZone = gains.getI_Zone();
+        motorConfig.slot0.maxIntegralAccumulator = gains.getI_MaxAccum();
+
+        var error = motor.configureSlot(motorConfig.slot0);
+        if (error.value != 0) {
+            DriverStation.reportWarning("issues setting pid for motor: " + super.name + ". Error: " + error.name(), false);
+        }
     }
 
     @Override
@@ -201,20 +210,20 @@ public class BasicVictorSPX extends BasicMotor {
 
     @Override
     protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode) {
-        if(mode.requiresPID()){
+        // Because victorSPX does not have a built-in encoder and does not have a connection for an external encoder,
+        // it cannot support direct PID control.
+        // but it can support percent output, voltage, current, and torque control modes.
+        if(mode.requiresPID() && !mode.isCurrentControl()){
             DriverStation.reportError("motor: " + this.name + " does not support direct PID control.", true);
         }
 
-        double output;
-        // Mode can be either PERCENT_OUTPUT or VOLTAGE
-        // If it is stop, the setpoint is zero.
-        if(mode == Controller.ControlMode.VOLTAGE){
-            output = setpoint / MotorManager.config.motorIdealVoltage;
-        } else {
-            output = setpoint;
-        }
+        switch (mode) {
+            case PRECENT_OUTPUT -> motor.set(VictorSPXControlMode.PercentOutput, setpoint);
 
-        motor.set(ControlMode.PercentOutput, output);
+            case VOLTAGE ->  motor.set(VictorSPXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage);
+
+            case CURRENT, TORQUE -> motor.set(ControlMode.Current, setpoint);
+        }
     }
 
     @Override
@@ -223,7 +232,7 @@ public class BasicVictorSPX extends BasicMotor {
     }
 
     @Override
-    protected LogFrame.SensorData getSensorData() {
+    protected LogFrame.SensorData getLatestSensorData() {
         //VictorSPX does not support current sensing.
 
         double busVoltage = motor.getBusVoltage();

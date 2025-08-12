@@ -103,10 +103,9 @@ public class BasicTalonSRX extends BasicMotor {
      * Until changed by the {@link #setMeasurements(Measurements)} method or the {@link #setEncoderType(EncoderType, int)}.
      * @param id The ID of the TalonSRX motor controller
      * @param name The name of the motor controller
-     * @param controllerLocation The location of the PID controller, RIO or Motor Controller.
      */
-    public BasicTalonSRX(int id, String name, MotorManager.ControllerLocation controllerLocation){
-        super(new ControllerGains(), name, controllerLocation);
+    public BasicTalonSRX(int id, String name){
+        super(new ControllerGains(), name);
 
         this.motor = new TalonSRX(id);
         this.motor.configFactoryDefault();
@@ -118,29 +117,16 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     /**
-     * Creates a BasicTalonSRX instance with the provided motor ID and name.
-     * This will make the motor only open loop controllable,
-     * Until changed by the {@link #setMeasurements(Measurements)} method or the {@link #setEncoderType(EncoderType, int)}.
-     * Using this constructor will place the motor in the RIO controller location.
-     * @param id The ID of the TalonSRX motor controller
-     * @param name The name of the motor controller
-     */
-    public BasicTalonSRX(int id, String name){
-        this(id, name, MotorManager.ControllerLocation.RIO);
-    }
-
-    /**
      * Creates a BasicTalonSRX instance with the provided motor ID, name, controller gains, controller location, encoder type, and ticks per revolution.
      * This constructor is used to create a TalonSRX motor controller with the specified settings
      * @param id The ID of the TalonSRX motor controller
      * @param name The name of the motor controller
      * @param controllerGains The controller gains to use for the motor controller
-     * @param controllerLocation The location of the PID controller, RIO or Motor Controller.
      * @param encoderType The type of encoder that is connected to the TalonSRX motor controller.
      * @param tickPerRevolution The number of ticks per revolution of the encoder.
      */
-    public BasicTalonSRX(int id, String name, ControllerGains controllerGains, MotorManager.ControllerLocation controllerLocation, EncoderType encoderType, int tickPerRevolution) {
-        super(controllerGains, name, controllerLocation);
+    public BasicTalonSRX(int id, String name, ControllerGains controllerGains, EncoderType encoderType, int tickPerRevolution) {
+        super(controllerGains, name);
 
         this.motor = new TalonSRX(id);
         this.motor.configFactoryDefault();
@@ -314,8 +300,11 @@ public class BasicTalonSRX extends BasicMotor {
             case VELOCITY, PROFILED_VELOCITY -> motor.set(TalonSRXControlMode.Velocity, setpoint,
                     DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.motorIdealVoltage);
 
-            // For percent output, just set the percent output directly
-            default ->  motor.set(TalonSRXControlMode.PercentOutput, setpoint);
+            case STOP -> stopMotorFollow();
+
+            case PRECENT_OUTPUT ->  motor.set(TalonSRXControlMode.PercentOutput, setpoint);
+
+            case TORQUE, CURRENT ->  motor.set(TalonSRXControlMode.Current, setpoint);
         }
     }
 
@@ -325,7 +314,7 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     @Override
-    protected LogFrame.SensorData getSensorData() {
+    protected LogFrame.SensorData getLatestSensorData() {
         double temperature = motor.getTemperature();
 
         double inputVoltage = motor.getBusVoltage();
@@ -389,7 +378,7 @@ public class BasicTalonSRX extends BasicMotor {
         if(defaultMeasurements instanceof MeasurementsTalonSRX) {
             setDefaultMeasurements();
         } else {
-            setMeasurements(new MeasurementsTalonSRX(motor, tickPerRevolution, gearRatio, unitConversion));
+            setMeasurements(new MeasurementsTalonSRX(motor, tickPerRevolution, gearRatio, unitConversion), false);
         }
     }
 

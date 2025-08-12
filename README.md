@@ -6,23 +6,13 @@ BasicMotor is a Java library designed to simplify motor control logic for FRC (F
 
 - Unified motor interface for FRC robots
 - Built-in support for simulation environments
-- Integrated PID control for precise motor management
+- Integrated PID control for precise motor control
 - Automatic logging of motor data using AdvantageKit for easy telemetry and debugging
 - Multithreaded architecture for high-speed, responsive motor updates
 
 ## Installation
 
-Before using BasicMotor, ensure you have the following libraries installed in your project:
-
-- [AdvantageKit](https://docs.advantagekit.org/getting-started/installation)
-- [Phoenix 6](https://v6.docs.ctr-electronics.com/en/stable/docs/installation/installation-frc.html)
-- [REVLib](https://docs.revrobotics.com/revlib/install)
-
-after installing these libraries install the BasicMotor Library with the following url:
-
-```https://captainsoccer.github.io/MotorUtils/BasicMotor.json```
-
-or download it manually to your vendordep folder
+For the installation, refer to the [installation section](https://github.com/captainsoccer/BasicMotor/wiki#installation) in the wiki.
 
 ## Wiki
 

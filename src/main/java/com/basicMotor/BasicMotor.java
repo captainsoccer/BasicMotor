@@ -932,10 +932,9 @@ public abstract class BasicMotor {
 
         if (controllerLocation == ControllerLocation.MOTOR) logFrame.pidOutput = getPIDLatestOutput();
 
-        if (config != null)
-            logFrame.appliedTorque =
-                    config.motorConfig.motorType.getTorque(logFrame.sensorData.currentOutput())
-                            * config.motorConfig.gearRatio;
+        if(config != null){
+            logFrame.appliedTorque = getTorqueFromCurrent(logFrame.sensorData.currentOutput());
+        }
 
         // if the pid has changed, then update the built-in motor pid
         if (hasPIDGainsChanged) {

@@ -304,7 +304,12 @@ public class BasicTalonSRX extends BasicMotor {
 
             case PRECENT_OUTPUT ->  motor.set(TalonSRXControlMode.PercentOutput, setpoint);
 
-            case TORQUE, CURRENT ->  motor.set(TalonSRXControlMode.Current, setpoint);
+            case CURRENT, TORQUE -> {
+                // Converts the current setpoint (output) to a supply current based on the motor output percent
+                double supplyCurrent = setpoint * motor.getMotorOutputPercent();
+
+                motor.set(TalonSRXControlMode.Current, supplyCurrent);
+            }
         }
     }
 

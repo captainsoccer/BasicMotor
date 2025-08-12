@@ -13,6 +13,7 @@ import com.basicMotor.measurements.Measurements;
 import com.basicMotor.motorManager.MotorManager;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPXConfiguration;
@@ -217,12 +218,22 @@ public class BasicVictorSPX extends BasicMotor {
             DriverStation.reportError("motor: " + this.name + " does not support direct PID control.", true);
         }
 
+        if(mode.isCurrentControl()){
+            DriverStation.reportWarning("motor: " + this.name + " is victorSPX," +
+                    "it does not have current reporting so it is difficult to use current based control modes.", true);
+        }
+
         switch (mode) {
             case PRECENT_OUTPUT -> motor.set(VictorSPXControlMode.PercentOutput, setpoint);
 
             case VOLTAGE ->  motor.set(VictorSPXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage);
 
-            case CURRENT, TORQUE -> motor.set(ControlMode.Current, setpoint);
+            case TORQUE, CURRENT -> {
+                // Converts the current setpoint (output) to a supply current based on the motor output percent
+                double supplyCurrent = setpoint * motor.getMotorOutputPercent();
+
+                motor.set(ControlMode.Current, supplyCurrent);
+            }
         }
     }
 

@@ -50,7 +50,7 @@ public abstract class BasicSparkBase extends BasicMotor {
      * This value is used to estimate the power draw of the motor.
      * This value is based on chatGPT's answer to the question about the idle power draw of the Spark MAX motor controller.
      */
-    private static final double SPARK_MAX_IDLE_POWER_DRAW = 0.72;
+    private static final double SPARK_BASE_IDLE_POWER_DRAW = 0.72;
 
     /**
      * Creates a new Spark Base motor controller with the provided parameters.
@@ -178,10 +178,10 @@ public abstract class BasicSparkBase extends BasicMotor {
         double temperature = motor.getMotorTemperature();
         double dutyCycle = motor.getAppliedOutput();
 
-        double outputVoltage = motor.getAppliedOutput() * MotorManager.config.motorIdealVoltage;
+        double outputVoltage = motor.getAppliedOutput() * voltage;
         double powerOutput = outputVoltage * current;
 
-        double powerDraw = SPARK_MAX_IDLE_POWER_DRAW + powerOutput; // idle power draw + output power
+        double powerDraw = SPARK_BASE_IDLE_POWER_DRAW + powerOutput; // idle power draw + output power
         double currentDraw = powerDraw / voltage; // current draw is power draw / voltage
 
         return new LogFrame.SensorData(

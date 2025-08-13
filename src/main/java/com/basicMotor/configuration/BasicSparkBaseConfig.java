@@ -13,6 +13,14 @@ import com.basicMotor.gains.currentLimits.CurrentLimitsSparkBase;
 public class BasicSparkBaseConfig extends BasicMotorConfig {
 
     /**
+     * Whether the motor connected to the motor controller is brushless or brushed.
+     * If the motor is brushless (Neo 1.1, Neo 550, Neo vortex), this should be true.
+     * If the motor is brushed (e.g. CIM, Mini CIM), this should be false.
+     * This is used to determine if there is an encoder connected to the motor controller.
+     */
+    public boolean brushless = true; // Default to brushless, can be set to false for brushed motors
+
+    /**
      * The current limit configuration for the spark base motor controller.
      */
     public CurrentLimitConfig currentLimitConfig = new CurrentLimitConfig();

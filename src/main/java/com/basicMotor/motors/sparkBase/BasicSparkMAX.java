@@ -8,6 +8,8 @@ import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
 import com.basicMotor.configuration.BasicSparkBaseConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import edu.wpi.first.wpilibj.DriverStation;
 
 /**
  * This class represents a basic spark max motor controller.
@@ -26,17 +28,24 @@ public class BasicSparkMAX extends BasicSparkBase {
      * @param unitConversion The conversion factor for the motor's position units.
      *                       This will be multiplied by the motor's rotation to get the position with the desired units.
      *                       The unit for this value is desired position unit per rotation.
+     * @param brushless      Whether the motor is brushless or not.
+     *                       Brushless motor have an integrated encoder that can be used for position and velocity control.
+     *                       those include: (Neo, Neo 550, Neo vortex (and probably others)).
+     *                       brushed controllers do not have an integrated encoder and
+     *                       require an external encoder to be used for position and velocity control.
+     *                       those include: (CIM, mini-CIM, and many more).
      */
     public BasicSparkMAX(
             ControllerGains gains,
             int id,
             String name,
             double gearRatio,
-            double unitConversion) {
+            double unitConversion,
+            boolean brushless) {
 
         super(
                 // creates a new SparkMax motor controller with the given id and type
-                new SparkMax(id, SparkLowLevel.MotorType.kBrushless),
+                new SparkMax(id, brushless ? MotorType.kBrushless : MotorType.kBrushed),
                 new SparkMaxConfig(),
                 gains,
                 name,
@@ -47,18 +56,26 @@ public class BasicSparkMAX extends BasicSparkBase {
     /**
      * Creates a basic spark max motor controller with the given gains, id, name, gear ratio,
      *
-     * @param gains          The gains of the motor controller
-     * @param id             The id of the motor controller
-     * @param name           The name of the motor controller (used for logging and debugging)
-     * @param gearRatio      The gear ratio of the motor controller (how many rotations of the motor are a rotation of the mechanism)
+     * @param gains     The gains of the motor controller
+     * @param id        The id of the motor controller
+     * @param name      The name of the motor controller (used for logging and debugging)
+     * @param gearRatio The gear ratio of the motor controller (how many rotations of the motor are a rotation of the mechanism)
+     * @param brushless Whether the motor is brushless or not.
+     *                  Brushless motor have an integrated encoder that can be used for position and velocity control.
+     *                  those include: (Neo, Neo 550, Neo vortex (and probably others)).
+     *                  brushed controllers do not have an integrated encoder and
+     *                  require an external encoder to be used for position and velocity control.
+     *                  those include: (CIM, mini-CIM, and many more).
+     *
      */
     public BasicSparkMAX(
             ControllerGains gains,
             int id,
             String name,
-            double gearRatio) {
+            double gearRatio,
+            boolean brushless) {
 
-        this(gains, id, name, gearRatio, 1);
+        this(gains, id, name, gearRatio, 1, brushless);
     }
 
     /**
@@ -67,10 +84,7 @@ public class BasicSparkMAX extends BasicSparkBase {
      * @param config The configuration for the motor controller.
      */
     public BasicSparkMAX(BasicMotorConfig config) {
-        super(
-                new SparkMax(config.motorConfig.id, SparkLowLevel.MotorType.kBrushless),
-                new SparkMaxConfig(),
-                config);
+        super(createSparkMax(config), new SparkMaxConfig(), config);
 
         if (config instanceof BasicSparkBaseConfig sparkBaseConfig) {
             // checks if both absolute and external encoders are being used
@@ -84,6 +98,24 @@ public class BasicSparkMAX extends BasicSparkBase {
         }
     }
 
+    /**
+     * Creates a SparkMax motor controller based on the provided configuration.
+     * If the configuration is not an instance of BasicSparkBaseConfig, it defaults to a
+     * brushless motor.
+     *
+     * @param config The configuration for the motor controller.
+     * @return A SparkMax motor controller instance.
+     */
+    private static SparkMax createSparkMax(BasicMotorConfig config) {
+        if (!(config instanceof BasicSparkBaseConfig sparkBaseConfig)) {
+            DriverStation.reportError("motor: " + config.motorConfig.name + " not using a sparkBaseConfig, defaulting to a brushless motor", false);
+            return new SparkMax(config.motorConfig.id, SparkLowLevel.MotorType.kBrushless);
+        }
+
+        return new SparkMax(config.motorConfig.id, sparkBaseConfig.brushless ? MotorType.kBrushless : MotorType.kBrushed);
+    }
+
+
     @Override
     public void useAbsoluteEncoder(boolean inverted, double zeroOffset, double sensorToMotorRatio, AbsoluteEncoderRange absoluteEncoderRange) {
         // sets the absolute encoder configuration
@@ -96,7 +128,7 @@ public class BasicSparkMAX extends BasicSparkBase {
     @Override
     protected void configExternalEncoder(boolean inverted, double sensorToMotorRatio) {
 
-        if(!(getSparkConfig() instanceof SparkMaxConfig config)) {
+        if (!(getSparkConfig() instanceof SparkMaxConfig config)) {
             throw new RuntimeException("SparkMax motor is not an instance of SparkMaxConfig");
         }
 
@@ -111,7 +143,7 @@ public class BasicSparkMAX extends BasicSparkBase {
 
     @Override
     protected RelativeEncoder getExternalEncoder() {
-        if(!(getMotor() instanceof SparkMax sparkMax)) {
+        if (!(getMotor() instanceof SparkMax sparkMax)) {
             throw new RuntimeException("SparkMax motor is not an instance of SparkMax");
         }
 

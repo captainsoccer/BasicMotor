@@ -111,14 +111,24 @@ public abstract class BasicSparkBase extends BasicMotor {
 
         double gearRatio = config.motorConfig.gearRatio;
         double unitConversion = config.motorConfig.unitConversion;
-        defaultMeasurements = motor.getMotorType() == SparkLowLevel.MotorType.kBrushless ?
-                new MeasurementsREVRelative(motor.getEncoder(), gearRatio, unitConversion) :
-                new EmptyMeasurements();
 
         if (!(config instanceof BasicSparkBaseConfig sparkBaseConfig)) {
             DriverStation.reportWarning("not using specific Spark Base config for motor: " + name, false);
+            defaultMeasurements = new MeasurementsREVRelative(motor.getEncoder(), gearRatio, unitConversion);
             return;
         }
+
+        var primaryEncoderConfig = sparkBaseConfig.primaryEncoderConfig;
+        defaultMeasurements = primaryEncoderConfig.usePrimaryEncoder ?
+                new MeasurementsREVRelative(
+                        motor.getEncoder(),
+                        gearRatio,
+                        unitConversion) :
+                new EmptyMeasurements();
+
+        if(primaryEncoderConfig.countsPerRevolution != 0)
+            motorConfig.encoder.countsPerRevolution(primaryEncoderConfig.countsPerRevolution);
+
 
         setCurrentLimits(sparkBaseConfig.currentLimitConfig.getCurrentLimits());
 
@@ -150,6 +160,30 @@ public abstract class BasicSparkBase extends BasicMotor {
                     externalEncoderConfig.sensorToMotorRatio,
                     externalEncoderConfig.mechanismToSensorRatio);
         }
+    }
+
+    /**
+     * Returns the type of motor that is connected to the spark base motor controller based on the provided configuration.
+     *
+     * @param motorConfig The configuration of the motor controller.
+     * @return The type of motor connected to the spark base motor controller.
+     */
+    protected static SparkLowLevel.MotorType getMotorType(BasicMotorConfig motorConfig) {
+        if (!(motorConfig instanceof BasicSparkBaseConfig sparkBaseConfig)) {
+            DriverStation.reportError("motor: " + motorConfig.motorConfig.name + " not using a sparkBaseConfig, defaulting to a brushless motor", false);
+            return SparkLowLevel.MotorType.kBrushless;
+        }
+
+        var primaryEncoderConfig = sparkBaseConfig.primaryEncoderConfig;
+
+        // if the primary encoder is used and the counts per revolution is 0,
+        // it means that the motor is brushless and there is a primary encoder connected to it.
+        if (primaryEncoderConfig.usePrimaryEncoder && primaryEncoderConfig.countsPerRevolution == 0)
+            return SparkLowLevel.MotorType.kBrushless;
+
+        // if the primary encoder is not used or the counts per revolution is not 0,
+        // it means that the motor is brushed or there is no primary encoder connected to it.
+        return SparkLowLevel.MotorType.kBrushed;
     }
 
     /**
@@ -496,16 +530,17 @@ public abstract class BasicSparkBase extends BasicMotor {
      * as showed at the <a href="https://docs.revrobotics.com/brushless/spark-max/encoders?q=brushed#brushed-motor">rev website</a>.
      * The encoder must be a quadrature encoder.
      * This will enable closed loop control on the primary encoder.
+     *
      * @param countsPerRevolution The number of counts per revolution of the encoder.
      *                            (written in the encoder's documentation).
-     *                           (The counts per revolution of the through-bore encoder is 8192.)
-     * @param gearRatio The gear ratio of the encoder.
-     *                  This is the gear ratio between the encoder and the mechanism it is connected to.
-     *                  Most of the time this will be 1.0.
-     * @param unitConversion The conversion factor for the motor's position units.
-     *                       This will be multiplied by the motor's rotation to get the position with the desired units.
-     *                       The unit for this value is desired position unit per rotation.
-     *                       (will also apply for velocity)
+     *                            (The counts per revolution of the through-bore encoder is 8192.)
+     * @param gearRatio           The gear ratio of the encoder.
+     *                            This is the gear ratio between the encoder and the mechanism it is connected to.
+     *                            Most of the time this will be 1.0.
+     * @param unitConversion      The conversion factor for the motor's position units.
+     *                            This will be multiplied by the motor's rotation to get the position with the desired units.
+     *                            The unit for this value is desired position unit per rotation.
+     *                            (will also apply for velocity)
      */
     public void usePrimaryEncoder(int countsPerRevolution, double gearRatio, double unitConversion) {
         // sets the configuration for the primary encoder

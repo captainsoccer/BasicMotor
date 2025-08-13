@@ -5,11 +5,9 @@ import com.basicMotor.configuration.BasicSparkBaseConfig;
 import com.basicMotor.gains.ControllerGains;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLowLevel;
 import com.basicMotor.configuration.BasicSparkBaseConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import edu.wpi.first.wpilibj.DriverStation;
 
 
 /**
@@ -84,7 +82,7 @@ public class BasicSparkFlex extends BasicSparkBase {
      * @param config The configuration for the motor controller.
      */
     public BasicSparkFlex(BasicMotorConfig config) {
-        super(createSparkFlex(config), new SparkFlexConfig(), config);
+        super(new SparkFlex(config.motorConfig.id, BasicSparkBase.getMotorType(config)), new SparkFlexConfig(), config);
 
         if (config instanceof BasicSparkBaseConfig sparkBaseConfig) {
             //if the user configured to use an external encoder with an absolute encoder,
@@ -100,23 +98,6 @@ public class BasicSparkFlex extends BasicSparkBase {
                         absoluteEncoderConfig.absoluteEncoderRange);
             }
         }
-    }
-
-    /**
-     * Creates a Spark Flex motor controller based on the provided configuration.
-     * If the configuration is not an instance of BasicSparkBaseConfig, it defaults to a
-     * brushless motor.
-     *
-     * @param config The configuration for the motor controller.
-     * @return A Spark Flex motor controller instance.
-     */
-    private static SparkFlex createSparkFlex(BasicMotorConfig config) {
-        if (!(config instanceof BasicSparkBaseConfig sparkBaseConfig)) {
-            DriverStation.reportError("motor: " + config.motorConfig.name + " not using a sparkBaseConfig, defaulting to a brushless motor", false);
-            return new SparkFlex(config.motorConfig.id, SparkLowLevel.MotorType.kBrushless);
-        }
-
-        return new SparkFlex(config.motorConfig.id, sparkBaseConfig.brushless ? MotorType.kBrushless : MotorType.kBrushed);
     }
 
     @Override

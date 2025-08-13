@@ -13,19 +13,17 @@ import com.basicMotor.gains.currentLimits.CurrentLimitsSparkBase;
 public class BasicSparkBaseConfig extends BasicMotorConfig {
 
     /**
-     * Whether the motor connected to the motor controller is brushless or brushed.
-     * Default is true, meaning the motor is brushless.
-     * Change this only if you are using a brushed motor.
-     * If the motor is brushless (Neo 1.1, Neo 550, Neo vortex), this should be true.
-     * If the motor is brushed (e.g. CIM, Mini CIM), this should be false.
-     * This is used to determine if there is an encoder connected to the motor controller.
-     */
-    public boolean brushless = true;
-
-    /**
      * The current limit configuration for the spark base motor controller.
      */
     public CurrentLimitConfig currentLimitConfig = new CurrentLimitConfig();
+
+    /**
+     * The primary encoder configuration for the spark base motor controller.
+     * Change only if you are using a brushed motor with or without an encoder connected to the encoder port.
+     * If you are using a brushless motor, this will be ignored and the integrated encoder
+     * of the motor controller will be used.
+     */
+    public PrimaryEncoderConfig primaryEncoderConfig = new PrimaryEncoderConfig();
 
     /**
      * The external encoder configuration for the spark base motor controller.
@@ -140,6 +138,27 @@ public class BasicSparkBaseConfig extends BasicMotorConfig {
 
             return currentLimitConfig;
         }
+    }
+
+    /**
+     * Handles the configuration parameters for the primary encoder.
+     * This will only be used if the connected motor is a brushed motor.
+     */
+    public static class PrimaryEncoderConfig {
+        /**
+         * Should the motor use the primary encoder (the integrated encoder of the motor controller)?
+         * Change this only if you have a brushed motor without an encoder connected to the encoder port.
+         * If you are using a brushed motor with an external encoder connected to the encoder port,
+         * you need to set {@link #countsPerRevolution}
+         */
+        public boolean usePrimaryEncoder = true;
+
+        /**
+         * The number of counts per revolution of the primary encoder.
+         * This defaults to 0, which means it is a brushless motor with a knwon encoder.
+         * Change this only if you are used a brushed motor and have connected an encoder to the encoder port.
+         */
+        public int countsPerRevolution = 0;
     }
 
     /**

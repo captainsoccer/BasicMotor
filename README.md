@@ -19,20 +19,12 @@ For the installation, refer to the [installation section](https://github.com/cap
 For detailed documentation, guides, and advanced usage tips, please visit our [Wiki](https://github.com/captainsoccer/MotorUtils/wiki).  
 The wiki contains additional resources to help you get started, troubleshoot issues, and explore advanced features of the MotorUtils library.
 
-For more sepecif information about API, check the [java doc](https://javadoc.jitpack.io/com/github/captainsoccer/MotorUtils/latest/javadoc/index.html)
+For more specific information about API, check the [java doc](https://javadoc.jitpack.io/com/github/captainsoccer/MotorUtils/latest/javadoc/index.html)
 
 
 ## Usage
+For information about using the library, check out the [Usage wiki page](https://github.com/captainsoccer/MotorUtils/wiki/Usage)
 
-To ensure motors are updated correctly, add the following code to your `robotPeriodic()` method in the `Robot.java` file, after the `CommandScheduler` runs:
-
-```java
-@Override
-public void robotPeriodic() {
-    CommandScheduler.getInstance().run();
-    MotorManager.getInstance().periodic();
-}
-```
 
 ## License
 

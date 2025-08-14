@@ -743,7 +743,7 @@ public abstract class BasicMotor {
 
         // If the measurements are empty and the control mode requires PID control,
         // then we cannot run the controller.
-        if(controlMode.requiresPID() && measurements instanceof EmptyMeasurements){
+        if((controlMode.requiresPID() && !controlMode.isCurrentControl())&& measurements instanceof EmptyMeasurements){
             DriverStation.reportError("Using empty measurements with a controller that requires PID control. " +
                     "Please set the measurements to a valid source.", false);
 

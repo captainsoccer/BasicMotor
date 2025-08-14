@@ -5,9 +5,10 @@ import com.basicMotor.configuration.BasicSparkBaseConfig;
 import com.basicMotor.gains.ControllerGains;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLowLevel;
 import com.basicMotor.configuration.BasicSparkBaseConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
 
 /**
  * This class represents a basic spark flex motor controller.
@@ -26,17 +27,24 @@ public class BasicSparkFlex extends BasicSparkBase {
      * @param unitConversion The conversion factor for the motor's position units.
      *                       This will be multiplied by the motor's rotation to get the position with the desired units.
      *                       The unit for this value is desired position unit per rotation.
+     * @param brushless      Whether the motor is brushless or not.
+     *                       Brushless motor have an integrated encoder that can be used for position and velocity control.
+     *                       those include: (Neo, Neo 550, Neo vortex (and probably others)).
+     *                       brushed controllers do not have an integrated encoder and
+     *                       require an external encoder to be used for position and velocity control.
+     *                       those include: (CIM, mini-CIM, and many more).
      */
     public BasicSparkFlex(
             ControllerGains gains,
             int id,
             String name,
             double gearRatio,
-            double unitConversion) {
+            double unitConversion,
+            boolean brushless) {
 
         super(
                 //creates a new SparkFlex motor controller with the given id and type
-                new SparkFlex(id, SparkLowLevel.MotorType.kBrushless),
+                new SparkFlex(id, brushless ? MotorType.kBrushless : MotorType.kBrushed),
                 new SparkFlexConfig(),
                 gains,
                 name,
@@ -51,14 +59,21 @@ public class BasicSparkFlex extends BasicSparkBase {
      * @param id        The id of the motor controller
      * @param name      The name of the motor controller (used for logging and debugging)
      * @param gearRatio The gear ratio of the motor controller (how many rotations of the motor are a rotation of the mechanism)
+     * @param brushless Whether the motor is brushless or not.
+     *                  Brushless motor have an integrated encoder that can be used for position and velocity control.
+     *                  those include: (Neo, Neo 550, Neo vortex (and probably others)).
+     *                  brushed controllers do not have an integrated encoder and
+     *                  require an external encoder to be used for position and velocity control.
+     *                  those include: (CIM, mini-CIM, and many more).
      */
     public BasicSparkFlex(
             ControllerGains gains,
             int id,
             String name,
-            double gearRatio) {
+            double gearRatio,
+            boolean brushless) {
 
-        this(gains, id, name, gearRatio, 1);
+        this(gains, id, name, gearRatio, 1, brushless);
     }
 
     /**
@@ -67,11 +82,7 @@ public class BasicSparkFlex extends BasicSparkBase {
      * @param config The configuration for the motor controller.
      */
     public BasicSparkFlex(BasicMotorConfig config) {
-        super(
-                // creates a new SparkFlex motor controller with the given id and type
-                new SparkFlex(config.motorConfig.id, SparkLowLevel.MotorType.kBrushless),
-                new SparkFlexConfig(),
-                config);
+        super(new SparkFlex(config.motorConfig.id, BasicSparkBase.getMotorType(config)), new SparkFlexConfig(), config);
 
         if (config instanceof BasicSparkBaseConfig sparkBaseConfig) {
             //if the user configured to use an external encoder with an absolute encoder,
@@ -91,7 +102,7 @@ public class BasicSparkFlex extends BasicSparkBase {
 
     @Override
     protected void configExternalEncoder(boolean inverted, double sensorToMotorRatio) {
-        if(!(getSparkConfig() instanceof SparkFlexConfig config)){
+        if (!(getSparkConfig() instanceof SparkFlexConfig config)) {
             throw new RuntimeException("SparkFlex config is not instance of SparkFlexConfig");
         }
 
@@ -104,7 +115,7 @@ public class BasicSparkFlex extends BasicSparkBase {
 
     @Override
     protected RelativeEncoder getExternalEncoder() {
-        if(!(getMotor() instanceof SparkFlex motor)) {
+        if (!(getMotor() instanceof SparkFlex motor)) {
             throw new RuntimeException("SparkFlex config is not instance of SparkFlexConfig");
         }
 
@@ -143,7 +154,7 @@ public class BasicSparkFlex extends BasicSparkBase {
         // also applies the configuration to the motor
         useExternalEncoder(inverted, sensorToMotorRatio);
 
-        if(!(getMotor() instanceof SparkFlex sparkFlex)) {
+        if (!(getMotor() instanceof SparkFlex sparkFlex)) {
             throw new RuntimeException("SparkFlex motor is not an instance of SparkFlex");
         }
 

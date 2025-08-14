@@ -126,8 +126,10 @@ public abstract class BasicSparkBase extends BasicMotor {
                         unitConversion) :
                 new EmptyMeasurements();
 
-        if(primaryEncoderConfig.countsPerRevolution != 0)
+        if(primaryEncoderConfig.countsPerRevolution != 0){
             motorConfig.encoder.countsPerRevolution(primaryEncoderConfig.countsPerRevolution);
+            applyConfig();
+        }
 
 
         setCurrentLimits(sparkBaseConfig.currentLimitConfig.getCurrentLimits());

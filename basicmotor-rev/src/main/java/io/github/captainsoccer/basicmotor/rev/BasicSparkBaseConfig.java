@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.rev;
 
 
-import io.github.captainsoccer.basicmotor.configuration.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 
 /**
  * This class represents the configuration for a basic spark base motor controller.

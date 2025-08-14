@@ -1,6 +1,6 @@
 package io.github.captainsoccer.basicmotor.ctre.talonsrx;
 
-import io.github.captainsoccer.basicmotor.configuration.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 
 /**
  * This class represents the configuration for a basic TalonSRX motor controller.

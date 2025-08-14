@@ -1,6 +1,5 @@
-package io.github.captainsoccer.basicmotor.configuration;
+package io.github.captainsoccer.basicmotor;
 
-import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManagerConfig;
 import io.github.captainsoccer.basicmotor.gains.ControllerConstraints;
 import io.github.captainsoccer.basicmotor.gains.ControllerFeedForwards;

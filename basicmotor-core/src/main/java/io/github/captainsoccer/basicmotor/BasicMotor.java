@@ -2,7 +2,6 @@ package io.github.captainsoccer.basicmotor;
 
 import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
-import io.github.captainsoccer.basicmotor.configuration.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.gains.ControllerConstraints;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;

@@ -1,5 +1,5 @@
 package io.github.captainsoccer.basicmotor.ctre.talonfx;
-import io.github.captainsoccer.basicmotor.configuration.BasicMotorConfig.MotorConfig;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig.MotorConfig;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import com.ctre.phoenix6.BaseStatusSignal;

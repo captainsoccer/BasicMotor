@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.measurements;
 
 import io.github.captainsoccer.basicmotor.BasicMotor;
-import io.github.captainsoccer.basicmotor.configuration.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 
 /**
  * This class is used to get the measurements of the motor. It is used to get the position,

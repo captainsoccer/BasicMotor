@@ -1,83 +1,51 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    base // keeps root free of Java source; provides clean/assemble tasks
 }
-
-group = "com.basicmotor"
-version = "2.0.0"
 
 val wpilibVersion = "2025.3.2"
 val advantageKitVersion = "4.1.2"
-val phoenix6Version = "25.4.0"
-val phoneix5Verison = "5.35.1"
-val revLibVersion = "2025.0.3"
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-    withJavadocJar()
-    withSourcesJar()
-}
-
-
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
-            groupId = "com.basicmotor"
-            artifactId = "basic-motor"
-            version = version
-        }
+// ---- Common repositories for every module ----
+allprojects {
+    repositories {
+        mavenCentral()
+        maven(url = "https://frcmaven.wpi.edu/artifactory/release/") // WPILib
+        maven(url = "https://frcmaven.wpi.edu/artifactory/littletonrobotics-mvn-release") // Littleton Robotics
+        // maven(url = "https://jitpack.io") // uncomment if you consume JitPack deps
     }
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs("src/main/java")
-            exclude("**/example_projects/**")
-        }
-    }
-}
+// ---- Shared config for all subprojects (modules) ----
+subprojects {
+    // Most modules will be Java libraries published somewhere
+    apply(plugin = "java-library")
+    apply(plugin = "maven-publish")
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    maven {
-        url = uri("https://frcmaven.wpi.edu/artifactory/release")
-    }
-    maven {
-        url = uri("https://frcmaven.wpi.edu/artifactory/littletonrobotics-mvn-release")
-    }
-    maven{
-        url = uri("https://maven.ctr-electronics.com/release/")
-    }
-    maven{
-        url = uri("https://maven.revrobotics.com/")
-    }
-}
+    // Group (Maven groupId). For JitPack publishing, you can set this to "com.github.captainsoccer".
+    group = (rootProject.findProperty("GROUP") as String?)
+        ?: "io.github.captainsoccer"
 
-dependencies {
-    implementation("edu.wpi.first.wpilibj:wpilibj-java:${wpilibVersion}")
-    implementation("edu.wpi.first.wpimath:wpimath-java:${wpilibVersion}")
-    implementation("edu.wpi.first.wpiutil:wpiutil-java:${wpilibVersion}")
-    implementation("edu.wpi.first.wpiunits:wpiunits-java:${wpilibVersion}")
-    implementation("org.littletonrobotics.akit:akit-java:${advantageKitVersion}")
-    implementation("com.ctre.phoenix6:wpiapi-java:${phoenix6Version}")
-    implementation("com.ctre.phoenix:api-java:${phoneix5Verison}")
-    implementation("com.ctre.phoenix:wpiapi-java:${phoneix5Verison}")
-    implementation(("com.revrobotics.frc:REVLib-java:${revLibVersion}"))
-    implementation("us.hebi.quickbuf:quickbuf-runtime:1.3.3")
+    // Version: by default each module should set its own version in its own build.gradle.kts.
+    // If you want a fallback (for local dev), keep this:
+    version = (findProperty("DEFAULT_VERSION") as String?) ?: "0.0.0-SNAPSHOT"
 
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-}
+    dependencies{
+        // WPILib dependencies
+        add("compileOnly", "edu.wpi.first.wpilibj:wpilibj-java:${wpilibVersion}")
+        add("compileOnly", "edu.wpi.first.wpimath:wpimath-java:${wpilibVersion}")
+        add("compileOnly", "edu.wpi.first.wpiutil:wpiutil-java:${wpilibVersion}")
+        add("compileOnly", "edu.wpi.first.wpiunits:wpiunits-java:${wpilibVersion}")
+        add("compileOnly", "org.littletonrobotics.akit:akit-java:${advantageKitVersion}")
+        add("compileOnly", "us.hebi.quickbuf:quickbuf-runtime:1.3.3")
+    }
 
-tasks.test {
-    useJUnitPlatform()
-}
+    the<JavaPluginExtension>().apply {
+        toolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
+        withSourcesJar()
+        withJavadocJar()
+    }
 
-tasks.named<Jar>("sourcesJar") {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//    tasks.test {
+//        useJUnitPlatform()
+//    }
 }

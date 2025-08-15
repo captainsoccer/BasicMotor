@@ -3,7 +3,7 @@ package io.github.captainsoccer.basicmotor;
 import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
-import io.github.captainsoccer.basicmotor.gains.ControllerConstraints;
+import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
@@ -120,7 +120,7 @@ public abstract class BasicMotor {
      *
      * @param constraints The constraints to set on the motor controller.
      */
-    protected abstract void updateConstraints(ControllerConstraints constraints);
+    protected abstract void updateConstraintsGainsToMotor(ConstraintsGains constraints);
 
     /**
      * The name of the motor.
@@ -208,7 +208,7 @@ public abstract class BasicMotor {
 
         updatePIDGainsToMotor(controllerGains.getPidGains().convertToMotorGains(gearRatio, unitConversion, getInternalPIDLoopTime()));
 
-        updateConstraints(controllerGains.getControllerConstrains().convertToMotorConstraints(gearRatio, unitConversion));
+        updateConstraintsGainsToMotor(controllerGains.getControllerConstrains().convertToMotorConstraints(gearRatio, unitConversion));
 
         // if the user uses a bare minimum configuration, then we will not set the idle mode, inverted, or current limits
         if (config == null) {
@@ -961,7 +961,7 @@ public abstract class BasicMotor {
                             .getControllerConstrains()
                             .convertToMotorConstraints(gearRatio, unitConversion);
 
-            updateConstraints(convertedConstraints);
+            updateConstraintsGainsToMotor(convertedConstraints);
         }
     }
 

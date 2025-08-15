@@ -11,7 +11,7 @@ import edu.wpi.first.math.MathUtil;
  * Some of the constraints are not available for every controller when running pid on the motor controller,
  * but they are available when running the pid on the RIO.
  */
-public class ControllerConstraints {
+public class ConstraintsGains {
     /**
      * Represents the type of constraint used
      */
@@ -103,7 +103,7 @@ public class ControllerConstraints {
      * @param deadband       The minimum output voltage of the motor.
      *                       any value (absolute value) below this will be ignored.
      */
-    public ControllerConstraints(ConstraintType type, double minValue, double maxValue, double maxMotorOutput, double minMotorOutput, double deadband) {
+    public ConstraintsGains(ConstraintType type, double minValue, double maxValue, double maxMotorOutput, double minMotorOutput, double deadband) {
         // if the type is null, set it to NONE
         if (type == null) this.constraintType = ConstraintType.NONE;
         else this.constraintType = type;
@@ -136,7 +136,7 @@ public class ControllerConstraints {
      *                 - If continuous, this is the maximum value to round to.
      *                 - If limited, this is the maximum value of the limits.
      */
-    public ControllerConstraints(ConstraintType type, double minValue, double maxValue) {
+    public ConstraintsGains(ConstraintType type, double minValue, double maxValue) {
         this(type, minValue, maxValue, MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, 0);
     }
 
@@ -156,7 +156,7 @@ public class ControllerConstraints {
      * @param voltageDeadband The minimum output voltage of the motor.
      *                        any value (absolute value) below this will be ignored.
      */
-    public ControllerConstraints(ConstraintType type, double minValue, double maxValue, double voltageDeadband) {
+    public ConstraintsGains(ConstraintType type, double minValue, double maxValue, double voltageDeadband) {
         this(type, minValue, maxValue, MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, voltageDeadband);
     }
 
@@ -170,7 +170,7 @@ public class ControllerConstraints {
      *                       This is used for capping the output of the motor.
      *                       (default is -13.0), can be defined in {@link MotorManager#config}
      */
-    public ControllerConstraints(double maxMotorOutput, double minMotorOutput) {
+    public ConstraintsGains(double maxMotorOutput, double minMotorOutput) {
         this(ConstraintType.NONE, 0, 0, maxMotorOutput, minMotorOutput, 0);
     }
 
@@ -186,7 +186,7 @@ public class ControllerConstraints {
      * @param voltageDeadband The minimum output voltage of the motor.
      *                        any value (absolute value) below this will be ignored.
      */
-    public ControllerConstraints(double maxMotorOutput, double minMotorOutput, double voltageDeadband) {
+    public ConstraintsGains(double maxMotorOutput, double minMotorOutput, double voltageDeadband) {
         this(ConstraintType.NONE, 0, 0, maxMotorOutput, minMotorOutput, voltageDeadband);
     }
 
@@ -196,14 +196,14 @@ public class ControllerConstraints {
      * @param voltageDeadband The minimum output voltage of the motor.
      *                        any value (absolute value) below this will be ignored.
      */
-    public ControllerConstraints(double voltageDeadband) {
+    public ConstraintsGains(double voltageDeadband) {
         this(MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, voltageDeadband);
     }
 
     /**
      * Creates a constraints object with no constraints, no output limits, and no deadband.
      */
-    public ControllerConstraints() {
+    public ConstraintsGains() {
         this(MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput);
     }
 
@@ -405,8 +405,8 @@ public class ControllerConstraints {
      *                       This is used to convert the constraints to motor units.
      * @return The motor ready constraints.
      */
-    public ControllerConstraints convertToMotorConstraints(double gearRatio, double unitConversion) {
-        return new ControllerConstraints(
+    public ConstraintsGains convertToMotorConstraints(double gearRatio, double unitConversion) {
+        return new ConstraintsGains(
                 constraintType,
                 (minValue / unitConversion) * gearRatio,
                 (maxValue / unitConversion) * gearRatio,

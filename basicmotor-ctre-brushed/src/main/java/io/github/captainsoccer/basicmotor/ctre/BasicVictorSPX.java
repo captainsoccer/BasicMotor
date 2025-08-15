@@ -4,7 +4,7 @@ import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
-import io.github.captainsoccer.basicmotor.gains.ControllerConstraints;
+import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
@@ -109,7 +109,7 @@ public class BasicVictorSPX extends BasicMotor {
     }
 
     @Override
-    protected void updateConstraints(ControllerConstraints constraints) {
+    protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
         // Does nothing with soft limits.
         motor.configPeakOutputForward(constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage);
         motor.configPeakOutputReverse(-constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage);

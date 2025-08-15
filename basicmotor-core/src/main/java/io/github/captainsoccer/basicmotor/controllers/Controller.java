@@ -9,7 +9,7 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DriverStation;
-import io.github.captainsoccer.basicmotor.gains.ControllerFeedForwards;
+import io.github.captainsoccer.basicmotor.gains.FeedForwardsGains;
 
 import java.util.Objects;
 
@@ -278,7 +278,7 @@ public class Controller implements Sendable {
      * @param dt The time since the last calculation
      */
     public void calculateProfile(double dt) {
-        var profile = this.controllerGains.getControllerProfile();
+        var profile = this.controllerGains.getMotionProfile();
 
         setpoint = profile.calculate(dt, setpoint, request.goal);
     }
@@ -454,7 +454,7 @@ public class Controller implements Sendable {
      * @param controlMode    The control mode used to control the motor.
      * @param arbFeedForward A voltage feedforward given by the user that will be added to the motor output.
      *                       Useful when using outside calculations easily.
-     *                       Similar to the function feedForward in the {@link ControllerFeedForwards}
+     *                       Similar to the function feedForward in the {@link FeedForwardsGains}
      */
     public record ControllerRequest(
             TrapezoidProfile.State goal, ControlMode controlMode, double arbFeedForward) {

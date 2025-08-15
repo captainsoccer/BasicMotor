@@ -5,7 +5,7 @@ import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.ctre.CANcoderMeasurements;
-import io.github.captainsoccer.basicmotor.gains.ControllerConstraints;
+import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
@@ -240,7 +240,7 @@ public class BasicTalonFX extends BasicMotor {
     }
 
     @Override
-    protected void updateConstraints(ControllerConstraints constraints) {
+    protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
         // sets the max voltage to the max motor output
         config.Voltage.PeakForwardVoltage = constraints.getMaxMotorOutput();
         config.Voltage.PeakReverseVoltage = constraints.getMinMotorOutput();
@@ -259,7 +259,7 @@ public class BasicTalonFX extends BasicMotor {
         config.ClosedLoopGeneral.ContinuousWrap = false;
 
         // checks if it needs to apply soft limits
-        if (constraints.getConstraintType() == ControllerConstraints.ConstraintType.LIMITED) {
+        if (constraints.getConstraintType() == ConstraintsGains.ConstraintType.LIMITED) {
             config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
             config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 

@@ -5,7 +5,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
-import io.github.captainsoccer.basicmotor.gains.ControllerConstraints;
+import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
@@ -66,7 +66,7 @@ public class BasicArmSim extends BasicSimSystem {
 
     double minAngle;
     double maxAngle;
-    if (config.constraintsConfig.constraintType == ControllerConstraints.ConstraintType.LIMITED) {
+    if (config.constraintsConfig.constraintType == ConstraintsGains.ConstraintType.LIMITED) {
       minAngle = Units.rotationsToRadians(config.constraintsConfig.minValue / config.motorConfig.unitConversion);
       maxAngle = Units.rotationsToRadians(config.constraintsConfig.maxValue / config.motorConfig.unitConversion);
     } else {

@@ -16,7 +16,7 @@ import io.github.captainsoccer.basicmotor.controllers.Controller;
  * Also more info about the DC motor equation that uses these feed forwards can be found in the
  * <a href="https://docs.wpilib.org/en/stable/docs/software/advanced-controls/introduction/introduction-to-feedforward.html">wpilib docs</a>.
  */
-public class ControllerFeedForwards {
+public class FeedForwardsGains {
 
     /**
      * The type of feed forward gain to change.
@@ -74,7 +74,7 @@ public class ControllerFeedForwards {
      * @param setpointFeedForward The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
      * @param feedForwardFunction The feed forward function that takes the setpoint and returns a voltage (volts per unit of control)
      */
-    public ControllerFeedForwards(double simpleFeedForward, double frictionFeedForward, double setpointFeedForward, Function<Double, Double> feedForwardFunction) {
+    public FeedForwardsGains(double simpleFeedForward, double frictionFeedForward, double setpointFeedForward, Function<Double, Double> feedForwardFunction) {
         // simple feed forward can be negative, as it is a constant voltage added to the output
         this.simpleFeedForward = simpleFeedForward;
 
@@ -96,7 +96,7 @@ public class ControllerFeedForwards {
      *
      * @param setpointFeedForward The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
      */
-    public ControllerFeedForwards(double setpointFeedForward) {
+    public FeedForwardsGains(double setpointFeedForward) {
         this(0, 0, setpointFeedForward, (x) -> 0.0);
     }
 
@@ -107,7 +107,7 @@ public class ControllerFeedForwards {
      * @param setpointFeedForward The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
      * @param frictionFeedForward The friction feed forward gain (volts) (Greater than or equal to zero)
      */
-    public ControllerFeedForwards(double setpointFeedForward, double frictionFeedForward) {
+    public FeedForwardsGains(double setpointFeedForward, double frictionFeedForward) {
         this(0, frictionFeedForward, setpointFeedForward, (x) -> 0.0);
     }
 
@@ -118,7 +118,7 @@ public class ControllerFeedForwards {
      * @param simpleFeedForward   The simple feed forward gain (volts) (Greater than or equal to zero)
      * @param frictionFeedForward The friction feed forward gain (volts) (Greater than or equal to zero)
      */
-    public ControllerFeedForwards(double setpointFeedForward, double simpleFeedForward, double frictionFeedForward) {
+    public FeedForwardsGains(double setpointFeedForward, double simpleFeedForward, double frictionFeedForward) {
         this(frictionFeedForward, simpleFeedForward, setpointFeedForward, (x) -> 0.0);
     }
 
@@ -126,7 +126,7 @@ public class ControllerFeedForwards {
      * Creates a feed forward with no gains.
      * Means that there is no feed forward output from the controller.
      */
-    public ControllerFeedForwards() {
+    public FeedForwardsGains() {
         this(0, 0, 0, (x) -> 0.0);
     }
 

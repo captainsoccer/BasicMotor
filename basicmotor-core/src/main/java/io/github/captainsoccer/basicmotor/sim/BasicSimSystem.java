@@ -4,7 +4,7 @@ import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
-import io.github.captainsoccer.basicmotor.gains.ControllerConstraints;
+import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
@@ -32,7 +32,7 @@ public abstract class BasicSimSystem extends BasicMotor {
    */
   public BasicSimSystem(String name, ControllerGains gains) {
     super(gains, name);
-    setControllerLocation(ControllerLocation.RIO);
+    super.setControllerLocation(ControllerLocation.RIO);
   }
 
   /**
@@ -43,7 +43,7 @@ public abstract class BasicSimSystem extends BasicMotor {
    */
   public BasicSimSystem(BasicMotorConfig config) {
     super(config);
-    setControllerLocation(ControllerLocation.RIO);
+    super.setControllerLocation(ControllerLocation.RIO);
   }
 
   @Override
@@ -52,7 +52,7 @@ public abstract class BasicSimSystem extends BasicMotor {
   }
 
   @Override
-  protected void updateConstraints(ControllerConstraints constraints) {
+  protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
     // does nothing, as this is a simulation system
   }
 

@@ -11,7 +11,7 @@ import io.github.captainsoccer.basicmotor.BasicMotor;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
-import io.github.captainsoccer.basicmotor.gains.ControllerConstraints;
+import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
@@ -189,14 +189,14 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     @Override
-    protected void updateConstraints(ControllerConstraints constraints) {
+    protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
         motorConfig.peakOutputForward = constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
         motorConfig.peakOutputReverse = -constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
 
         motorConfig.nominalOutputForward = constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
         motorConfig.nominalOutputReverse = -constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
 
-        if (constraints.getConstraintType() == ControllerConstraints.ConstraintType.LIMITED
+        if (constraints.getConstraintType() == ConstraintsGains.ConstraintType.LIMITED
                 && getDefaultMeasurements() instanceof TalonSRXMeasurements talonMeasurements) {
             motorConfig.forwardSoftLimitEnable = true;
             motorConfig.forwardSoftLimitThreshold = constraints.getMaxValue() * talonMeasurements.tickPerRevolution;

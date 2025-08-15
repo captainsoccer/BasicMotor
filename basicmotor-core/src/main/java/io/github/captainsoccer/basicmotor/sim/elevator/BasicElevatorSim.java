@@ -3,7 +3,7 @@ package io.github.captainsoccer.basicmotor.sim.elevator;
 
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
-import io.github.captainsoccer.basicmotor.gains.ControllerConstraints;
+import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
@@ -65,7 +65,7 @@ public class BasicElevatorSim extends BasicSimSystem {
   private static ElevatorSim createElevatorSim(BasicMotorConfig config) {
     double minHeight;
     double maxHeight;
-    if (config.constraintsConfig.constraintType == ControllerConstraints.ConstraintType.LIMITED) {
+    if (config.constraintsConfig.constraintType == ConstraintsGains.ConstraintType.LIMITED) {
       minHeight = config.constraintsConfig.minValue;
       maxHeight = config.constraintsConfig.maxValue;
     } else {

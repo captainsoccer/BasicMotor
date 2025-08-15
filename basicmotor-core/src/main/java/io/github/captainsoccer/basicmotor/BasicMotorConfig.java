@@ -1,8 +1,8 @@
 package io.github.captainsoccer.basicmotor;
 
 import io.github.captainsoccer.basicmotor.motorManager.MotorManagerConfig;
-import io.github.captainsoccer.basicmotor.gains.ControllerConstraints;
-import io.github.captainsoccer.basicmotor.gains.ControllerFeedForwards;
+import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
+import io.github.captainsoccer.basicmotor.gains.FeedForwardsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
@@ -326,8 +326,8 @@ public class BasicMotorConfig {
          *
          * @return The feed forwards of the controller
          */
-        public ControllerFeedForwards getFeedForwards() {
-            return new ControllerFeedForwards(
+        public FeedForwardsGains getFeedForwards() {
+            return new FeedForwardsGains(
                     simpleFeedForward, frictionFeedForward, setpointFeedForward, customFeedForward);
         }
 
@@ -356,7 +356,7 @@ public class BasicMotorConfig {
          * @param feedForwards The ControllerFeedForwards object to convert into a FeedForwardConfig.
          * @return The FeedForwardConfig instance with the values from the ControllerFeedForwards object.
          */
-        public static FeedForwardConfig fromFeedForwards(ControllerFeedForwards feedForwards) {
+        public static FeedForwardConfig fromFeedForwards(FeedForwardsGains feedForwards) {
             var config = new FeedForwardConfig();
 
             config.simpleFeedForward = feedForwards.getSimpleFeedForward();
@@ -388,8 +388,8 @@ public class BasicMotorConfig {
          * This effects only position control, where it will find the shortest path to the setpoint.
          * The most common use case is a swerve module steering motor.
          */
-        public ControllerConstraints.ConstraintType constraintType =
-                ControllerConstraints.ConstraintType.NONE;
+        public ConstraintsGains.ConstraintType constraintType =
+                ConstraintsGains.ConstraintType.NONE;
 
         /**
          * The maximum value of the constraint units are: (unit of position (default is rotations))
@@ -446,8 +446,8 @@ public class BasicMotorConfig {
          *
          * @return The constraints of the controller
          */
-        public ControllerConstraints getConstraints() {
-            return new ControllerConstraints(
+        public ConstraintsGains getConstraints() {
+            return new ConstraintsGains(
                     constraintType, minValue, maxValue, maxOutput, minOutput, voltageDeadband);
         }
 
@@ -476,7 +476,7 @@ public class BasicMotorConfig {
          * @param constraints The ControllerConstraints object to convert into a ConstraintsConfig.
          * @return The ConstraintsConfig instance with the values from the ControllerConstraints object.
          */
-        public static ConstraintsConfig fromConstraints(ControllerConstraints constraints) {
+        public static ConstraintsConfig fromConstraints(ConstraintsGains constraints) {
             var config = new ConstraintsConfig();
 
             config.constraintType = constraints.getConstraintType();

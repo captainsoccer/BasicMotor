@@ -7,7 +7,7 @@ import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
-import io.github.captainsoccer.basicmotor.gains.ControllerConstraints;
+import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
@@ -317,7 +317,7 @@ public abstract class BasicSpark extends BasicMotor {
     }
 
     @Override
-    protected void updateConstraints(ControllerConstraints constraints) {
+    protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
         double idealVoltage = MotorManager.config.motorIdealVoltage;
 
         // sets the max voltage to the max motor output
@@ -326,7 +326,7 @@ public abstract class BasicSpark extends BasicMotor {
 
         //if the constraints are continuous, ignores them.
         //the rio code handles the continuous constraints.
-        if (constraints.getConstraintType() == ControllerConstraints.ConstraintType.LIMITED) {
+        if (constraints.getConstraintType() == ConstraintsGains.ConstraintType.LIMITED) {
             // sets the soft limits to the max and min values
             config.softLimit.forwardSoftLimit(constraints.getMaxValue());
             config.softLimit.reverseSoftLimit(constraints.getMinValue());
@@ -341,7 +341,7 @@ public abstract class BasicSpark extends BasicMotor {
 
         if (constraints.getVoltageDeadband() != 0 && getControllerLocation() == MotorManager.ControllerLocation.MOTOR) {
             DriverStation.reportWarning(
-                    "Spark MAX does not use voltage deadband (works on RIO PID controller), so it is ignored: "
+                    "Spark motor controllers do not use voltage deadband (works on RIO PID controller), so it is ignored: "
                             + name,
                     false);
         }

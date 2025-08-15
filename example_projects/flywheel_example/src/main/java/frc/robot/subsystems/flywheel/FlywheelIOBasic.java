@@ -1,18 +1,18 @@
 package frc.robot.subsystems.flywheel;
 
-import com.basicMotor.BasicMotor;
-import com.basicMotor.controllers.Controller;
-import com.basicMotor.motors.simulation.BasicSimMotor;
-import com.basicMotor.motors.talonFX.BasicTalonFX;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.controllers.Controller.ControlMode;
+import io.github.captainsoccer.basicmotor.ctre.talonfx.BasicTalonFX;
+import io.github.captainsoccer.basicmotor.sim.motor.BasicMotorSim;
 
 public class FlywheelIOBasic implements  FlywheelIO {
     private final BasicMotor motor;
 
     public FlywheelIOBasic() {
         this.motor = RobotBase.isReal() ? new BasicTalonFX(FlywheelConstants.motorConfig) :
-                        new BasicSimMotor(FlywheelConstants.motorConfig);
+                        new BasicMotorSim(FlywheelConstants.motorConfig);
     }
 
     @Override
@@ -23,7 +23,7 @@ public class FlywheelIOBasic implements  FlywheelIO {
 
     @Override
     public void setTargetVelocity(double targetMetersPerSecond) {
-        motor.setControl(targetMetersPerSecond, Controller.ControlMode.VELOCITY);
+        motor.setControl(targetMetersPerSecond, ControlMode.VELOCITY);
     }
 
     @Override

@@ -9,6 +9,10 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/basicmotor-core" />
+            <option value="$PROJECT_DIR$/basicmotor-ctre" />
+            <option value="$PROJECT_DIR$/basicmotor-ctre-brushed" />
+            <option value="$PROJECT_DIR$/basicmotor-rev" />
           </set>
         </option>
       </GradleProjectSettings>

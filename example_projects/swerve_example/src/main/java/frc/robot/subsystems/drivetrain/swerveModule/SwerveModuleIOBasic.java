@@ -4,12 +4,6 @@
 
 package frc.robot.subsystems.drivetrain.swerveModule;
 
-import com.basicMotor.BasicMotor;
-import com.basicMotor.controllers.Controller.ControlMode;
-import com.basicMotor.measurements.ctreEncoders.MeasurementsCANCoder;
-import com.basicMotor.motors.simulation.BasicSimMotor;
-import com.basicMotor.motors.sparkBase.BasicSparkMAX;
-import com.basicMotor.motors.talonFX.BasicTalonFX;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
@@ -17,6 +11,12 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.controllers.Controller.ControlMode;
+import io.github.captainsoccer.basicmotor.sim.motor.BasicMotorSim;
+import io.github.captainsoccer.basicmotor.ctre.talonfx.BasicTalonFX;
+import io.github.captainsoccer.basicmotor.ctre.CANcoderMeasurements;
+import io.github.captainsoccer.basicmotor.rev.BasicSparkMAX;
 
 /** Add your docs here. */
 public class SwerveModuleIOBasic extends SwerveModuleIO{
@@ -39,7 +39,7 @@ public class SwerveModuleIOBasic extends SwerveModuleIO{
 
             canCoder = configureCanCoder(constants);
 
-            var canCoderMeasurements = new MeasurementsCANCoder(canCoder, 1, 1);
+            var canCoderMeasurements = new CANcoderMeasurements(canCoder, 1, 1);
 
             canCoder.getMagnetHealth(false).setUpdateFrequency(4);
 
@@ -50,8 +50,8 @@ public class SwerveModuleIOBasic extends SwerveModuleIO{
         else{
             canCoder = null;
 
-            driveMotor = new BasicSimMotor(constants.DRIVE_MOTOR_CONFIG);
-            steerMotor = new BasicSimMotor(constants.STEER_MOTOR_CONFIG);
+            driveMotor = new BasicMotorSim(constants.DRIVE_MOTOR_CONFIG);
+            steerMotor = new BasicMotorSim(constants.STEER_MOTOR_CONFIG);
         }
     }
 

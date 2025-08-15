@@ -100,9 +100,9 @@ public class BasicTalonFXConfig extends BasicMotorConfig {
          */
         public void fromCurrentLimits(TalonFXCurrentLimits currentLimits) {
             this.statorCurrentLimit = currentLimits.getCurrentLimit();
-            this.supplyCurrentLimit = currentLimits.getSupplyCurrentLimit();
-            this.lowerLimitTime = currentLimits.getSupplyLowerTime();
-            this.lowerCurrentLimit = currentLimits.getSupplyLowerLimit();
+            this.supplyCurrentLimit = currentLimits.supplyCurrentLimit();
+            this.lowerLimitTime = currentLimits.supplyLowerTime();
+            this.lowerCurrentLimit = currentLimits.supplyLowerLimit();
         }
 
         /**

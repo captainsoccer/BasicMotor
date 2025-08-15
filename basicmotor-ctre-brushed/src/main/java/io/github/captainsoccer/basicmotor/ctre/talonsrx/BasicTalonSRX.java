@@ -224,10 +224,10 @@ public class BasicTalonSRX extends BasicMotor {
         motorConfig.continuousCurrentLimit = currentLimits.getCurrentLimit();
 
         if (currentLimits instanceof TalonSRXCurrentLimits talonCurrentLimits &&
-                talonCurrentLimits.getPeakCurrentLimit() != 0 && talonCurrentLimits.getPeakCurrentDuration() != 0) {
+                talonCurrentLimits.peakCurrentLimit() != 0 && talonCurrentLimits.peakCurrentDuration() != 0) {
 
-            motorConfig.peakCurrentLimit = talonCurrentLimits.getPeakCurrentLimit();
-            motorConfig.peakCurrentDuration = talonCurrentLimits.getPeakCurrentDuration() * 1000; // Convert seconds to milliseconds
+            motorConfig.peakCurrentLimit = talonCurrentLimits.peakCurrentLimit();
+            motorConfig.peakCurrentDuration = talonCurrentLimits.peakCurrentDuration() * 1000; // Convert seconds to milliseconds
         } else {
             // If not talonSRX current limits, use the continuous current limit for peak current limit
             motorConfig.peakCurrentDuration = 0;

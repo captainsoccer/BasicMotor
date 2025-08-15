@@ -20,6 +20,18 @@ public class BasicTalonSRXConfig extends BasicMotorConfig {
      */
     public CurrentLimitConfig currentLimitConfig = new CurrentLimitConfig();
 
+    @Override
+    public BasicTalonSRXConfig copy() {
+        var copy = new BasicTalonSRXConfig();
+        //Transfer the base configuration
+        super.copy(copy);
+
+        copy.encoderConfig = this.encoderConfig.copy();
+        copy.currentLimitConfig = this.currentLimitConfig.copy();
+
+        return copy;
+    }
+
     /**
      * This class handles the configuration for the encoder.
      * It has encoder types specifically tailored to the TalonSRX motor controllers.
@@ -36,6 +48,22 @@ public class BasicTalonSRXConfig extends BasicMotorConfig {
          * The default value is 2048, which is common for many encoders.
          */
         public int tickPerRevolution = 2048;
+
+        /**
+         * Copies the encoder configuration.
+         * This method creates a new instance of EncoderConfig with the same values as this instance.
+         * This is useful for creating a new configuration based on an existing one without modifying the original
+         * configuration.
+         * @return A new instance of EncoderConfig with the same values as this instance.
+         */
+        public EncoderConfig copy() {
+            var copy = new BasicTalonSRXConfig.EncoderConfig();
+
+            copy.type = this.type;
+            copy.tickPerRevolution = this.tickPerRevolution;
+
+            return copy;
+        }
     }
 
     /**
@@ -69,6 +97,37 @@ public class BasicTalonSRXConfig extends BasicMotorConfig {
          */
         public TalonSRXCurrentLimits toCurrentLimits() {
             return new TalonSRXCurrentLimits(continuousCurrentLimit, peakCurrentLimit, peakCurrentDuration);
+        }
+
+        /**
+         * Copies the current limits configuration.
+         * This method creates a new instance of CurrentLimitConfig with the same values as this instance.
+         * This is useful for creating a new configuration based on an existing one without modifying the original
+         * configuration.
+         * @return A new instance of CurrentLimitConfig with the same values as this instance.
+         */
+        public CurrentLimitConfig copy() {
+            var copy = new BasicTalonSRXConfig.CurrentLimitConfig();
+
+            copy.continuousCurrentLimit = this.continuousCurrentLimit;
+            copy.peakCurrentLimit = this.peakCurrentLimit;
+            copy.peakCurrentDuration = this.peakCurrentDuration;
+
+            return copy;
+        }
+
+        /**
+         * Creates a CurrentLimitConfig from the provided TalonSRXCurrentLimits.
+         * This method converts the TalonSRXCurrentLimits to a CurrentLimitConfig.
+         * @param currentLimits The TalonSRXCurrentLimits to convert.
+         * @return A new instance of CurrentLimitConfig with the values from the provided TalonSRXCurrentLimits.
+         */
+        public static CurrentLimitConfig fromCurrentLimits(TalonSRXCurrentLimits currentLimits) {
+            var config = new BasicTalonSRXConfig.CurrentLimitConfig();
+            config.continuousCurrentLimit = currentLimits.continuousCurrentLimit();
+            config.peakCurrentLimit = currentLimits.peakCurrentLimit();
+            config.peakCurrentDuration = currentLimits.peakCurrentDuration();
+            return config;
         }
     }
 }

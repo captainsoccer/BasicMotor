@@ -354,14 +354,14 @@ public abstract class BasicSpark extends BasicMotor {
 
         if (currentLimits instanceof SparkCurrentLimits limits) {
             //if both the normal and secondary current limits are 0, do not set any current limits
-            if (limits.getCurrentLimit() == 0 && limits.getSecondaryCurrentLimit() == 0) return;
+            if (limits.getCurrentLimit() == 0 && limits.secondaryCurrentLimit() == 0) return;
 
             //if there is a secondary current limit, set it
-            if (limits.getSecondaryCurrentLimit() != 0) config.secondaryCurrentLimit(limits.getSecondaryCurrentLimit());
+            if (limits.secondaryCurrentLimit() != 0) config.secondaryCurrentLimit(limits.secondaryCurrentLimit());
 
             //if there is a free speed current limit and a stall current limit, set both
-            if (limits.getCurrentLimit() != 0 && limits.getStallCurrentLimit() != 0) {
-                config.smartCurrentLimit(limits.getStallCurrentLimit(), limits.getCurrentLimit(), limits.getFreeSpeedRPM());
+            if (limits.getCurrentLimit() != 0 && limits.stallCurrentLimit() != 0) {
+                config.smartCurrentLimit(limits.stallCurrentLimit(), limits.getCurrentLimit(), limits.freeSpeedRPM());
             }
             //if there is only free set it.
             else if (limits.getCurrentLimit() != 0) {

@@ -133,9 +133,9 @@ public class BasicSparkConfig extends BasicMotorConfig {
             var currentLimitConfig = new CurrentLimitConfig();
 
             currentLimitConfig.freeSpeedCurrentLimit = currentLimits.getCurrentLimit();
-            currentLimitConfig.stallCurrentLimit = currentLimits.getStallCurrentLimit();
-            currentLimitConfig.freeSpeedRPM = currentLimits.getFreeSpeedRPM();
-            currentLimitConfig.secondaryCurrentLimit = currentLimits.getSecondaryCurrentLimit();
+            currentLimitConfig.stallCurrentLimit = currentLimits.stallCurrentLimit();
+            currentLimitConfig.freeSpeedRPM = currentLimits.freeSpeedRPM();
+            currentLimitConfig.secondaryCurrentLimit = currentLimits.secondaryCurrentLimit();
 
             return currentLimitConfig;
         }

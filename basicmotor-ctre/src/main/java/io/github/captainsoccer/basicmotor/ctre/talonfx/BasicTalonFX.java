@@ -224,11 +224,11 @@ public class BasicTalonFX extends BasicMotor {
         currentConfig.StatorCurrentLimit = currentLimits.getCurrentLimit();
 
         if (currentLimits instanceof TalonFXCurrentLimits limits) {
-            currentConfig.SupplyCurrentLimitEnable = limits.getSupplyCurrentLimit() != 0;
+            currentConfig.SupplyCurrentLimitEnable = limits.supplyCurrentLimit() != 0;
 
-            currentConfig.SupplyCurrentLimit = limits.getSupplyCurrentLimit();
-            currentConfig.SupplyCurrentLowerLimit = limits.getSupplyLowerLimit();
-            currentConfig.SupplyCurrentLowerTime = limits.getSupplyLowerTime();
+            currentConfig.SupplyCurrentLimit = limits.supplyCurrentLimit();
+            currentConfig.SupplyCurrentLowerLimit = limits.supplyLowerLimit();
+            currentConfig.SupplyCurrentLowerTime = limits.supplyLowerTime();
         } else {
             //reports a warning if the current limits are not for a TalonFX motor controller
             DriverStation.reportWarning("Using non-TalonFX current limits on TalonFX motor controller: " + super.name, false);

@@ -6,37 +6,8 @@ import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
  * This class represents the current limits for a TalonFX motor controller.
  * It implements the {@link CurrentLimits} interface and provides specific current limits.
  */
-public class TalonFXCurrentLimits implements CurrentLimits {
-    /**
-     * The maximum current output of the motor controller (in amps).
-     * This is different from supplyCurrentLimit and will usually be higher.
-     * If the motor reaches this current limit, it will lower the output voltage to prevent exceeding this limit.
-     * If this is zero, there will be no stator current limit.
-     */
-    private final int statorCurrentLimit;
-    /**
-     * The maximum current draw of the motor controller (in amps).
-     * This is different from statorCurrentLimit and will usually be lower.
-     * If the motor draws this amount of current for more than {@link #supplyLowerTime} seconds,
-     * it will lower to {@link #supplyLowerLimit}.
-     * Use this if there are brownouts or breakers tripping.
-     * If this is zero, there will be no supply current limit.
-     */
-    private final int supplyCurrentLimit;
-    /**
-     * The time (in seconds) that the motor can stay at supply current limit before it lowers to supply lower limit.
-     * If this or {@link #supplyLowerLimit} is zero, it will be ignored.
-     */
-    private final double supplyLowerTime;
-    /**
-     * The supply lower limit.
-     * If the motor draws {@link #supplyCurrentLimit} for more than {@link #supplyLowerTime} seconds,
-     * it will lower to this current limit.
-     * This is especially useful for preventing breakers from tripping.
-     * If this or {@link #supplyLowerTime} is zero, it will be ignored.
-     */
-    private final int supplyLowerLimit;
-
+public record TalonFXCurrentLimits(int statorCurrentLimit, int supplyCurrentLimit, double supplyLowerTime,
+                                   int supplyLowerLimit) implements CurrentLimits {
     /**
      * Creates a current limit with the given values
      *
@@ -94,7 +65,8 @@ public class TalonFXCurrentLimits implements CurrentLimits {
      *
      * @return The maximum current draw of the motor controller (in amps).
      */
-    public int getSupplyCurrentLimit() {
+    @Override
+    public int supplyCurrentLimit() {
         return supplyCurrentLimit;
     }
 
@@ -104,7 +76,8 @@ public class TalonFXCurrentLimits implements CurrentLimits {
      *
      * @return The time (in seconds) that the motor can stay at supply current limit.
      */
-    public double getSupplyLowerTime() {
+    @Override
+    public double supplyLowerTime() {
         return supplyLowerTime;
     }
 
@@ -114,7 +87,8 @@ public class TalonFXCurrentLimits implements CurrentLimits {
      * @return The current the motor drops to after the supply current limit is reached for
      * supplyLowerTime.
      */
-    public int getSupplyLowerLimit() {
+    @Override
+    public int supplyLowerLimit() {
         return supplyLowerLimit;
     }
 }

@@ -8,7 +8,7 @@ import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
  * It has specific current limits offered by the Spark Base motor controller.
  * Use this for Spark Max and Spark Flex motor controllers instead of the generic {@link CurrentLimits} interface.
  */
-public class CurrentLimitsSparkBase implements CurrentLimits {
+public class SparkCurrentLimits implements CurrentLimits {
 
     /**
      * The maximum current output of the motor controller (in amps) when not in stall.
@@ -61,7 +61,7 @@ public class CurrentLimitsSparkBase implements CurrentLimits {
      * @param secondaryCurrentLimit The secondary current limit of the motor controller (in amps).
      *                              When the motor reaches this current limit, it will stop for a short time.
      */
-    public CurrentLimitsSparkBase(int freeSpeedCurrentLimit, int stallCurrentLimit, int freeSpeedRPM, int secondaryCurrentLimit) {
+    public SparkCurrentLimits(int freeSpeedCurrentLimit, int stallCurrentLimit, int freeSpeedRPM, int secondaryCurrentLimit) {
 
         if (freeSpeedCurrentLimit < 0) {
             throw new IllegalArgumentException("Free speed current limit must be non-negative.");
@@ -99,7 +99,7 @@ public class CurrentLimitsSparkBase implements CurrentLimits {
      *                              This value is in the motors rotations per minute (RPM), not the mechanisms rotations per minute (RPM).
      *                              If this value is zero, the motor will linearly interpolate between the free speed current limit and the stall current limit.
      */
-    public CurrentLimitsSparkBase(int freeSpeedCurrentLimit, int stallCurrentLimit, int freeSpeedRPM) {
+    public SparkCurrentLimits(int freeSpeedCurrentLimit, int stallCurrentLimit, int freeSpeedRPM) {
         this(freeSpeedCurrentLimit, stallCurrentLimit, freeSpeedRPM, 0);
     }
 
@@ -112,7 +112,7 @@ public class CurrentLimitsSparkBase implements CurrentLimits {
      *                              When the motor reaches this current limit, it will stop for a short time.
      *                              If this value is zero, the motor will not limit the current output.
      */
-    public CurrentLimitsSparkBase(int currentLimit, int secondaryCurrentLimit) {
+    public SparkCurrentLimits(int currentLimit, int secondaryCurrentLimit) {
         this(currentLimit, 0, 0, secondaryCurrentLimit);
     }
 
@@ -121,7 +121,7 @@ public class CurrentLimitsSparkBase implements CurrentLimits {
      *
      * @param currentLimit The maximum current output of the motor controller (in amps).
      */
-    public CurrentLimitsSparkBase(int currentLimit) {
+    public SparkCurrentLimits(int currentLimit) {
         this(currentLimit, 0, 0, 0);
     }
 

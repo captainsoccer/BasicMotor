@@ -1,4 +1,4 @@
-package io.github.captainsoccer.basicmotor.ctre.victorspx;
+package io.github.captainsoccer.basicmotor.ctre;
 
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;

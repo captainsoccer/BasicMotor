@@ -11,7 +11,7 @@ import io.github.captainsoccer.basicmotor.BasicMotorConfig;
  * See the <a href="https://github.com/captainsoccer/BasicMotor/wiki/Usage-Spark-Base">wiki</a>
  * for more information on how to use this class.
  */
-public class BasicSparkBaseConfig extends BasicMotorConfig {
+public class BasicSparkConfig extends BasicMotorConfig {
 
     /**
      * The current limit configuration for the spark base motor controller.
@@ -52,8 +52,8 @@ public class BasicSparkBaseConfig extends BasicMotorConfig {
      * @return A new BasicSparkBaseConfig object with the same values as this instance
      */
     @Override
-    public BasicSparkBaseConfig copy() {
-        BasicSparkBaseConfig copy = new BasicSparkBaseConfig();
+    public BasicSparkConfig copy() {
+        BasicSparkConfig copy = new BasicSparkConfig();
 
         // Copy the basic motor configuration
         super.copy(copy);
@@ -101,8 +101,8 @@ public class BasicSparkBaseConfig extends BasicMotorConfig {
          *
          * @return The current limits of the motor controller
          */
-        public CurrentLimitsSparkBase getCurrentLimits() {
-            return new CurrentLimitsSparkBase(
+        public SparkCurrentLimits getCurrentLimits() {
+            return new SparkCurrentLimits(
                     freeSpeedCurrentLimit, stallCurrentLimit, freeSpeedRPM, secondaryCurrentLimit);
         }
 
@@ -129,7 +129,7 @@ public class BasicSparkBaseConfig extends BasicMotorConfig {
          * @param currentLimits The CurrentLimitsSparkBase to convert
          * @return A new CurrentLimitConfig object with the values from the CurrentLimitsSparkBase
          */
-        public static CurrentLimitConfig fromCurrentLimits(CurrentLimitsSparkBase currentLimits) {
+        public static CurrentLimitConfig fromCurrentLimits(SparkCurrentLimits currentLimits) {
             var currentLimitConfig = new CurrentLimitConfig();
 
             currentLimitConfig.freeSpeedCurrentLimit = currentLimits.getCurrentLimit();
@@ -171,7 +171,7 @@ public class BasicSparkBaseConfig extends BasicMotorConfig {
          * Change this to true if you want to use an external encoder.
          * If the encoder is a through-bore encoder and is connected to a spark flex motor controller,
          * you can use the absolute encoder to reset the relative encoder then use the higher quality relative encoder.
-         * To do that, set this flag to true and configure the absolute encoder in {@link BasicSparkBaseConfig#absoluteEncoderConfig}.
+         * To do that, set this flag to true and configure the absolute encoder in {@link BasicSparkConfig#absoluteEncoderConfig}.
          */
         public boolean useExternalEncoder = false;
 

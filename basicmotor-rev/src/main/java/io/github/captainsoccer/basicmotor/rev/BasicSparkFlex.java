@@ -6,7 +6,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
-import io.github.captainsoccer.basicmotor.rev.BasicSparkBaseConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
+import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
 
 
 /**
@@ -15,7 +15,7 @@ import io.github.captainsoccer.basicmotor.rev.BasicSparkBaseConfig.AbsoluteEncod
  * functionality specific to the Spark Flex motor controller.
  * This class assumes that the motor is brushless.
  */
-public class BasicSparkFlex extends BasicSparkBase {
+public class BasicSparkFlex extends BasicSpark {
     /**
      * Creates a basic spark flex motor controller with the given gains, id, name, gear ratio,
      *
@@ -81,9 +81,9 @@ public class BasicSparkFlex extends BasicSparkBase {
      * @param config The configuration for the motor controller.
      */
     public BasicSparkFlex(BasicMotorConfig config) {
-        super(new SparkFlex(config.motorConfig.id, BasicSparkBase.getMotorType(config)), new SparkFlexConfig(), config);
+        super(new SparkFlex(config.motorConfig.id, BasicSpark.getMotorType(config)), new SparkFlexConfig(), config);
 
-        if (config instanceof BasicSparkBaseConfig sparkBaseConfig) {
+        if (config instanceof BasicSparkConfig sparkBaseConfig) {
             //if the user configured to use an external encoder with an absolute encoder,
             // then we will use the external encoder with the absolute encoder
             if (sparkBaseConfig.externalEncoderConfig.useExternalEncoder

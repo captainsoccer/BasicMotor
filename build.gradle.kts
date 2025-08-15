@@ -22,12 +22,11 @@ subprojects {
     apply(plugin = "maven-publish")
 
     // Group (Maven groupId). For JitPack publishing, you can set this to "com.github.captainsoccer".
-    group = (rootProject.findProperty("GROUP") as String?)
-        ?: "io.github.captainsoccer"
+    group = "com.github.captainsoccer"
 
     // Version: by default each module should set its own version in its own build.gradle.kts.
     // If you want a fallback (for local dev), keep this:
-    version = (findProperty("DEFAULT_VERSION") as String?) ?: "0.0.0-SNAPSHOT"
+    version = "3.0.0"
 
     dependencies{
         // WPILib dependencies

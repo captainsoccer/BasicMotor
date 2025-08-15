@@ -24,7 +24,7 @@ dependencies {
     implementation(project(":basicmotor-core"))
 
     // RevLib dependencies
-    implementation(("com.revrobotics.frc:REVLib-java:${revLibVersion}"))
+    compileOnly(("com.revrobotics.frc:REVLib-java:${revLibVersion}"))
 }
 
 tasks.test {
@@ -38,8 +38,8 @@ publishing {
             artifactId = "basicmotor-rev"
 
             pom {
-                name.set("CTRE motor controllers for BasicMotor")
-                description.set("CTRE motor controller implementations for the BasicMotor ecosystem.")
+                name.set("Rev CAN motor controllers for BasicMotor")
+                description.set("Rev CAN motor controller implementations for the BasicMotor ecosystem.")
                 url.set("https://github.com/captainsoccer/BasicMotor")
 
                 licenses {

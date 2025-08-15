@@ -9,7 +9,7 @@ import io.github.captainsoccer.basicmotor.measurements.Measurements;
  * A relative encoder is the one found built-in to rev brushless motors.
  * Also, it can be the through bore relative encoder.
  */
-public class MeasurementsREVRelative extends Measurements {
+public class RevRelativeEncoder extends Measurements {
     /**
      * The relative encoder used for taking measurements.
      */
@@ -40,7 +40,7 @@ public class MeasurementsREVRelative extends Measurements {
      *                       This will be desired units per rotation.
      *                       More info at {@link BasicMotorConfig.MotorConfig#unitConversion}.
      */
-    public MeasurementsREVRelative(RelativeEncoder encoder, double gearRatio, double unitConversion) {
+    public RevRelativeEncoder(RelativeEncoder encoder, double gearRatio, double unitConversion) {
         super(gearRatio, unitConversion);
         this.encoder = encoder;
     }

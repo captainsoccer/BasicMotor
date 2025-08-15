@@ -6,7 +6,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
-import io.github.captainsoccer.basicmotor.rev.BasicSparkBaseConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
+import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
 
 /**
  * This class represents a basic spark max motor controller.
@@ -14,7 +14,7 @@ import io.github.captainsoccer.basicmotor.rev.BasicSparkBaseConfig.AbsoluteEncod
  * functionality specific to the Spark Max motor controller.
  * This class assumes that the motor is brushless.
  */
-public class BasicSparkMAX extends BasicSparkBase {
+public class BasicSparkMAX extends BasicSpark {
     /**
      * Creates a basic spark max motor controller with the given gains, id, name, gear ratio,
      *
@@ -81,9 +81,9 @@ public class BasicSparkMAX extends BasicSparkBase {
      * @param config The configuration for the motor controller.
      */
     public BasicSparkMAX(BasicMotorConfig config) {
-        super(new SparkMax(config.motorConfig.id, BasicSparkBase.getMotorType(config)), new SparkMaxConfig(), config);
+        super(new SparkMax(config.motorConfig.id, BasicSpark.getMotorType(config)), new SparkMaxConfig(), config);
 
-        if (config instanceof BasicSparkBaseConfig sparkBaseConfig) {
+        if (config instanceof BasicSparkConfig sparkBaseConfig) {
             // checks if both absolute and external encoders are being used
             if (sparkBaseConfig.externalEncoderConfig.useExternalEncoder
                     && sparkBaseConfig.absoluteEncoderConfig.useAbsoluteEncoder) {

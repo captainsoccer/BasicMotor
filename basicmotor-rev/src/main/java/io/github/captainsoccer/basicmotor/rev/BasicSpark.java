@@ -19,16 +19,16 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import edu.wpi.first.wpilibj.DriverStation;
-import io.github.captainsoccer.basicmotor.rev.encoders.MeasurementsREVAbsolute;
-import io.github.captainsoccer.basicmotor.rev.encoders.MeasurementsREVRelative;
-import io.github.captainsoccer.basicmotor.rev.BasicSparkBaseConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
+import io.github.captainsoccer.basicmotor.rev.encoders.RevAbsoluteEncoder;
+import io.github.captainsoccer.basicmotor.rev.encoders.RevRelativeEncoder;
+import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
 
 /**
  * A class that includes common functionality for Spark Base motor controllers
  * (e.g., SparkFlex, SparkMax, etc.).
  * This class assumes that the motor is brushless.
  */
-public abstract class BasicSparkBase extends BasicMotor {
+public abstract class BasicSpark extends BasicMotor {
     /**
      * The spark base motor instance (SparkFlex, SparkMax, etc.)
      * This is provided by the derived class.
@@ -66,7 +66,7 @@ public abstract class BasicSparkBase extends BasicMotor {
      * @param unitConversion The conversion factor for the motor's position units.
      *                       This will be multiplied by the motor's rotation to get the position with the desired units.
      */
-    public BasicSparkBase(
+    public BasicSpark(
             SparkBase motor,
             SparkBaseConfig config,
             ControllerGains gains,
@@ -84,7 +84,7 @@ public abstract class BasicSparkBase extends BasicMotor {
         configurePeriodicFrames(MotorManager.ControllerLocation.MOTOR.getHZ());
 
         defaultMeasurements = motor.getMotorType() == SparkLowLevel.MotorType.kBrushless ?
-                new MeasurementsREVRelative(motor.getEncoder(), gearRatio, unitConversion) :
+                new RevRelativeEncoder(motor.getEncoder(), gearRatio, unitConversion) :
                 new EmptyMeasurements();
 
     }
@@ -98,7 +98,7 @@ public abstract class BasicSparkBase extends BasicMotor {
      *                    This should be an empty configuration that will be applied to the motor controller.
      * @param config      The configuration of the motor controller.
      */
-    public BasicSparkBase(SparkBase motor, SparkBaseConfig motorConfig, BasicMotorConfig config) {
+    public BasicSpark(SparkBase motor, SparkBaseConfig motorConfig, BasicMotorConfig config) {
         super(config);
 
         this.motor = motor;
@@ -112,15 +112,15 @@ public abstract class BasicSparkBase extends BasicMotor {
         double gearRatio = config.motorConfig.gearRatio;
         double unitConversion = config.motorConfig.unitConversion;
 
-        if (!(config instanceof BasicSparkBaseConfig sparkBaseConfig)) {
+        if (!(config instanceof BasicSparkConfig sparkBaseConfig)) {
             DriverStation.reportWarning("not using specific Spark Base config for motor: " + name, false);
-            defaultMeasurements = new MeasurementsREVRelative(motor.getEncoder(), gearRatio, unitConversion);
+            defaultMeasurements = new RevRelativeEncoder(motor.getEncoder(), gearRatio, unitConversion);
             return;
         }
 
         var primaryEncoderConfig = sparkBaseConfig.primaryEncoderConfig;
         defaultMeasurements = primaryEncoderConfig.usePrimaryEncoder ?
-                new MeasurementsREVRelative(
+                new RevRelativeEncoder(
                         motor.getEncoder(),
                         gearRatio,
                         unitConversion) :
@@ -171,7 +171,7 @@ public abstract class BasicSparkBase extends BasicMotor {
      * @return The type of motor connected to the spark base motor controller.
      */
     protected static SparkLowLevel.MotorType getMotorType(BasicMotorConfig motorConfig) {
-        if (!(motorConfig instanceof BasicSparkBaseConfig sparkBaseConfig)) {
+        if (!(motorConfig instanceof BasicSparkConfig sparkBaseConfig)) {
             DriverStation.reportError("motor: " + motorConfig.motorConfig.name + " not using a sparkBaseConfig, defaulting to a brushless motor", false);
             return SparkLowLevel.MotorType.kBrushless;
         }
@@ -352,7 +352,7 @@ public abstract class BasicSparkBase extends BasicMotor {
     @Override
     public void setCurrentLimits(CurrentLimits currentLimits) {
 
-        if (currentLimits instanceof CurrentLimitsSparkBase limits) {
+        if (currentLimits instanceof SparkCurrentLimits limits) {
             //if both the normal and secondary current limits are 0, do not set any current limits
             if (limits.getCurrentLimit() == 0 && limits.getSecondaryCurrentLimit() == 0) return;
 
@@ -465,7 +465,7 @@ public abstract class BasicSparkBase extends BasicMotor {
 
     @Override
     protected void setMotorFollow(BasicMotor master, boolean inverted) {
-        var motor = (BasicSparkBase) master;
+        var motor = (BasicSpark) master;
 
         config.follow(motor.motor, inverted);
         applyConfig();
@@ -548,7 +548,7 @@ public abstract class BasicSparkBase extends BasicMotor {
         // sets the configuration for the primary encoder
         config.encoder.countsPerRevolution(countsPerRevolution);
 
-        var measurements = new MeasurementsREVRelative(
+        var measurements = new RevRelativeEncoder(
                 motor.getEncoder(), gearRatio, unitConversion);
 
         setMeasurements(measurements, false);
@@ -594,7 +594,7 @@ public abstract class BasicSparkBase extends BasicMotor {
         applyConfig();
 
         // set the measurements to the absolute encoder measurements
-        setMeasurements(new MeasurementsREVAbsolute(motor.getAbsoluteEncoder(), 1), false);
+        setMeasurements(new RevAbsoluteEncoder(motor.getAbsoluteEncoder(), 1), false);
     }
 
     /**
@@ -686,7 +686,7 @@ public abstract class BasicSparkBase extends BasicMotor {
         applyConfig();
 
         // set the measurements to the absolute encoder measurements
-        setMeasurements(new MeasurementsREVRelative(getExternalEncoder(), mechanismToSensorRatio, unitConversion), false);
+        setMeasurements(new RevRelativeEncoder(getExternalEncoder(), mechanismToSensorRatio, unitConversion), false);
     }
 
     /**

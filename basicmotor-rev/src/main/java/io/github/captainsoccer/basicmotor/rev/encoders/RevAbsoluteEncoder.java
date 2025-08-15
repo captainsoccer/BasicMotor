@@ -9,7 +9,7 @@ import io.github.captainsoccer.basicmotor.measurements.Measurements;
  * It extends the Measurements class and implements methods to update
  * position, velocity, and acceleration based on the encoder readings.
  */
-public class MeasurementsREVAbsolute extends Measurements {
+public class RevAbsoluteEncoder extends Measurements {
     /**
      * The absolute encoder used for taking measurements
      */
@@ -37,7 +37,7 @@ public class MeasurementsREVAbsolute extends Measurements {
      *                       This will be desired units per rotation.
      *                       See {@link BasicMotorConfig.MotorConfig#unitConversion} for more details.
      */
-    public MeasurementsREVAbsolute(AbsoluteEncoder encoder, double unitConversion) {
+    public RevAbsoluteEncoder(AbsoluteEncoder encoder, double unitConversion) {
         super(1, unitConversion);
         this.encoder = encoder;
     }

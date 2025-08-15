@@ -1,16 +1,16 @@
 package frc.robot.subsystems.Drivetrain;
 
-import com.basicMotor.BasicMotor;
-import com.basicMotor.configuration.BasicMotorConfig;
-import com.basicMotor.configuration.BasicSparkBaseConfig;
-import com.basicMotor.configuration.BasicMotorConfig.FeedForwardConfig;
-import com.basicMotor.configuration.BasicMotorConfig.PIDConfig;
-import com.basicMotor.gains.ControllerFeedForwards;
-import com.basicMotor.gains.PIDGains;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
+import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig.FeedForwardConfig;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig.PIDConfig;
+import io.github.captainsoccer.basicmotor.gains.ControllerFeedForwards;
+import io.github.captainsoccer.basicmotor.gains.PIDGains;
+import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig;
 
 /**
  * Constants for the tank drive system.
@@ -71,7 +71,7 @@ public enum TankConstants {
      * @return A BasicMotorConfig object containing the common motor configuration.
      */
     private static BasicMotorConfig createCommonMotorConfig(){
-        var config = new BasicSparkBaseConfig();
+        var config = new BasicSparkConfig();
 
         config.motorConfig.gearRatio = GEAR_RATIO;
         config.motorConfig.unitConversion = WHEEL_RADIUS_METERS * 2 * Math.PI; // Convert wheel radius to circumference
@@ -153,7 +153,7 @@ public enum TankConstants {
         leadMotorConfig.simulationConfig.kV = feedForwards.getSetpointFeedForward();
         leadMotorConfig.simulationConfig.kA = kA;
 
-        followerMotorConfig = new BasicSparkBaseConfig();
+        followerMotorConfig = new BasicSparkConfig();
 
         followerMotorConfig.motorConfig.id = followID;
         followerMotorConfig.motorConfig.name = this.name() + " Follower Motor";

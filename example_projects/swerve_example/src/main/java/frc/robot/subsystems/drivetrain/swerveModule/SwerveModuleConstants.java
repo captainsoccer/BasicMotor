@@ -6,17 +6,17 @@ package frc.robot.subsystems.drivetrain.swerveModule;
 
 import java.util.ArrayList;
 
-import com.basicMotor.BasicMotor;
-import com.basicMotor.configuration.BasicMotorConfig;
-import com.basicMotor.configuration.BasicSparkBaseConfig;
-import com.basicMotor.configuration.BasicTalonFXConfig;
-import com.basicMotor.configuration.BasicMotorConfig.FeedForwardConfig;
-import com.basicMotor.configuration.BasicMotorConfig.PIDConfig;
-import com.basicMotor.gains.ControllerConstraints;
-import com.basicMotor.gains.ControllerFeedForwards;
-import com.basicMotor.gains.PIDGains;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.BasicMotor.IdleMode;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig.FeedForwardConfig;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig.PIDConfig;
+import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig;
+import io.github.captainsoccer.basicmotor.ctre.talonfx.BasicTalonFXConfig;
+import io.github.captainsoccer.basicmotor.gains.ControllerConstraints;
+import io.github.captainsoccer.basicmotor.gains.ControllerFeedForwards;
+import io.github.captainsoccer.basicmotor.gains.PIDGains;
 
 /**
  * Constants for the swerve modules.
@@ -96,7 +96,7 @@ public enum SwerveModuleConstants {
 
         config.motorConfig.gearRatio = DRIVE_GEAR_RATIO;
         config.motorConfig.unitConversion = 2 * Math.PI * WHEEL_RADIUS_METERS;
-        config.motorConfig.idleMode = BasicMotor.IdleMode.BRAKE;
+        config.motorConfig.idleMode = IdleMode.BRAKE;
         config.motorConfig.motorType = DCMotor.getKrakenX60(1);
 
         config.currentLimitConfig.statorCurrentLimit = DRIVE_CURRENT_LIMIT;
@@ -107,10 +107,10 @@ public enum SwerveModuleConstants {
 
     // Common configurations for the steer motor
     private static BasicMotorConfig getSteerMotorCommonConfig() {
-        var config = new BasicSparkBaseConfig();
+        var config = new BasicSparkConfig();
 
         config.motorConfig.gearRatio = 12.75; // Adjust based on your gear ratio
-        config.motorConfig.idleMode = BasicMotor.IdleMode.BRAKE;
+        config.motorConfig.idleMode = IdleMode.BRAKE;
         config.motorConfig.motorType = DCMotor.getNEO(1); // Adjust based on your motor type
 
         config.currentLimitConfig.freeSpeedCurrentLimit = 40; // Adjust based on your motor's current limit

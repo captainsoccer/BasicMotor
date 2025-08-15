@@ -10,12 +10,12 @@
   "jsonUrl": "https://captainsoccer.github.io/BasicMotor/BasicMotor.json",
   "javaDependencies": [
     {
-      "groupId": "com.github.captainsoccer",
+      "groupId": "com.github.captainsoccer.BasicMotor",
       "artifactId": "basicmotor-ctre",
       "version": "v3.0.0"
     },
     {
-      "groupId": "com.github.captainsoccer",
+      "groupId": "com.github.captainsoccer.BasicMotor",
       "artifactId": "basicmotor-core",
       "version": "v3.0.0"
     }

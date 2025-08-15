@@ -38,6 +38,17 @@ subprojects {
         add("compileOnly", "us.hebi.quickbuf:quickbuf-runtime:1.3.3")
     }
 
+    plugins.withType<JavaPlugin> {
+        the<JavaPluginExtension>().sourceSets.configureEach {
+            java {
+                exclude("example_projects/**")
+            }
+            resources {
+                exclude("example_projects/**")
+            }
+        }
+    }
+
     the<JavaPluginExtension>().apply {
         toolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
         withSourcesJar()

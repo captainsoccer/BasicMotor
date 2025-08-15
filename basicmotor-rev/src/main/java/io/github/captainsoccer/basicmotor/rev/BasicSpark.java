@@ -243,7 +243,7 @@ public abstract class BasicSpark extends BasicMotor {
             // set the motor output to a voltage
             case VOLTAGE -> motor.setVoltage(setpoint);
             // set the motor output to a duty cycle
-            case PRECENT_OUTPUT -> motor.set(setpoint);
+            case PERCENT_OUTPUT -> motor.set(setpoint);
             // set the motor output to a position
             case POSITION, PROFILED_POSITION -> setClosedLoopOutput(
                     setpoint, feedForward, SparkBase.ControlType.kPosition);

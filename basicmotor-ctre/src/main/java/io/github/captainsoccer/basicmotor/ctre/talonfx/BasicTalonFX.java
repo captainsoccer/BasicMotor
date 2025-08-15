@@ -291,7 +291,7 @@ public class BasicTalonFX extends BasicMotor {
 
                     case VOLTAGE -> motor.setControl(voltageRequest.withOutput(setpoint));
 
-                    case PRECENT_OUTPUT -> motor.setControl(dutyCycleRequest.withOutput(setpoint));
+                    case PERCENT_OUTPUT -> motor.setControl(dutyCycleRequest.withOutput(setpoint));
 
                     case STOP -> {
                         stopMotorOutput();

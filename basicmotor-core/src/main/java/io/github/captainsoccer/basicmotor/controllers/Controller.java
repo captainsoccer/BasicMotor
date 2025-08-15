@@ -333,7 +333,7 @@ public class Controller implements Sendable {
          * Controls the duty cycle of the motor output. (a fraction of the input voltage).
          * Known as (precent output and duty cycle output)
          */
-        PRECENT_OUTPUT(false, false),
+        PERCENT_OUTPUT(false, false),
         /**
          * Controls the motor with a closed loop position control.
          * Needs pid gains to be set in the controller gains.

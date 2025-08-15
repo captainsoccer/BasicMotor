@@ -300,7 +300,7 @@ public class BasicTalonSRX extends BasicMotor {
 
             case STOP -> stopMotorOutput();
 
-            case PRECENT_OUTPUT ->  motor.set(TalonSRXControlMode.PercentOutput, setpoint);
+            case PERCENT_OUTPUT ->  motor.set(TalonSRXControlMode.PercentOutput, setpoint);
 
             case CURRENT, TORQUE -> {
                 DriverStation.reportError("motor: " + super.name + " does not support current or torque control", false);

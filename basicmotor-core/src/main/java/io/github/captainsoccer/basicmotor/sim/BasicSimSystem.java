@@ -124,7 +124,7 @@ public abstract class BasicSimSystem extends BasicMotor {
         switch (mode) {
           case STOP -> 0;
           //converts duty cycle to voltage output
-          case PRECENT_OUTPUT -> setpoint * RobotController.getBatteryVoltage();
+          case PERCENT_OUTPUT -> setpoint * RobotController.getBatteryVoltage();
           default -> setpoint;
         };
 

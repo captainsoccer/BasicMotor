@@ -156,7 +156,7 @@ public class BasicSparkConfig extends BasicMotorConfig {
 
         /**
          * The number of counts per revolution of the primary encoder.
-         * This defaults to 0, which means it is a brushless motor with a knwon encoder.
+         * This defaults to 0, which means it is a brushless motor with a known encoder.
          * Change this only if you are used a brushed motor and have connected an encoder to the encoder port.
          */
         public int countsPerRevolution = 0;

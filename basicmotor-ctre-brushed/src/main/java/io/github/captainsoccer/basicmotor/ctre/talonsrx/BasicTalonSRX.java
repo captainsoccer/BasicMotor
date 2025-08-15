@@ -272,11 +272,11 @@ public class BasicTalonSRX extends BasicMotor {
 
     @Override
     protected void setMotorFollow(BasicMotor master, boolean inverted) {
-        BasicTalonSRX maserMotor = (BasicTalonSRX) master;
+        BasicTalonSRX masterMotor = (BasicTalonSRX) master;
 
-        motor.setInverted(inverted != maserMotor.motor.getInverted());
+        motor.setInverted(inverted != masterMotor.motor.getInverted());
 
-        motor.follow(maserMotor.motor);
+        motor.follow(masterMotor.motor);
     }
 
     @Override

@@ -143,5 +143,13 @@ tasks.register("syncDocsVendordepsIntoExamples") {
     }
 }
 
-// Make other tasks depend on it (so it always runs first)
-tasks.named("build").configure { dependsOn("syncVendordepsVersion") }
+tasks.register("ReleaseBuild"){
+    group = "release"
+    description = "Run version syncing, then perform a normal build suitable for releases."
+    // Add any sync tasks you want to run BEFORE building:
+    dependsOn(
+        "syncVendordepsVersion",
+        "syncDocsVendordepsIntoExamples",
+        "build"
+    )
+}

@@ -1,9 +1,17 @@
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+
 plugins {
     base // keeps root free of Java source; provides clean/assemble tasks
 }
 
-val wpilibVersion = "2025.3.2"
-val advantageKitVersion = "4.1.2"
+version = providers.gradleProperty("libVersion").get()
+val versionStr = "v$version"
+group   = providers.gradleProperty("group").get()
+
+val wpilibVersion = providers.gradleProperty("wpilibVersion").get()
+val advantageKitVersion = providers.gradleProperty("advantageKitVersion").get()
+
 
 // ---- Common repositories for every module ----
 allprojects {
@@ -15,6 +23,41 @@ allprojects {
     }
 }
 
+tasks.register("syncVendordepsVersion") {
+    group = "release"
+    description = "Updates the .version in all vendordeps/*.json"
+    doLast {
+        val dir = file("docs")
+        if (!dir.exists()) return@doLast
+        dir.listFiles { f -> f.name.endsWith(".json") }?.forEach { f ->
+            val obj = JsonSlurper().parse(f) as Map<*, *>
+            val mutable = obj.toMutableMap()
+
+            // 1) set the top-level version field
+            mutable["version"] = version
+
+            // 2) update nested dependency versions
+            fun bumpList(key: String) {
+                val list = (mutable[key] as? List<*>)?.map { it as Map<*, *> } ?: return
+                val newList = list.map { dep ->
+                    val dm = dep.toMutableMap()
+                    if (dm["version"] is String) dm["version"] = versionStr
+                    dm
+                }
+                mutable[key] = newList
+            }
+            bumpList("javaDependencies")
+
+            // 3) write back (pretty-printed, trailing newline)
+            f.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(mutable)) + "\n")
+            println("Updated ${f.name} -> version=$version")
+        }
+    }
+}
+
+// Make other tasks depend on it (so it always runs first)
+tasks.named("build").configure { dependsOn("syncVendordepsVersion") }
+
 // ---- Shared config for all subprojects (modules) ----
 subprojects {
     // Most modules will be Java libraries published somewhere
@@ -22,11 +65,10 @@ subprojects {
     apply(plugin = "maven-publish")
 
     // Group (Maven groupId). For JitPack publishing, you can set this to "com.github.captainsoccer".
-    group = "com.github.captainsoccer"
-
+    group = rootProject.group
     // Version: by default each module should set its own version in its own build.gradle.kts.
     // If you want a fallback (for local dev), keep this:
-    version = "3.0.0"
+    version = rootProject.version
 
     dependencies{
         // WPILib dependencies

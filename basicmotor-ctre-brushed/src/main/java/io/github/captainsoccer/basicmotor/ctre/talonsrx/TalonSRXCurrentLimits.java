@@ -2,6 +2,11 @@ package io.github.captainsoccer.basicmotor.ctre.talonsrx;
 
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
 
+/**
+ * This class represents the current limits for a TalonSRX motor controller.
+ * It implements the {@link CurrentLimits} interface and provides specific current limits.
+ * Use this for TalonSRX motor controllers instead of the generic {@link CurrentLimits}
+ */
 public record TalonSRXCurrentLimits(int continuousCurrentLimit, int peakCurrentLimit,
                                     int peakCurrentDuration) implements CurrentLimits {
     /**

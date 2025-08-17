@@ -26,9 +26,12 @@ jobs:
   jitpack-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger JitPack build
+      - name: Trigger JitPack build for this tag
+        env:
+          TAG: ${{ github.event.release.tag_name }}
         run: |
-          curl -s "https://jitpack.io/com/github/captainsoccer/BasicMotor/${GITHUB_REF_NAME}/build.log" \
+          set -euo pipefail
+          curl --silent --show-error --globoff \
+            "https://jitpack.io/com/github/captainsoccer/BasicMotor/${TAG}/build.log" \
             -o jitpack-build.log
-          echo "JitPack log saved to jitpack-build.log"
-          head -n 50 jitpack-build.log
+          head -n 50 jitpack-build.log || true

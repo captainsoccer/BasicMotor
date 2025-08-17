@@ -143,12 +143,15 @@ tasks.register("syncDocsVendordepsIntoExamples") {
     }
 }
 
+tasks.named("syncDocsVendordepsIntoExamples") {
+    dependsOn("syncVendordepsVersion")
+}
+
 tasks.register("ReleaseBuild"){
     group = "release"
     description = "Run version syncing, then perform a normal build suitable for releases."
     // Add any sync tasks you want to run BEFORE building:
     dependsOn(
-        "syncVendordepsVersion",
         "syncDocsVendordepsIntoExamples",
         "build"
     )

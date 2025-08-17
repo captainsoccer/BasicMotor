@@ -1,26 +1,32 @@
 {
-  "fileName": "BasicMotor-Ctre.json",
-  "name": "BasicMotor Ctre",
-  "version": "f6f347e875",
-  "uuid": "84127b43-d98f-469e-bab8-92cd98af47b5",
-  "frcYear": "2025",
-  "mavenUrls": [
-    "https://jitpack.io"
-  ],
-  "jsonUrl": "https://captainsoccer.github.io/BasicMotor/BasicMotor.json",
-  "javaDependencies": [
-    {
-      "groupId": "com.github.captainsoccer.BasicMotor",
-      "artifactId": "basicmotor-ctre",
-      "version": "f6f347e875"
-    },
-    {
-      "groupId": "com.github.captainsoccer.BasicMotor",
-      "artifactId": "basicmotor-core",
-      "version": "f6f347e875"
-    }
-  ],
-  "jniDependencies": [],
-  "nativeDependencies": [],
-  "cppDependencies": []
+    "fileName": "BasicMotor-Ctre.json",
+    "name": "BasicMotor Ctre",
+    "version": "3.1.0-beta",
+    "uuid": "84127b43-d98f-469e-bab8-92cd98af47b5",
+    "frcYear": "2025",
+    "mavenUrls": [
+        "https://jitpack.io"
+    ],
+    "jsonUrl": "https://captainsoccer.github.io/BasicMotor/BasicMotor.json",
+    "javaDependencies": [
+        {
+            "groupId": "com.github.captainsoccer.BasicMotor",
+            "artifactId": "basicmotor-ctre",
+            "version": "v3.1.0-beta"
+        },
+        {
+            "groupId": "com.github.captainsoccer.BasicMotor",
+            "artifactId": "basicmotor-core",
+            "version": "v3.1.0-beta"
+        }
+    ],
+    "jniDependencies": [
+        
+    ],
+    "nativeDependencies": [
+        
+    ],
+    "cppDependencies": [
+        
+    ]
 }

@@ -1,5 +1,7 @@
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 plugins {
     base // keeps root free of Java source; provides clean/assemble tasks
@@ -52,6 +54,52 @@ tasks.register("syncVendordepsVersion") {
             f.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(mutable)) + "\n")
             println("Updated ${f.name} -> version=$version")
         }
+    }
+}
+
+tasks.register("syncDocsVendordepsIntoExamples") {
+    group = "release"
+    description = "Copy vendordep JSONs from /docs into example projects if names match"
+
+    doLast {
+        val docsDir = file("docs")
+        val examplesRoot = file("example_projects")
+
+        if (!docsDir.exists() || !examplesRoot.exists()) {
+            println("No docs/ or template_projects/ directory found.")
+            return@doLast
+        }
+
+        val docsJsons = docsDir.listFiles { f -> f.isFile && f.extension == "json" }?.toList().orEmpty()
+        if (docsJsons.isEmpty()) {
+            println("No vendordep JSON files found in docs/.")
+            return@doLast
+        }
+
+        var replaced = 0
+        var skipped = 0
+
+        examplesRoot.listFiles { f -> f.isDirectory }?.forEach { example ->
+            val vendordepsDir = File(example, "vendordeps")
+            if (!vendordepsDir.exists()) return@forEach
+
+            docsJsons.forEach { src ->
+                val dest = File(vendordepsDir, src.name)
+                if (dest.exists()) {
+                    // only replace if content differs
+                    val same = src.readBytes().contentEquals(dest.readBytes())
+                    if (same) {
+                        skipped++
+                    } else {
+                        Files.copy(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                        println("Updated ${dest.relativeTo(rootDir)} from docs/${src.name}")
+                        replaced++
+                    }
+                }
+            }
+        }
+
+        println("Sync complete. Replaced $replaced file(s), skipped $skipped unchanged file(s).")
     }
 }
 

@@ -22,3 +22,13 @@ jobs:
           files: |
             dist/*.zip
             docs/*.json
+
+  jitpack-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger JitPack build
+        run: |
+          curl -s "https://jitpack.io/com/github/captainsoccer/BasicMotor/${GITHUB_REF_NAME}/build.log" \
+            -o jitpack-build.log
+          echo "JitPack log saved to jitpack-build.log"
+          head -n 50 jitpack-build.log

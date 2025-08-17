@@ -25,6 +25,46 @@ allprojects {
     }
 }
 
+// ---- Shared config for all subprojects (modules) ----
+subprojects {
+    // Most modules will be Java libraries published somewhere
+    apply(plugin = "java-library")
+    apply(plugin = "maven-publish")
+
+    // Group (Maven groupId). For JitPack publishing, you can set this to "com.github.captainsoccer".
+    group = rootProject.group
+    // Version: by default each module should set its own version in its own build.gradle.kts.
+    // If you want a fallback (for local dev), keep this:
+    version = rootProject.version
+
+    dependencies{
+        // WPILib dependencies
+        add("compileOnly", "edu.wpi.first.wpilibj:wpilibj-java:${wpilibVersion}")
+        add("compileOnly", "edu.wpi.first.wpimath:wpimath-java:${wpilibVersion}")
+        add("compileOnly", "edu.wpi.first.wpiutil:wpiutil-java:${wpilibVersion}")
+        add("compileOnly", "edu.wpi.first.wpiunits:wpiunits-java:${wpilibVersion}")
+        add("compileOnly", "org.littletonrobotics.akit:akit-java:${advantageKitVersion}")
+        add("compileOnly", "us.hebi.quickbuf:quickbuf-runtime:1.3.3")
+    }
+
+    plugins.withType<JavaPlugin> {
+        the<JavaPluginExtension>().sourceSets.configureEach {
+            java {
+                exclude("example_projects/**")
+            }
+            resources {
+                exclude("example_projects/**")
+            }
+        }
+    }
+
+    the<JavaPluginExtension>().apply {
+        toolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
+        withSourcesJar()
+        withJavadocJar()
+    }
+}
+
 tasks.register("syncVendordepsVersion") {
     group = "release"
     description = "Updates the .version in all vendordeps/*.json"
@@ -105,47 +145,3 @@ tasks.register("syncDocsVendordepsIntoExamples") {
 
 // Make other tasks depend on it (so it always runs first)
 tasks.named("build").configure { dependsOn("syncVendordepsVersion") }
-
-// ---- Shared config for all subprojects (modules) ----
-subprojects {
-    // Most modules will be Java libraries published somewhere
-    apply(plugin = "java-library")
-    apply(plugin = "maven-publish")
-
-    // Group (Maven groupId). For JitPack publishing, you can set this to "com.github.captainsoccer".
-    group = rootProject.group
-    // Version: by default each module should set its own version in its own build.gradle.kts.
-    // If you want a fallback (for local dev), keep this:
-    version = rootProject.version
-
-    dependencies{
-        // WPILib dependencies
-        add("compileOnly", "edu.wpi.first.wpilibj:wpilibj-java:${wpilibVersion}")
-        add("compileOnly", "edu.wpi.first.wpimath:wpimath-java:${wpilibVersion}")
-        add("compileOnly", "edu.wpi.first.wpiutil:wpiutil-java:${wpilibVersion}")
-        add("compileOnly", "edu.wpi.first.wpiunits:wpiunits-java:${wpilibVersion}")
-        add("compileOnly", "org.littletonrobotics.akit:akit-java:${advantageKitVersion}")
-        add("compileOnly", "us.hebi.quickbuf:quickbuf-runtime:1.3.3")
-    }
-
-    plugins.withType<JavaPlugin> {
-        the<JavaPluginExtension>().sourceSets.configureEach {
-            java {
-                exclude("example_projects/**")
-            }
-            resources {
-                exclude("example_projects/**")
-            }
-        }
-    }
-
-    the<JavaPluginExtension>().apply {
-        toolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
-        withSourcesJar()
-        withJavadocJar()
-    }
-
-//    tasks.test {
-//        useJUnitPlatform()
-//    }
-}

@@ -1,5 +1,5 @@
 {
-    "fileName": "BasicMotor-core.json",
+    "fileName": "BasicMotor-Core.json",
     "name": "BasicMotor Core",
     "version": "3.1.0-beta",
     "uuid": "faa487b0-6832-4c4b-9d38-d6e8b4893548",
@@ -7,7 +7,7 @@
     "mavenUrls": [
         "https://jitpack.io"
     ],
-    "jsonUrl": "https://captainsoccer.github.io/BasicMotor/BasicMotor.json",
+    "jsonUrl": "https://captainsoccer.github.io/BasicMotor/BasicMotor-Core.json",
     "javaDependencies": [
         {
             "groupId": "com.github.captainsoccer.BasicMotor",

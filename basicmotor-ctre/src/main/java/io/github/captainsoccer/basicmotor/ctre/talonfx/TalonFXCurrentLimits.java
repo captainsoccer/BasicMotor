@@ -20,6 +20,16 @@ public record TalonFXCurrentLimits(int statorCurrentLimit, int supplyCurrentLimi
                                    int supplyLowerLimit) implements CurrentLimits {
     /**
      * Checks the validity of the current limits.
+     * @param statorCurrentLimit The maximum current output of the motor controller (in amps).
+     *                           If this is zero, there will be no stator current limit.
+     * @param supplyCurrentLimit The maximum current draw of the motor controller (in amps).
+     *                           If this is zero, there will be no supply current limit.
+     * @param supplyLowerTime    The time (in seconds) that the motor can stay at supply current limit.
+     *                           If this or supplyLowerLimit is zero, it will be ignored.
+     * @param supplyLowerLimit   The current the motor drops to after the supply current limit is
+     *                           reached for supplyLowerTime.
+     *                           If this or supplyLowerTime is zero, it will be ignored.
+     * @throws IllegalArgumentException if any of the limits are negative.
      */
     public TalonFXCurrentLimits {
         if (statorCurrentLimit < 0) {
@@ -54,37 +64,5 @@ public record TalonFXCurrentLimits(int statorCurrentLimit, int supplyCurrentLimi
     @Override
     public int getCurrentLimit() {
         return statorCurrentLimit;
-    }
-
-    /**
-     * Gets the maximum current draw of the motor controller (in amps).
-     *
-     * @return The maximum current draw of the motor controller (in amps).
-     */
-    @Override
-    public int supplyCurrentLimit() {
-        return supplyCurrentLimit;
-    }
-
-    /**
-     * Gets the time (in seconds) that the motor can stay at supply current limit before it lowers to
-     * supply lower limit.
-     *
-     * @return The time (in seconds) that the motor can stay at supply current limit.
-     */
-    @Override
-    public double supplyLowerTime() {
-        return supplyLowerTime;
-    }
-
-    /**
-     * Gets the current the motor drops to after the supply current limit is reached for supplyLowerTime.
-     *
-     * @return The current the motor drops to after the supply current limit is reached for
-     * supplyLowerTime.
-     */
-    @Override
-    public int supplyLowerLimit() {
-        return supplyLowerLimit;
     }
 }

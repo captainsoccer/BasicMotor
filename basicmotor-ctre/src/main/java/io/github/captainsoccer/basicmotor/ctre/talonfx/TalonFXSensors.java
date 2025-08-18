@@ -220,6 +220,7 @@ public class TalonFXSensors {
                     .toArray(BaseStatusSignal[]::new);
         } else {
             allSignals = sensorsSignals;
+            latestPIDOutput = LogFrame.PIDOutput.EMPTY;
 
             for (BaseStatusSignal signal : pidSignals) {
                 signal.setUpdateFrequency(0);

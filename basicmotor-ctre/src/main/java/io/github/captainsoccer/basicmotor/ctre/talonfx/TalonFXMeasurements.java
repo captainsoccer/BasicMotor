@@ -26,6 +26,12 @@ public class TalonFXMeasurements extends Measurements {
     private final double timeout;
 
     /**
+     * The TalonFX motor controller to get the measurements from.
+     * This is used to get the position, velocity, and acceleration signals.
+     */
+    private final TalonFX talonFX;
+
+    /**
      * The motor position signal.
      */
     private final StatusSignal<Angle> motorPosition;
@@ -37,12 +43,6 @@ public class TalonFXMeasurements extends Measurements {
      * The motor acceleration signal.
      */
     private final StatusSignal<AngularAcceleration> motorAcceleration;
-
-    /**
-     * This is the setter for the motor position.
-     * This sets the position of the motor.
-     */
-    private final DoubleConsumer motorPositionSetter;
 
     /**
      * The latency compensated value of the motor position.
@@ -73,6 +73,8 @@ public class TalonFXMeasurements extends Measurements {
     public TalonFXMeasurements(TalonFX motor, double gearRatio, double unitConversion) {
         super(gearRatio, unitConversion);
 
+        this.talonFX = motor;
+
         motorPosition = motor.getPosition(false);
         motorVelocity = motor.getVelocity(false);
         motorAcceleration = motor.getAcceleration(false);
@@ -82,8 +84,6 @@ public class TalonFXMeasurements extends Measurements {
         motorPosition.setUpdateFrequency(refreshHZ);
         motorVelocity.setUpdateFrequency(refreshHZ);
         motorAcceleration.setUpdateFrequency(refreshHZ);
-
-        motorPositionSetter = motor::setPosition;
 
         timeout = 1 / (refreshHZ * TalonFXSensors.TIMEOUT_REFRESH_MULTIPLIER);
     }
@@ -139,6 +139,6 @@ public class TalonFXMeasurements extends Measurements {
 
     @Override
     public void setPosition(double position) {
-        motorPositionSetter.accept(position);
+        talonFX.setPosition(position);
     }
 }

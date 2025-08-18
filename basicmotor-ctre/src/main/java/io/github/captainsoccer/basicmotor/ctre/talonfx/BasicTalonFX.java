@@ -43,6 +43,12 @@ public class BasicTalonFX extends BasicMotor {
     private final TalonFXConfiguration config;
 
     /**
+     * Whether the TalonFX motor controller is licensed with Phoenix Pro.
+     * This is used to determine if the motor controller can use FOC and time synchronization.
+     */
+    private final boolean isProLicensed;
+
+    /**
      * The object that handles the sensors for the TalonFX motor controller.
      */
     private final TalonFXSensors sensors;
@@ -85,6 +91,7 @@ public class BasicTalonFX extends BasicMotor {
      * Constructor for the TalonFX motor controller
      *
      * @param controllerGains    The gains for the motor controller.
+     * @param name               The name of the motor controller (used for logging and debugging).
      * @param id                 The id of the motor controller.
      * @param gearRatio          The gear ratio of the motor.
      *                           the gear ratio is how many rotations of the motor are a rotation of the mechanism
@@ -93,9 +100,8 @@ public class BasicTalonFX extends BasicMotor {
      * @param unitConversion     The value that will be multiplied by to convert the measurements to the desired units.
      *                           This will be desired units per rotation.
      *                           This will be multiplied after the gear ratio is applied.
-     * @param name               The name of the motor controller (used for logging and debugging).
      */
-    public BasicTalonFX(ControllerGains controllerGains, int id, double gearRatio, double unitConversion, String name) {
+    public BasicTalonFX(ControllerGains controllerGains, String name, int id, double gearRatio, double unitConversion) {
 
         super(controllerGains, name);
 
@@ -107,6 +113,8 @@ public class BasicTalonFX extends BasicMotor {
         defaultMeasurements = new TalonFXMeasurements(motor, gearRatio, unitConversion);
 
         sensors = new TalonFXSensors(motor, super::getControllerLocation);
+
+        isProLicensed = motor.getIsProLicensed(true).getValue();
 
         motor.optimizeBusUtilization();
     }
@@ -122,41 +130,39 @@ public class BasicTalonFX extends BasicMotor {
      *                           e.g., a 10 gear ratio means the motor turns 10 times for every rotation of the mechanism.
      * @param name               The name of the motor controller (used for logging and debugging).
      */
-    public BasicTalonFX(
-            ControllerGains controllerGains,
-            int id,
-            double gearRatio,
-            String name) {
-        this(controllerGains, id, gearRatio, 1, name);
+    public BasicTalonFX(ControllerGains controllerGains, String name, int id, double gearRatio) {
+        this(controllerGains, name, id, gearRatio, 1);
     }
 
     /**
      * Constructor for the TalonFX motor controller.
      * This constructor uses the configuration provided.
      *
-     * @param config The configuration for the motor controller.
+     * @param motorConfig The configuration for the motor controller.
      */
-    public BasicTalonFX(BasicMotorConfig config) {
-        super(config);
+    public BasicTalonFX(BasicMotorConfig motorConfig) {
+        super(motorConfig);
 
-        boolean isSpecificConfig = config instanceof BasicTalonFXConfig;
+        boolean isSpecificConfig = motorConfig instanceof BasicTalonFXConfig;
 
-        String canbusName = isSpecificConfig ? ((BasicTalonFXConfig) config).canBusName : defaultCanBusName;
+        String canbusName = isSpecificConfig ? ((BasicTalonFXConfig) motorConfig).canBusName : defaultCanBusName;
 
-        motor = new TalonFX(config.motorConfig.id, canbusName);
-        this.config = new TalonFXConfiguration();
+        motor = new TalonFX(motorConfig.motorConfig.id, canbusName);
+        config = new TalonFXConfiguration();
 
         applyConfig();
 
-        defaultMeasurements = new TalonFXMeasurements(motor, config.motorConfig.gearRatio, config.motorConfig.unitConversion);
+        defaultMeasurements = new TalonFXMeasurements(motor, motorConfig.motorConfig.gearRatio, motorConfig.motorConfig.unitConversion);
 
         sensors = new TalonFXSensors(motor, super::getControllerLocation);
+
+        isProLicensed = motor.getIsProLicensed(true).getValue();
 
         motor.optimizeBusUtilization();
 
         if (!isSpecificConfig) return;
 
-        BasicTalonFXConfig specificConfig = (BasicTalonFXConfig) config;
+        BasicTalonFXConfig specificConfig = (BasicTalonFXConfig) motorConfig;
 
         setCurrentLimits(specificConfig.currentLimitConfig.getCurrentLimits());
 
@@ -298,8 +304,12 @@ public class BasicTalonFX extends BasicMotor {
                         yield StatusCode.OK; // no error when stopping the motor
                     }
 
-                    case CURRENT, TORQUE -> motor.setControl(torqueCurrentRequest.withOutput(setpoint));
+                    case CURRENT, TORQUE -> {
+                        if(!isProLicensed)
+                            DriverStation.reportError("motor " + name + " is not pro licensed and cannot use current or torque control modes", false);
 
+                        yield motor.setControl(torqueCurrentRequest.withOutput(setpoint));
+                    }
                 };
 
         if (error != StatusCode.OK) {
@@ -368,7 +378,7 @@ public class BasicTalonFX extends BasicMotor {
     protected void setMotorFollow(BasicMotor master, boolean inverted) {
         BasicTalonFX motor = (BasicTalonFX) master;
 
-        sensors.setDutyCycleToDefaultRate(true);
+        motor.sensors.setDutyCycleToDefaultRate(true);
 
         Follower follower = new Follower(motor.motor.getDeviceID(), inverted);
 
@@ -377,7 +387,6 @@ public class BasicTalonFX extends BasicMotor {
 
     @Override
     protected void stopMotorFollow() {
-        sensors.setDutyCycleToDefaultRate(false);
         motor.stopMotor();
     }
 
@@ -389,6 +398,11 @@ public class BasicTalonFX extends BasicMotor {
      * @param enable Whether to enable or disable FOC.
      */
     public void enableFOC(boolean enable) {
+        if(!isProLicensed) {
+            DriverStation.reportError("Motor " + name + " is not pro licensed and cannot use FOC", false);
+            return;
+        }
+
         velocityRequest.EnableFOC = enable;
         positionRequest.EnableFOC = enable;
         voltageRequest.EnableFOC = enable;
@@ -401,6 +415,11 @@ public class BasicTalonFX extends BasicMotor {
      * @param enable Whether to enable time synchronization.
      */
     public void enableTimeSync(boolean enable) {
+        if(!isProLicensed) {
+            DriverStation.reportError("Motor " + name + " is not pro licensed and cannot use time sync", false);
+            return;
+        }
+
         sensors.setWaitForAll(enable);
 
         if(!(defaultMeasurements instanceof TalonFXMeasurements measurements)) {
@@ -507,6 +526,11 @@ public class BasicTalonFX extends BasicMotor {
      *                               (the value of the can coder to get the mechanism value)
      */
     public void useFusedCanCoder(CANcoder canCoder, double sensorToMotorRatio, double unitConversion, double mechanismToSensorRatio){
+        if(!isProLicensed) {
+            DriverStation.reportError("Motor " + name + " is not pro licensed and cannot use fused can coder", false);
+            return;
+        }
+
         configureCanCoder(canCoder, sensorToMotorRatio, unitConversion, mechanismToSensorRatio, FeedbackSensorSourceValue.FusedCANcoder);
     }
 

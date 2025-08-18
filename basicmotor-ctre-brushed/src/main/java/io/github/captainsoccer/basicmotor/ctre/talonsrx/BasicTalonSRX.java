@@ -107,7 +107,7 @@ public class BasicTalonSRX extends BasicMotor {
 
         this.motor = new TalonSRX(id);
         this.motor.configFactoryDefault();
-        motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage();
+        motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
 
         this.motor.configAllSettings(motorConfig);
 
@@ -128,7 +128,7 @@ public class BasicTalonSRX extends BasicMotor {
 
         this.motor = new TalonSRX(id);
         this.motor.configFactoryDefault();
-        this.motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage();
+        this.motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
 
         this.motorConfig.primaryPID.selectedFeedbackSensor = encoderType.feedbackDevice;
         this.motorConfig.primaryPID.selectedFeedbackCoefficient = 1.0 / tickPerRevolution;
@@ -148,7 +148,7 @@ public class BasicTalonSRX extends BasicMotor {
 
         this.motor = new TalonSRX(config.motorConfig.id);
         this.motor.configFactoryDefault();
-        this.motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage();
+        this.motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
 
         this.motorConfig.primaryPID.selectedFeedbackSensor = config.encoderConfig.type.feedbackDevice;
         this.motorConfig.primaryPID.selectedFeedbackCoefficient = 1.0 / config.encoderConfig.tickPerRevolution;
@@ -190,11 +190,11 @@ public class BasicTalonSRX extends BasicMotor {
 
     @Override
     protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
-        motorConfig.peakOutputForward = constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage();
-        motorConfig.peakOutputReverse = -constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage();
+        motorConfig.peakOutputForward = constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
+        motorConfig.peakOutputReverse = -constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
 
-        motorConfig.nominalOutputForward = constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage();
-        motorConfig.nominalOutputReverse = -constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage();
+        motorConfig.nominalOutputForward = constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
+        motorConfig.nominalOutputReverse = -constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
 
         if (constraints.getConstraintType() == ConstraintsGains.ConstraintType.LIMITED
                 && getDefaultMeasurements() instanceof TalonSRXMeasurements talonMeasurements) {
@@ -288,15 +288,15 @@ public class BasicTalonSRX extends BasicMotor {
     protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode) {
         switch (mode) {
             // Converts voltage to percent output based on the ideal voltage of the motor
-            case VOLTAGE -> motor.set(TalonSRXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage());
+            case VOLTAGE -> motor.set(TalonSRXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage);
 
             // Converts the voltage feedforward to percent output based on the ideal voltage of the motor
             case POSITION, PROFILED_POSITION -> motor.set(TalonSRXControlMode.Position, setpoint,
-                    DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.motorIdealVoltage());
+                    DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.motorIdealVoltage);
 
             // Converts the velocity feedforward to percent output based on the ideal voltage of the motor
             case VELOCITY, PROFILED_VELOCITY -> motor.set(TalonSRXControlMode.Velocity, setpoint,
-                    DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.motorIdealVoltage());
+                    DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.motorIdealVoltage);
 
             case STOP -> stopMotorOutput();
 

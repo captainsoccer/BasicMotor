@@ -247,13 +247,13 @@ public class BasicTalonFX extends BasicMotor {
 
         // sets the max duty cycle to the max motor output (same as voltage)
         config.MotorOutput.PeakForwardDutyCycle =
-                constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage();
+                constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
         config.MotorOutput.PeakReverseDutyCycle =
-                constraints.getMinMotorOutput() / MotorManager.config.motorIdealVoltage();
+                constraints.getMinMotorOutput() / MotorManager.config.motorIdealVoltage;
 
         // sets the voltage deadband to the voltage deadband
         config.MotorOutput.DutyCycleNeutralDeadband =
-                constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage();
+                constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
 
         // sets continuous wrap to false (it is calculated on the rio if needed)
         config.ClosedLoopGeneral.ContinuousWrap = false;

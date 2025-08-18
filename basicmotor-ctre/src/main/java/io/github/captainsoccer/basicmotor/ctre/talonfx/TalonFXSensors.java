@@ -121,7 +121,7 @@ public class TalonFXSensors {
      *                 This is used to determine if there is need to log the motor's built-in PID output.
      */
     public TalonFXSensors(TalonFX motor, Supplier<MotorManager.ControllerLocation> location) {
-        double refreshHZ = MotorManager.config.SENSOR_LOOP_HZ();
+        double refreshHZ = MotorManager.config.SENSOR_LOOP_HZ;
         this.location = location;
 
         timeout = 1 / (refreshHZ * TIMEOUT_REFRESH_MULTIPLIER);
@@ -205,7 +205,7 @@ public class TalonFXSensors {
      * @param defaultRate Whether to set the duty cycle to the default rate (100 Hz) or to the refresh rate.
      */
     public void setDutyCycleToDefaultRate(boolean defaultRate) {
-        dutyCycleSignal.setUpdateFrequency(defaultRate ? 100 : MotorManager.config.SENSOR_LOOP_HZ());
+        dutyCycleSignal.setUpdateFrequency(defaultRate ? 100 : MotorManager.config.SENSOR_LOOP_HZ);
     }
 
     /**
@@ -227,7 +227,7 @@ public class TalonFXSensors {
         }
 
         for(BaseStatusSignal signal : allSignals) {
-            signal.setUpdateFrequency(MotorManager.config.SENSOR_LOOP_HZ());
+            signal.setUpdateFrequency(MotorManager.config.SENSOR_LOOP_HZ);
         }
     }
 

@@ -77,7 +77,7 @@ public abstract class BasicSpark extends BasicMotor {
         super(gains, name);
 
         this.motor = motor;
-        this.config = config.voltageCompensation(MotorManager.config.motorIdealVoltage()); // set the voltage compensation to the idle voltage
+        this.config = config.voltageCompensation(MotorManager.config.motorIdealVoltage); // set the voltage compensation to the idle voltage
         // all configs should be stored in code and not on motor
         applyConfig();
 
@@ -103,7 +103,7 @@ public abstract class BasicSpark extends BasicMotor {
 
         this.motor = motor;
 
-        this.config = motorConfig.voltageCompensation(MotorManager.config.motorIdealVoltage()); // set the voltage compensation to the idle voltage
+        this.config = motorConfig.voltageCompensation(MotorManager.config.motorIdealVoltage); // set the voltage compensation to the idle voltage
         // all configs should be stored in code and not on motor
         applyConfig();
 
@@ -318,7 +318,7 @@ public abstract class BasicSpark extends BasicMotor {
 
     @Override
     protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
-        double idealVoltage = MotorManager.config.motorIdealVoltage();
+        double idealVoltage = MotorManager.config.motorIdealVoltage;
 
         // sets the max voltage to the max motor output
         config.closedLoop.maxOutput(constraints.getMaxMotorOutput() / idealVoltage);
@@ -419,7 +419,7 @@ public abstract class BasicSpark extends BasicMotor {
     private void configurePeriodicFrames(double mainLoopHZ) {
         var signals = config.signals;
         int sensorLoopPeriodMs =
-                (int) ((1 / MotorManager.config.SENSOR_LOOP_HZ()) * 1000); // convert to milliseconds
+                (int) ((1 / MotorManager.config.SENSOR_LOOP_HZ) * 1000); // convert to milliseconds
         int mainLoopPeriodMs = (int) ((1 / mainLoopHZ) * 1000); // convert to milliseconds
 
         signals.busVoltagePeriodMs(sensorLoopPeriodMs); // currently does nothing

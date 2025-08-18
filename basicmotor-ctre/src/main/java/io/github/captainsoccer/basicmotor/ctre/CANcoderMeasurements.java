@@ -26,13 +26,19 @@ public class CANcoderMeasurements extends Measurements {
     private final double timeout;
 
     /**
+     * The CANCoder to use for the measurements.
+     * This is used to get the position and velocity signals.
+     */
+    private final CANcoder cancoder;
+
+    /**
      * The position status signal
      */
-    private final StatusSignal<Angle> motorPosition;
+    private final StatusSignal<Angle> positionSignal;
     /**
      * The velocity status signal
      */
-    private final StatusSignal<AngularVelocity> motorVelocity;
+    private final StatusSignal<AngularVelocity> velocitySignal;
 
     /**
      * The latency compensated position.
@@ -68,8 +74,7 @@ public class CANcoderMeasurements extends Measurements {
      * Creates a new measurements object with the given signals sets the refresh rate of the signals.
      * This method does not optimize the canbus usage of the canCoder.
      *
-     * @param positionSignal           The position signal of the canCoder
-     * @param velocitySignal           The velocity signal of the canCoder
+     * @param canCoder                The CANCoder to use for the measurements.
      * @param canCoderToMechanismRatio The ratio of the canCoder rotations to the mechanism rotations.
      *                                 A number larger than 1 means the canCoder spins more than the mechanism.
      *                                 In most cases, this will be 1.
@@ -77,25 +82,21 @@ public class CANcoderMeasurements extends Measurements {
      *                                 See {@link MotorConfig#unitConversion} for more information.
      * @param throughRIO               If true, the canCoder will use the timings of a roboRIO pid controller,
      *                                 else it will use the timings of a motor controller pid controller.
-     *                                 If you are using this function outside the BasicMotor library,
-     *                                 you should set this to true.
+     *                                 If the canCoder cannot communicate directly with the motor
+     *                                 (like a talonFX), this should be true.
      * @param timeSync                 If true, the measurements will wait for all signals to update before returning the values.
      *                                 Use this only if you have a licensed version of Phoenix Pro connected to a canivore.
      *                                 Otherwise, it will slow down the robot code significantly.
      */
-    public CANcoderMeasurements(StatusSignal<Angle> positionSignal,
-                                StatusSignal<AngularVelocity> velocitySignal,
-                                double canCoderToMechanismRatio,
-                                double unitConversion,
-                                boolean throughRIO,
-                                boolean timeSync) {
-
+    public CANcoderMeasurements(CANcoder canCoder, double canCoderToMechanismRatio, double unitConversion, boolean throughRIO, boolean timeSync) {
         super(canCoderToMechanismRatio, unitConversion);
 
         this.timeSync = timeSync;
 
-        motorPosition = positionSignal;
-        motorVelocity = velocitySignal;
+        this.cancoder = canCoder;
+
+        this.positionSignal = canCoder.getPosition(false);
+        this.velocitySignal = canCoder.getVelocity(false);
 
         double refreshHZ =
                 throughRIO ? MotorManager.ControllerLocation.RIO.getHZ() : MotorManager.ControllerLocation.MOTOR.getHZ();
@@ -104,51 +105,6 @@ public class CANcoderMeasurements extends Measurements {
         velocitySignal.setUpdateFrequency(refreshHZ);
 
         timeout = 1 / (refreshHZ * TalonFXSensors.TIMEOUT_REFRESH_MULTIPLIER);
-    }
-
-    /**
-     * Creates a new measurements object with the given signals sets the refresh rate of the signals.
-     * This method does not optimize the canbus usage of the canCoder.
-     *
-     * @param positionSignal           The position signal of the canCoder
-     * @param velocitySignal           The velocity signal of the canCoder
-     * @param canCoderToMechanismRatio The ratio of the canCoder rotations to the mechanism rotations.
-     *                                 A number larger than 1 means the canCoder spins more than the mechanism.
-     *                                 In most cases, this will be 1.
-     * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
-     *                                 See {@link MotorConfig#unitConversion} for more information.
-     * @param throughRIO               If true, the canCoder will use the timings of a roboRIO pid controller,
-     *                                 else it will use the timings of a motor controller pid controller.
-     *                                 If you are using this function outside the BasicMotor library,
-     *                                 you should set this to true.
-     */
-    public CANcoderMeasurements(StatusSignal<Angle> positionSignal,
-                                StatusSignal<AngularVelocity> velocitySignal,
-                                double canCoderToMechanismRatio,
-                                double unitConversion,
-                                boolean throughRIO) {
-        this(positionSignal, velocitySignal, canCoderToMechanismRatio, unitConversion, throughRIO, false);
-    }
-
-    /**
-     * Creates a new measurements object with the given CANCoder
-     *
-     * @param cancoder                 The CANCoder to use for the measurements.
-     * @param canCoderToMechanismRatio The ratio of the canCoder rotations to the mechanism rotations.
-     *                                 A number larger than 1 means the canCoder spins more than the mechanism.
-     *                                 In most cases, this will be 1.
-     * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
-     *                                 See {@link MotorConfig#unitConversion} for more information.
-     * @param throughRIO               If true, the canCoder will use the timings of a roboRIO pid controller,
-     *                                 else it will use the timings of a motor controller pid controller.
-     *                                 If you are using this function outside the BasicMotor library,
-     *                                 you should set this to true.
-     * @param timeSync                 If true, the measurements will wait for all signals to update before returning the values.
-     *                                 Use this only if you have a licensed version of Phoenix Pro connected to a canivore.
-     *                                 Otherwise, it will slow down the robot code significantly.
-     */
-    public CANcoderMeasurements(CANcoder cancoder, double canCoderToMechanismRatio, double unitConversion, boolean throughRIO, boolean timeSync) {
-        this(cancoder.getPosition(false), cancoder.getVelocity(false), canCoderToMechanismRatio, unitConversion, throughRIO, timeSync);
     }
 
     /**
@@ -162,8 +118,8 @@ public class CANcoderMeasurements extends Measurements {
      *                                 See {@link MotorConfig#unitConversion} for more information.
      * @param throughRIO               If true, the canCoder will use the timings of a roboRIO pid controller,
      *                                 else it will use the timings of a motor controller pid controller.
-     *                                 If you are using this function outside the BasicMotor library,
-     *                                 you should set this to true.
+     *                                 If the canCoder cannot communicate directly with the motor
+     *                                 (like a talonFX), this should be true.
      */
     public CANcoderMeasurements(CANcoder cancoder, double canCoderToMechanismRatio, double unitConversion, boolean throughRIO) {
         this(cancoder, canCoderToMechanismRatio, unitConversion, throughRIO, false);
@@ -185,13 +141,13 @@ public class CANcoderMeasurements extends Measurements {
 
     @Override
     public Measurement update(double dt) {
-        if (timeSync) BaseStatusSignal.waitForAll(timeout, motorPosition, motorVelocity);
-        else BaseStatusSignal.refreshAll(motorPosition, motorVelocity);
+        if (timeSync) BaseStatusSignal.waitForAll(timeout, positionSignal, velocitySignal);
+        else BaseStatusSignal.refreshAll(positionSignal, velocitySignal);
 
-        var position = BaseStatusSignal.getLatencyCompensatedValue(motorPosition, motorVelocity);
+        var position = BaseStatusSignal.getLatencyCompensatedValue(positionSignal, velocitySignal);
         positionLatencyCompensatedValue = position.in(Units.Rotations);
 
-        currentVelocity = motorVelocity.getValueAsDouble();
+        currentVelocity = velocitySignal.getValueAsDouble();
 
         acceleration = (currentVelocity - lastVelocity) / dt;
 
@@ -207,8 +163,8 @@ public class CANcoderMeasurements extends Measurements {
      * @param refreshHZ The refresh rate of the signals (how often to update the signals)
      */
     public void setUpdateFrequency(double refreshHZ) {
-        motorPosition.setUpdateFrequency(refreshHZ);
-        motorVelocity.setUpdateFrequency(refreshHZ);
+        positionSignal.setUpdateFrequency(refreshHZ);
+        velocitySignal.setUpdateFrequency(refreshHZ);
     }
 
     @Override
@@ -228,6 +184,6 @@ public class CANcoderMeasurements extends Measurements {
 
     @Override
     public void setPosition(double position) {
-        //Does nothing, CANCoder does not support setting position directly.
+        cancoder.setPosition(position);
     }
 }

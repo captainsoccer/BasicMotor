@@ -54,6 +54,8 @@ public class LogFrame {
      */
     public double appliedTorque = 0;
 
+    //Helper classes
+
     /**
      * The record holding the sensor data of the motor
      * This is in a record due to multithreading and performance reasons.

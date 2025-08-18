@@ -47,7 +47,7 @@ public class BasicVictorSPX extends BasicMotor {
 
         motor = new VictorSPX(id);
         motor.configFactoryDefault();
-        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
+        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage());
 
         defaultMeasurements = new EmptyMeasurements();
     }
@@ -67,7 +67,7 @@ public class BasicVictorSPX extends BasicMotor {
         motor = new VictorSPX(id);
         motor.configFactoryDefault();
 
-        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
+        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage());
 
         if(measurements != null) {
             defaultMeasurements = measurements;
@@ -91,7 +91,7 @@ public class BasicVictorSPX extends BasicMotor {
         motor = new VictorSPX(config.motorConfig.id);
         motor.configFactoryDefault();
 
-        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
+        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage());
 
         if(measurements != null) {
             defaultMeasurements = measurements;
@@ -111,11 +111,11 @@ public class BasicVictorSPX extends BasicMotor {
     @Override
     protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
         // Does nothing with soft limits.
-        motor.configPeakOutputForward(constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage);
-        motor.configPeakOutputReverse(-constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage);
+        motor.configPeakOutputForward(constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage());
+        motor.configPeakOutputReverse(-constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage());
 
-        motor.configNominalOutputForward(constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage);
-        motor.configNominalOutputReverse(-constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage);
+        motor.configNominalOutputForward(constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage());
+        motor.configNominalOutputReverse(-constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage());
     }
 
     @Override
@@ -197,7 +197,7 @@ public class BasicVictorSPX extends BasicMotor {
         switch (mode) {
             case PERCENT_OUTPUT -> motor.set(VictorSPXControlMode.PercentOutput, setpoint);
 
-            case VOLTAGE ->  motor.set(VictorSPXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage);
+            case VOLTAGE ->  motor.set(VictorSPXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage());
         }
     }
 

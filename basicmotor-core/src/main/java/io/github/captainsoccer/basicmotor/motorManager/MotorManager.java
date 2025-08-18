@@ -139,7 +139,7 @@ public class MotorManager {
 
         motorMap.put(name, functions);
 
-        functions.sensorLoop.startPeriodic(1 / config.SENSOR_LOOP_HZ);
+        functions.sensorLoop.startPeriodic(1 / config.SENSOR_LOOP_HZ());
         functions.mainLoop.startPeriodic(ControllerLocation.MOTOR.getSeconds());
     }
 
@@ -192,17 +192,17 @@ public class MotorManager {
          * This is the default location for most motors.
          * For most mechanisms, this is the best location to run the pid controller.
          * But it lacks control over the measurement source of the pid controller.
-         * Takes the frequency from the {@link MotorManagerConfig#PROFILE_LOOP_HZ} which is the default profile loop frequency.
+         * Takes the frequency from the {@link MotorManagerConfig#PROFILE_LOOP_HZ()} which is the default profile loop frequency.
          */
-        MOTOR(() -> config.PROFILE_LOOP_HZ),
+        MOTOR(() -> config.PROFILE_LOOP_HZ()),
         /**
          * The pid controller is running on the rio.
          * This means that the code on the rio is calculating everything and sending the output to the motor controller.
          * This is useful when you want to have more control over the measurement source of the pid controller.
          * But it can lead to more canbus traffic and robo rio cpu usage.
-         * Takes the frequency from the {@link MotorManagerConfig#PID_LOOP_HZ} which is the default pid loop frequency.
+         * Takes the frequency from the {@link MotorManagerConfig#PID_LOOP_HZ()} which is the default pid loop frequency.
          */
-        RIO(() -> config.PID_LOOP_HZ),;
+        RIO(() -> config.PID_LOOP_HZ());
 
         /**
          * The supplier of the frequency of the controller loop in Hz.

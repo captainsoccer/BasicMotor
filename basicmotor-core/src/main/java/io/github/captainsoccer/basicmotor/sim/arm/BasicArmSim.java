@@ -16,98 +16,105 @@ import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
  * want to simulate an arm in your robot code. units are in rotations.
  */
 public class BasicArmSim extends BasicSimSystem {
-  /** The SingleJointedArmSim instance used by this BasicSimArm. */
-  private final SingleJointedArmSim armSim;
+    /**
+     * The SingleJointedArmSim instance used by this BasicSimArm.
+     */
+    private final SingleJointedArmSim armSim;
 
-  /** The default measurements for the arm simulation. */
-  private final Measurements defaultMeasurements;
+    /**
+     * The default measurements for the arm simulation.
+     */
+    private final Measurements defaultMeasurements;
 
-  /**
-   * Creates a BasicSimArm instance with the provided SingleJointedArmSim and name.
-   *
-   * @param armSim The SingleJointedArmSim instance to use for the arm simulation
-   * @param name The name of the arm simulation
-   * @param gains The controller gains to use for the arm simulation
-   */
-  public BasicArmSim(SingleJointedArmSim armSim, String name, ControllerGains gains) {
-    super(name, gains);
-    this.armSim = armSim;
+    /**
+     * Creates a BasicSimArm instance with the provided SingleJointedArmSim and name.
+     *
+     * @param armSim The SingleJointedArmSim instance to use for the arm simulation
+     * @param name   The name of the arm simulation
+     * @param gains  The controller gains to use for the arm simulation
+     */
+    public BasicArmSim(SingleJointedArmSim armSim, String name, ControllerGains gains) {
+        super(name, gains);
+        this.armSim = armSim;
 
-    defaultMeasurements = new ArmSimEncoder(armSim);
-  }
-
-  /**
-   * Creates a BasicSimArm instance with the provided configuration.
-   * the config must have the {@link BasicMotorConfig.SimulationConfig#momentOfInertia} set.
-   *
-   * @param config The configuration for the arm motor
-   */
-  public BasicArmSim(BasicMotorConfig config) {
-    super(config);
-
-    this.armSim = createArmSim(config);
-
-    defaultMeasurements = new ArmSimEncoder(armSim);
-  }
-
-  /**
-   * Creates a SingleJointedArmSim based on the provided configuration.
-   * This method initializes the arm simulation
-   *
-   * @param config The configuration for the arm motor
-   * @return A SingleJointedArmSim instance configured according to the provided BasicMotorConfig
-   */
-  private static SingleJointedArmSim createArmSim(BasicMotorConfig config) {
-    var plant =
-        LinearSystemId.createSingleJointedArmSystem(
-            config.motorConfig.motorType,
-            config.simulationConfig.momentOfInertia,
-            config.motorConfig.gearRatio);
-
-    double minAngle;
-    double maxAngle;
-    if (config.constraintsConfig.constraintType == ConstraintsGains.ConstraintType.LIMITED) {
-      minAngle = Units.rotationsToRadians(config.constraintsConfig.minValue / config.motorConfig.unitConversion);
-      maxAngle = Units.rotationsToRadians(config.constraintsConfig.maxValue / config.motorConfig.unitConversion);
-    } else {
-      minAngle = Double.NEGATIVE_INFINITY;
-      maxAngle = Double.POSITIVE_INFINITY;
+        defaultMeasurements = new ArmSimEncoder(armSim);
     }
 
-    var simConfig = config.simulationConfig;
+    /**
+     * Creates a BasicSimArm instance with the provided configuration.
+     * the config must have the {@link BasicMotorConfig.SimulationConfig#momentOfInertia} set.
+     *
+     * @param config The configuration for the arm motor
+     */
+    public BasicArmSim(BasicMotorConfig config) {
+        super(config);
 
-    double startingAngle = Units.rotationsToRadians(simConfig.armSimConfig.startingAngle);
+        this.armSim = createArmSim(config);
 
-    double positionSTD = Units.rotationsToRadians(simConfig.positionStandardDeviation);
+        defaultMeasurements = new ArmSimEncoder(armSim);
+    }
 
-    double velocitySTD =
-        Units.rotationsPerMinuteToRadiansPerSecond(simConfig.velocityStandardDeviation* 60);
+    /**
+     * Creates a SingleJointedArmSim based on the provided configuration.
+     * This method initializes the arm simulation
+     *
+     * @param config The configuration for the arm motor
+     * @return A SingleJointedArmSim instance configured according to the provided BasicMotorConfig
+     */
+    private static SingleJointedArmSim createArmSim(BasicMotorConfig config) {
+        // Create the plant model for the arm system based on the motor type, moment of inertia, and gear ratio
+        var plant =
+                LinearSystemId.createSingleJointedArmSystem(
+                        config.motorConfig.motorType,
+                        config.simulationConfig.momentOfInertia,
+                        config.motorConfig.gearRatio);
 
-    return new SingleJointedArmSim(
-        plant,
-        config.motorConfig.motorType,
-        config.motorConfig.gearRatio,
-        simConfig.armSimConfig.armlengthMeters,
-        minAngle,
-        maxAngle,
-        simConfig.armSimConfig.simulateGravity,
-        startingAngle,
-        positionSTD,
-        velocitySTD);
-  }
 
-  @Override
-  protected void setInputVoltage(double voltage) {
-    armSim.setInputVoltage(voltage);
-  }
+        // apply constraints based on the configuration
+        double minAngle;
+        double maxAngle;
+        if (config.constraintsConfig.constraintType == ConstraintsGains.ConstraintType.LIMITED) {
+            minAngle = Units.rotationsToRadians(config.constraintsConfig.minValue / config.motorConfig.unitConversion);
+            maxAngle = Units.rotationsToRadians(config.constraintsConfig.maxValue / config.motorConfig.unitConversion);
+        } else {
+            minAngle = Double.NEGATIVE_INFINITY;
+            maxAngle = Double.POSITIVE_INFINITY;
+        }
 
-  @Override
-  protected double getCurrentDraw() {
-    return armSim.getCurrentDrawAmps();
-  }
+        var simConfig = config.simulationConfig;
 
-  @Override
-  protected Measurements getDefaultMeasurements() {
-    return defaultMeasurements;
-  }
+        double startingAngle = Units.rotationsToRadians(simConfig.armSimConfig.startingAngle);
+
+        double positionSTD = Units.rotationsToRadians(simConfig.positionStandardDeviation);
+
+        double velocitySTD =
+                Units.rotationsPerMinuteToRadiansPerSecond(simConfig.velocityStandardDeviation * 60);
+
+        return new SingleJointedArmSim(
+                plant,
+                config.motorConfig.motorType,
+                config.motorConfig.gearRatio,
+                simConfig.armSimConfig.armlengthMeters,
+                minAngle,
+                maxAngle,
+                simConfig.armSimConfig.simulateGravity,
+                startingAngle,
+                positionSTD,
+                velocitySTD);
+    }
+
+    @Override
+    protected void setInputVoltage(double voltage) {
+        armSim.setInputVoltage(voltage);
+    }
+
+    @Override
+    protected double getCurrentDraw() {
+        return armSim.getCurrentDrawAmps();
+    }
+
+    @Override
+    protected Measurements getDefaultMeasurements() {
+        return defaultMeasurements;
+    }
 }

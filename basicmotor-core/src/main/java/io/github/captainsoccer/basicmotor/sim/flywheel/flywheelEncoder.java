@@ -63,6 +63,6 @@ public class flywheelEncoder extends Measurements {
 
     @Override
     public void setPosition(double position) {
-        //Does nothing as the flywheel sim does not support setting position directly.
+        this.position = position;
     }
 }

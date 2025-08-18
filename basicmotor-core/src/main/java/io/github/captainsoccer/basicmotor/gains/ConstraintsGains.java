@@ -116,8 +116,8 @@ public class ConstraintsGains {
         this.minValue = minValue;
         this.maxValue = maxValue;
 
-        this.maxMotorOutput = MathUtil.clamp(Math.abs(maxMotorOutput), 0, MotorManager.config.defaultMaxMotorOutput);
-        this.minMotorOutput = -MathUtil.clamp(Math.abs(minMotorOutput), 0, MotorManager.config.defaultMaxMotorOutput);
+        this.maxMotorOutput = MathUtil.clamp(Math.abs(maxMotorOutput), 0, MotorManager.config.defaultMaxMotorOutput());
+        this.minMotorOutput = -MathUtil.clamp(Math.abs(minMotorOutput), 0, MotorManager.config.defaultMaxMotorOutput());
 
         this.voltageDeadband = Math.abs(deadband);
     }
@@ -137,7 +137,7 @@ public class ConstraintsGains {
      *                 - If limited, this is the maximum value of the limits.
      */
     public ConstraintsGains(ConstraintType type, double minValue, double maxValue) {
-        this(type, minValue, maxValue, MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, 0);
+        this(type, minValue, maxValue, MotorManager.config.defaultMaxMotorOutput(), -MotorManager.config.defaultMaxMotorOutput(), 0);
     }
 
     /**
@@ -157,7 +157,7 @@ public class ConstraintsGains {
      *                        any value (absolute value) below this will be ignored.
      */
     public ConstraintsGains(ConstraintType type, double minValue, double maxValue, double voltageDeadband) {
-        this(type, minValue, maxValue, MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, voltageDeadband);
+        this(type, minValue, maxValue, MotorManager.config.defaultMaxMotorOutput(), -MotorManager.config.defaultMaxMotorOutput(), voltageDeadband);
     }
 
     /**
@@ -197,14 +197,14 @@ public class ConstraintsGains {
      *                        any value (absolute value) below this will be ignored.
      */
     public ConstraintsGains(double voltageDeadband) {
-        this(MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, voltageDeadband);
+        this(MotorManager.config.defaultMaxMotorOutput(), -MotorManager.config.defaultMaxMotorOutput(), voltageDeadband);
     }
 
     /**
      * Creates a constraints object with no constraints, no output limits, and no deadband.
      */
     public ConstraintsGains() {
-        this(MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput);
+        this(MotorManager.config.defaultMaxMotorOutput(), -MotorManager.config.defaultMaxMotorOutput());
     }
 
     /**
@@ -255,7 +255,7 @@ public class ConstraintsGains {
             }
         }
 
-        // if not position control,
+        // if not position control, that means the goal set is the direction of the motor,
         // then check if the measurement is in the limits of the motor
         // and make sure the direction is back to the zone
         else {
@@ -283,10 +283,8 @@ public class ConstraintsGains {
         // control)
         if (!request.controlMode().isPositionControl()) return;
 
-        // calculate the error bound
         double errorBound = (maxValue - minValue) / 2.0;
 
-        // store the original position
         double originalPosition = request.goal().position;
 
         // wrap the goal around the limits
@@ -296,6 +294,7 @@ public class ConstraintsGains {
                         + measurement.position();
 
         // if the goal is in the opposite direction of the original position, reverse the velocity
+        // only affects motion profiles
         if (Math.signum(request.goal().position - measurement.position())
                 != Math.signum(originalPosition - measurement.position())) {
             request.goal().velocity *= -1;

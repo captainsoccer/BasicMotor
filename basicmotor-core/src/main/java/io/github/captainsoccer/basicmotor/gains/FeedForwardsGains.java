@@ -205,7 +205,7 @@ public class FeedForwardsGains {
      * @param type  The type of feed forward gain to change.
      */
     public void updateFeedForwards(double value, ChangeType type) {
-        if (value < 0) {
+        if (value < 0 && type != ChangeType.SIMPLE_FEED_FORWARD) {
             //ignore negative values
             return;
         }

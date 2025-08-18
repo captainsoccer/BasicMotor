@@ -90,7 +90,7 @@ public abstract class BasicMotor {
     /**
      * The state of the motor.
      */
-    private MotorState motorState;
+    private volatile MotorState motorState;
 
     /**
      * If the PID gains have changed (then it updates the motor controller on the slower thread).
@@ -206,9 +206,15 @@ public abstract class BasicMotor {
 
         var controllerGains = controller.getControllerGains();
 
-        updatePIDGainsToMotor(controllerGains.getPidGains().convertToMotorGains(gearRatio, unitConversion, getInternalPIDLoopTime()));
+        var motorPIDGains =
+                controllerGains.getPidGains().convertToMotorGains(gearRatio, unitConversion, getInternalPIDLoopTime());
 
-        updateConstraintsGainsToMotor(controllerGains.getControllerConstrains().convertToMotorConstraints(gearRatio, unitConversion));
+        updatePIDGainsToMotor(motorPIDGains);
+
+        var motorConstraintsGains =
+                controllerGains.getControllerConstrains().convertToMotorConstraints(gearRatio, unitConversion);
+
+        updateConstraintsGainsToMotor(motorConstraintsGains);
 
         // if the user uses a bare minimum configuration, then we will not set the idle mode, inverted, or current limits
         if (config == null) {
@@ -367,7 +373,7 @@ public abstract class BasicMotor {
      */
     private void setMotorPosition(double position){
         if (measurements == null) {
-            throw new IllegalStateException("Motor measurements are not initialized. Call setMeasurements() first.");
+            DriverStation.reportError("Motor " + name + " has not been initialized yet, cannot set position.", false);
         }
         measurements.setPosition(position);
     };
@@ -562,7 +568,7 @@ public abstract class BasicMotor {
      *   <li>power output (Watts)</li>
      *   <li>power draw (Watts)</li>
      *   <li>temperature (°C)</li>
-     *   <li>duty cycle (ratio)</li>
+     *   <li>duty cycle (ratio of output voltage to input voltage)</li>
      * </ul>
      * @return The latest sensor data from the motor.
      */
@@ -601,12 +607,7 @@ public abstract class BasicMotor {
      * @param newPosition The new position of the motor.
      */
     public void resetEncoder(double newPosition) {
-        if (controller.getControlMode().isVelocityControl())
-            controller.reset(0, 0);
-        else
-            controller.reset(newPosition, 0);
-
-        setMotorPosition((newPosition / measurements.getUnitConversion()) * measurements.getGearRatio());
+        resetEncoder(newPosition, 0);
     }
 
     /**
@@ -634,9 +635,10 @@ public abstract class BasicMotor {
     private void run() {
         // if the motor is not initialized, then we need to initialize it
         if (!initialized) {
-            measurements = initializeMotor();
+            var measurements = initializeMotor();
             // if the measurements are still null, it means the motor has not been initialized yet
             if (measurements == null) return;
+            else this.measurements = measurements;
         }
 
         // doesn't need to do anything if the motor is following another motor
@@ -657,26 +659,16 @@ public abstract class BasicMotor {
         var motorOutput =
                 runController(measurement, controllerLocation.getSeconds(), controller.getRequest());
 
-        double tolerance = controller.getControllerGains().getPidGains().getTolerance();
+        // updates the log frame with the controller frame
+        updateLogFrameData(motorOutput);
 
-        boolean atSetpoint = Math.abs(motorOutput.error()) <= tolerance;
-        logFrame.atSetpoint = atSetpoint;
-
-        if (motorOutput.mode().isProfiled()) {
-            // checking if the goal is the same as the setpoint
-            logFrame.atGoal = (motorOutput.goal() == motorOutput.setpoint()) && atSetpoint;
-        }
-        // if not using a motion profile, then the atGoal is the same as atSetpoint
-        else logFrame.atGoal = atSetpoint;
-
-        // updates the log frame with the motor output
-        logFrame.controllerFrame = motorOutput;
         // sets the motor output
         if (controllerLocation == ControllerLocation.RIO)
             // all the pid and feedforward outputs are already calculated in the controller frame
             setMotorOutput(motorOutput.totalOutput(), 0, Controller.ControlMode.VOLTAGE);
         else
             setMotorOutput(
+                    // converts the setpoint to the motor units if needed
                     checkMotorSetpoint(motorOutput),
                     motorOutput.feedForwardOutput().totalOutput(),
                     motorOutput.mode());
@@ -742,7 +734,7 @@ public abstract class BasicMotor {
 
         // If the measurements are empty and the control mode requires PID control,
         // then we cannot run the controller.
-        if((controlMode.requiresPID() && !controlMode.isCurrentControl())&& measurements instanceof EmptyMeasurements){
+        if((controlMode.requiresPID() && !controlMode.isCurrentControl()) && measurements instanceof EmptyMeasurements){
             DriverStation.reportError("Using empty measurements with a controller that requires PID control. " +
                     "Please set the measurements to a valid source.", false);
 
@@ -750,7 +742,7 @@ public abstract class BasicMotor {
         }
 
         // if the robot is enabled but the motor is disabled, then we need to reset the controller
-        if (motorState == MotorState.DISABLED && controlMode != Controller.ControlMode.STOP) {
+        if (motorState == MotorState.DISABLED) {
             if (controlMode.isVelocityControl()) controller.reset(measurement.velocity(), measurement.acceleration());
             else controller.reset(measurement.position(), measurement.velocity());
             // continue running the loop
@@ -872,6 +864,29 @@ public abstract class BasicMotor {
     }
 
     /**
+     * Updates the log frame data with the motor output.
+     * This will update the atSetpoint and atGoal values based on the motor output.
+     * It also updates the controller frame in the log frame.
+     * @param motorOutput The motor output to update the log frame with.
+     */
+    private void updateLogFrameData(LogFrame.ControllerFrame motorOutput) {
+        double tolerance = controller.getControllerGains().getPidGains().getTolerance();
+
+        boolean atSetpoint = Math.abs(motorOutput.error()) <= tolerance;
+        logFrame.atSetpoint = atSetpoint;
+
+        if (motorOutput.mode().isProfiled()) {
+            // checking if the goal is the same as the setpoint
+            logFrame.atGoal = (motorOutput.goal() == motorOutput.setpoint()) && atSetpoint;
+        }
+        // if not using a motion profile, then the atGoal is the same as atSetpoint
+        else logFrame.atGoal = atSetpoint;
+
+        // updates the log frame with the motor output
+        logFrame.controllerFrame = motorOutput;
+    }
+
+    /**
      * Converts the motor torque to current.
      * This uses the config to convert the torque to current.
      * If the config is null, it will report an error to the driver station.
@@ -935,6 +950,11 @@ public abstract class BasicMotor {
             logFrame.appliedTorque = getTorqueFromCurrent(logFrame.sensorData.currentOutput());
         }
 
+        if(!hasConstraintsChanged && !hasPIDGainsChanged) return;
+
+        double gearRatio = getDefaultMeasurements().getGearRatio();
+        double unitConversion = getDefaultMeasurements().getUnitConversion();
+
         // if the pid has changed, then update the built-in motor pid
         if (hasPIDGainsChanged) {
             hasPIDGainsChanged = false;
@@ -943,7 +963,7 @@ public abstract class BasicMotor {
                     controller
                             .getControllerGains()
                             .getPidGains()
-                            .convertToMotorGains(measurements.getGearRatio(), measurements.getUnitConversion(), getInternalPIDLoopTime());
+                            .convertToMotorGains(gearRatio, unitConversion, getInternalPIDLoopTime());
 
             updatePIDGainsToMotor(convertedGains);
         }
@@ -951,9 +971,6 @@ public abstract class BasicMotor {
         // if the constraints have changed, then update the built-in motor pid
         if (hasConstraintsChanged) {
             hasConstraintsChanged = false;
-
-            double gearRatio = getDefaultMeasurements().getGearRatio();
-            double unitConversion = getDefaultMeasurements().getUnitConversion();
 
             var convertedConstraints =
                     controller

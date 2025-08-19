@@ -305,10 +305,13 @@ public class BasicTalonFX extends BasicMotor {
                     }
 
                     case CURRENT, TORQUE -> {
-                        if(!isProLicensed)
+                        if(!isProLicensed){
                             DriverStation.reportError("motor " + name + " is not pro licensed and cannot use current or torque control modes", false);
+                            yield motor.setControl(torqueCurrentRequest.withOutput(setpoint));
+                        }
 
-                        yield motor.setControl(torqueCurrentRequest.withOutput(setpoint));
+                        // there is already error handling in the torqueCurrentRequest
+                        yield StatusCode.OK;
                     }
                 };
 

@@ -1,5 +1,5 @@
 {
-    "fileName": "BasicMotor-Full.json",
+    "fileName": "BasicMotor-Ctre-Full.json",
     "name": "BasicMotor Full",
     "version": "3.2.1",
     "uuid": "93dea7aa-3062-46af-ae27-7a95825df614",
@@ -7,7 +7,7 @@
     "mavenUrls": [
         "https://jitpack.io"
     ],
-    "jsonUrl": "https://captainsoccer.github.io/BasicMotor/BasicMotor-Full.json",
+    "jsonUrl": "https://captainsoccer.github.io/BasicMotor/BasicMotor-Ctre-Full.json",
     "javaDependencies": [
         {
             "groupId": "com.github.captainsoccer.BasicMotor",

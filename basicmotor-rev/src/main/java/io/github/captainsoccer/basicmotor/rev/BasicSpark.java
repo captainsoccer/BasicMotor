@@ -94,25 +94,25 @@ public abstract class BasicSpark extends BasicMotor {
      *
      * @param motor       The new instance of the spark base motor controller (SparkFlex, SparkMax, etc.).
      *                    This needs to be a brand-new instance of the motor controller without any configuration.
-     * @param motorConfig The empty configuration of the Spark Base motor controller (SparkFlexConfig, SparkMaxConfig, etc.).
+     * @param config      The empty configuration of the Spark Base motor controller (SparkFlexConfig, SparkMaxConfig, etc.).
      *                    This should be an empty configuration that will be applied to the motor controller.
-     * @param config      The configuration of the motor controller.
+     * @param motorConfig The configuration of the motor controller.
      */
-    public BasicSpark(SparkBase motor, SparkBaseConfig motorConfig, BasicMotorConfig config) {
-        super(config);
+    public BasicSpark(SparkBase motor, SparkBaseConfig config, BasicMotorConfig motorConfig) {
+        super(motorConfig);
 
         this.motor = motor;
 
-        this.config = motorConfig.voltageCompensation(MotorManager.config.motorIdealVoltage); // set the voltage compensation to the idle voltage
+        this.config = config.voltageCompensation(MotorManager.config.motorIdealVoltage); // set the voltage compensation to the idle voltage
         // all configs should be stored in code and not on motor
         applyConfig();
 
         configurePeriodicFrames(MotorManager.ControllerLocation.MOTOR.getHZ());
 
-        double gearRatio = config.motorConfig.gearRatio;
-        double unitConversion = config.motorConfig.unitConversion;
+        double gearRatio = motorConfig.motorConfig.gearRatio;
+        double unitConversion = motorConfig.motorConfig.unitConversion;
 
-        if (!(config instanceof BasicSparkConfig sparkBaseConfig)) {
+        if (!(motorConfig instanceof BasicSparkConfig sparkBaseConfig)) {
             DriverStation.reportWarning("not using specific Spark Base config for motor: " + name, false);
             defaultMeasurements = new RevRelativeEncoder(motor.getEncoder(), gearRatio, unitConversion);
             return;
@@ -126,10 +126,8 @@ public abstract class BasicSpark extends BasicMotor {
                         unitConversion) :
                 new EmptyMeasurements();
 
-        if(primaryEncoderConfig.countsPerRevolution != 0){
-            motorConfig.encoder.countsPerRevolution(primaryEncoderConfig.countsPerRevolution);
-            applyConfig();
-        }
+        if (primaryEncoderConfig.countsPerRevolution != 0)
+            config.encoder.countsPerRevolution(primaryEncoderConfig.countsPerRevolution);
 
 
         setCurrentLimits(sparkBaseConfig.currentLimitConfig.getCurrentLimits());
@@ -351,7 +349,6 @@ public abstract class BasicSpark extends BasicMotor {
 
     @Override
     public void setCurrentLimits(CurrentLimits currentLimits) {
-
         if (currentLimits instanceof SparkCurrentLimits limits) {
             //if both the normal and secondary current limits are 0, do not set any current limits
             if (limits.getCurrentLimit() == 0 && limits.secondaryCurrentLimit() == 0) return;
@@ -594,7 +591,7 @@ public abstract class BasicSpark extends BasicMotor {
         applyConfig();
 
         // set the measurements to the absolute encoder measurements
-        setMeasurements(new RevAbsoluteEncoder(motor.getAbsoluteEncoder(), 1), false);
+        setMeasurements(new RevAbsoluteEncoder(motor.getAbsoluteEncoder()), false);
     }
 
     /**

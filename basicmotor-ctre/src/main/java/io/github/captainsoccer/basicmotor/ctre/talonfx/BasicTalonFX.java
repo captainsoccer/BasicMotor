@@ -390,6 +390,14 @@ public class BasicTalonFX extends BasicMotor {
         motor.stopMotor();
     }
 
+    @Override
+    public void setDefaultMeasurements(){
+        config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+        applyConfig();
+
+        super.setDefaultMeasurements();
+    }
+
     /**
      * This enables or disables the Field Oriented Control (FOC) for the TalonFX motor controller.
      * This works only if the motor controller is licensed with Phoenix Pro.

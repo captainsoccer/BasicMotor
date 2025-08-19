@@ -59,6 +59,7 @@ public class BasicSparkConfig extends BasicMotorConfig {
         super.copy(copy);
 
         copy.currentLimitConfig = this.currentLimitConfig.copy();
+        copy.primaryEncoderConfig = this.primaryEncoderConfig.copy();
         copy.externalEncoderConfig = this.externalEncoderConfig.copy();
         copy.absoluteEncoderConfig = this.absoluteEncoderConfig.copy();
 
@@ -160,6 +161,18 @@ public class BasicSparkConfig extends BasicMotorConfig {
          * Change this only if you are used a brushed motor and have connected an encoder to the encoder port.
          */
         public int countsPerRevolution = 0;
+
+        /**
+         * Creates a copy of the primary encoder configuration.
+         * This method creates a new instance of PrimaryEncoderConfig and copies the values from the current
+         * @return A new PrimaryEncoderConfig object with the same values as this instance
+         */
+        public PrimaryEncoderConfig copy() {
+            PrimaryEncoderConfig copy = new PrimaryEncoderConfig();
+            copy.usePrimaryEncoder = this.usePrimaryEncoder;
+            copy.countsPerRevolution = this.countsPerRevolution;
+            return copy;
+        }
     }
 
     /**

@@ -21,25 +21,26 @@ public class BasicSparkFlex extends BasicSpark {
      *
      * @param gains          The gains of the motor controller
      * @param id             The id of the motor controller
-     * @param name           The name of the motor controller (used for logging and debugging)
-     * @param gearRatio      The gear ratio of the motor controller (how many rotations of the motor are a rotation of the mechanism)
-     * @param unitConversion The conversion factor for the motor's position units.
-     *                       This will be multiplied by the motor's rotation to get the position with the desired units.
-     *                       The unit for this value is desired position unit per rotation.
      * @param brushless      Whether the motor is brushless or not.
      *                       Brushless motor have an integrated encoder that can be used for position and velocity control.
      *                       those include: (Neo, Neo 550, Neo vortex (and probably others)).
      *                       brushed controllers do not have an integrated encoder and
      *                       require an external encoder to be used for position and velocity control.
      *                       those include: (CIM, mini-CIM, and many more).
+     * @param name           The name of the motor controller (used for logging and debugging)
+     * @param gearRatio      The gear ratio of the motor controller (how many rotations of the motor are a rotation of the mechanism)
+     * @param unitConversion The conversion factor for the motor's position units.
+     *                       This will be multiplied by the motor's rotation to get the position with the desired units.
+     *                       The unit for this value is desired position unit per rotation.
+
      */
     public BasicSparkFlex(
             ControllerGains gains,
             int id,
+            boolean brushless,
             String name,
             double gearRatio,
-            double unitConversion,
-            boolean brushless) {
+            double unitConversion) {
 
         super(
                 //creates a new SparkFlex motor controller with the given id and type
@@ -56,23 +57,24 @@ public class BasicSparkFlex extends BasicSpark {
      *
      * @param gains     The gains of the motor controller
      * @param id        The id of the motor controller
-     * @param name      The name of the motor controller (used for logging and debugging)
-     * @param gearRatio The gear ratio of the motor controller (how many rotations of the motor are a rotation of the mechanism)
      * @param brushless Whether the motor is brushless or not.
      *                  Brushless motor have an integrated encoder that can be used for position and velocity control.
      *                  those include: (Neo, Neo 550, Neo vortex (and probably others)).
      *                  brushed controllers do not have an integrated encoder and
      *                  require an external encoder to be used for position and velocity control.
      *                  those include: (CIM, mini-CIM, and many more).
+     * @param name      The name of the motor controller (used for logging and debugging)
+     * @param gearRatio The gear ratio of the motor controller (how many rotations of the motor are a rotation of the mechanism)
+
      */
     public BasicSparkFlex(
             ControllerGains gains,
             int id,
+            boolean brushless,
             String name,
-            double gearRatio,
-            boolean brushless) {
+            double gearRatio) {
 
-        this(gains, id, name, gearRatio, 1, brushless);
+        this(gains, id, brushless, name, gearRatio, 1);
     }
 
     /**

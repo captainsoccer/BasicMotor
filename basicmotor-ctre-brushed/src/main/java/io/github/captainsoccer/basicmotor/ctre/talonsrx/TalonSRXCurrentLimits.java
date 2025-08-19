@@ -21,6 +21,17 @@ public record TalonSRXCurrentLimits(int continuousCurrentLimit, int peakCurrentL
                                     int peakCurrentDuration) implements CurrentLimits {
     /**
      * Validates the current limits for the TalonSRX motor controller.
+     *
+     * @param continuousCurrentLimit The continuous current limit for the TalonSRX motor controller.
+     *                               If the peak current limit or peak current duration is not set,
+     *                               This will also be used as the peak current limit.
+     * @param peakCurrentLimit       The peak current limit for the TalonSRX motor controller.
+     *                               This is the maximum current that the motor can draw for a short duration.
+     *                               If this is not set, the continuous current limit will be used as the peak current limit.
+     *                               The duration is the peak current duration.
+     * @param peakCurrentDuration    The duration for which the peak current limit can be sustained.
+     *                               This is the time in seconds that the motor can draw the peak current limit before it is limited to the continuous current limit.
+     * @throws IllegalArgumentException If any of the current limits are negative.
      */
     public TalonSRXCurrentLimits {
         if (continuousCurrentLimit < 0) {

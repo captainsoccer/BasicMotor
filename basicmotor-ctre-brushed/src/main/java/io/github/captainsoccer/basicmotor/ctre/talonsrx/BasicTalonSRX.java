@@ -76,11 +76,12 @@ public class BasicTalonSRX extends BasicMotor {
      * The TalonSRX motor controller instance used by this BasicTalonSRX.
      */
     private final TalonSRX motor;
+
     /**
      * The configuration for the TalonSRX motor controller.
      * This is used to configure the TalonSRX motor controller with the correct settings.
      */
-    private final TalonSRXConfiguration motorConfig = new TalonSRXConfiguration();
+    private final TalonSRXConfiguration config = new TalonSRXConfiguration();
 
     /**
      * The default measurements for the TalonSRX motor controller.
@@ -107,9 +108,9 @@ public class BasicTalonSRX extends BasicMotor {
 
         this.motor = new TalonSRX(id);
         this.motor.configFactoryDefault();
-        motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
+        config.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
 
-        this.motor.configAllSettings(motorConfig);
+        applyConfig();
 
         defaultMeasurements = new EmptyMeasurements();
     }
@@ -128,12 +129,12 @@ public class BasicTalonSRX extends BasicMotor {
 
         this.motor = new TalonSRX(id);
         this.motor.configFactoryDefault();
-        this.motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
+        this.config.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
 
-        this.motorConfig.primaryPID.selectedFeedbackSensor = encoderType.feedbackDevice;
-        this.motorConfig.primaryPID.selectedFeedbackCoefficient = 1.0 / tickPerRevolution;
+        this.config.primaryPID.selectedFeedbackSensor = encoderType.feedbackDevice;
+        this.config.primaryPID.selectedFeedbackCoefficient = 1.0 / tickPerRevolution;
 
-        motor.configAllSettings(motorConfig);
+        applyConfig();
 
         defaultMeasurements = new TalonSRXMeasurements(motor, tickPerRevolution);
     }
@@ -141,31 +142,31 @@ public class BasicTalonSRX extends BasicMotor {
     /**
      * Creates a BasicTalonSRX instance with the provided configuration.
      * This constructor is used to create a TalonSRX motor controller with the specified settings.
-     * @param config The configuration for the TalonSRX motor controller.
+     * @param motorConfig The configuration for the TalonSRX motor controller.
      */
-    public BasicTalonSRX(BasicTalonSRXConfig config){
-        super(config);
+    public BasicTalonSRX(BasicTalonSRXConfig motorConfig){
+        super(motorConfig);
 
-        this.motor = new TalonSRX(config.motorConfig.id);
+        this.motor = new TalonSRX(motorConfig.motorConfig.id);
         this.motor.configFactoryDefault();
-        this.motorConfig.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
+        this.config.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
 
-        this.motorConfig.primaryPID.selectedFeedbackSensor = config.encoderConfig.type.feedbackDevice;
-        this.motorConfig.primaryPID.selectedFeedbackCoefficient = 1.0 / config.encoderConfig.tickPerRevolution;
+        this.config.primaryPID.selectedFeedbackSensor = motorConfig.encoderConfig.type.feedbackDevice;
+        this.config.primaryPID.selectedFeedbackCoefficient = 1.0 / motorConfig.encoderConfig.tickPerRevolution;
 
-        this.motor.configAllSettings(motorConfig);
+        applyConfig();
 
-        defaultMeasurements = new TalonSRXMeasurements(motor, config.encoderConfig.tickPerRevolution,
-                config.motorConfig.gearRatio, config.motorConfig.unitConversion);
+        defaultMeasurements = new TalonSRXMeasurements(motor, motorConfig.encoderConfig.tickPerRevolution,
+                motorConfig.motorConfig.gearRatio, motorConfig.motorConfig.unitConversion);
 
-        setCurrentLimits(config.currentLimitConfig.toCurrentLimits());
+        setCurrentLimits(motorConfig.currentLimitConfig.toCurrentLimits());
     }
 
     @Override
     protected void updatePIDGainsToMotor(PIDGains pidGains) {
         motorGains = pidGains.convertToDutyCycle();
 
-        var pidConfig = motorConfig.slot0;
+        var pidConfig = config.slot0;
 
         pidConfig.kP = motorGains.getK_P();
         pidConfig.kI = motorGains.getK_I();
@@ -175,10 +176,7 @@ public class BasicTalonSRX extends BasicMotor {
         pidConfig.integralZone = motorGains.getI_Zone();
         pidConfig.maxIntegralAccumulator = motorGains.getI_MaxAccum();
 
-        var error = motor.configureSlot(pidConfig);
-        if (error.value != 0) {
-            DriverStation.reportWarning("issues setting pid for motor: " + super.name + ". Error: " + error.name(), false);
-        }
+        applyConfig();
     }
 
     @Override
@@ -190,28 +188,25 @@ public class BasicTalonSRX extends BasicMotor {
 
     @Override
     protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
-        motorConfig.peakOutputForward = constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
-        motorConfig.peakOutputReverse = -constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
+        config.peakOutputForward = constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
+        config.peakOutputReverse = -constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
 
-        motorConfig.nominalOutputForward = constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
-        motorConfig.nominalOutputReverse = -constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
+        config.nominalOutputForward = constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
+        config.nominalOutputReverse = -constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
 
         if (constraints.getConstraintType() == ConstraintsGains.ConstraintType.LIMITED
                 && getDefaultMeasurements() instanceof TalonSRXMeasurements talonMeasurements) {
-            motorConfig.forwardSoftLimitEnable = true;
-            motorConfig.forwardSoftLimitThreshold = constraints.getMaxValue() * talonMeasurements.tickPerRevolution;
+            config.forwardSoftLimitEnable = true;
+            config.forwardSoftLimitThreshold = constraints.getMaxValue() * talonMeasurements.tickPerRevolution;
 
-            motorConfig.reverseSoftLimitEnable = true;
-            motorConfig.reverseSoftLimitThreshold = constraints.getMinValue() * talonMeasurements.tickPerRevolution;
+            config.reverseSoftLimitEnable = true;
+            config.reverseSoftLimitThreshold = constraints.getMinValue() * talonMeasurements.tickPerRevolution;
         } else {
-            motorConfig.forwardSoftLimitEnable = false;
-            motorConfig.reverseSoftLimitEnable = false;
+            config.forwardSoftLimitEnable = false;
+            config.reverseSoftLimitEnable = false;
         }
 
-        var error = motor.configAllSettings(motorConfig);
-        if (error.value != 0) {
-            DriverStation.reportWarning("issues setting constraints for motor: " + super.name + ". Error: " + error.name(), false);
-        }
+        applyConfig();
     }
 
     @Override
@@ -221,22 +216,19 @@ public class BasicTalonSRX extends BasicMotor {
 
     @Override
     public void setCurrentLimits(CurrentLimits currentLimits) {
-        motorConfig.continuousCurrentLimit = currentLimits.getCurrentLimit();
+        config.continuousCurrentLimit = currentLimits.getCurrentLimit();
 
         if (currentLimits instanceof TalonSRXCurrentLimits talonCurrentLimits &&
                 talonCurrentLimits.peakCurrentLimit() != 0 && talonCurrentLimits.peakCurrentDuration() != 0) {
 
-            motorConfig.peakCurrentLimit = talonCurrentLimits.peakCurrentLimit();
-            motorConfig.peakCurrentDuration = talonCurrentLimits.peakCurrentDuration() * 1000; // Convert seconds to milliseconds
+            config.peakCurrentLimit = talonCurrentLimits.peakCurrentLimit();
+            config.peakCurrentDuration = talonCurrentLimits.peakCurrentDuration() * 1000; // Convert seconds to milliseconds
         } else {
             // If not talonSRX current limits, use the continuous current limit for peak current limit
-            motorConfig.peakCurrentDuration = 0;
+            config.peakCurrentDuration = 0;
         }
 
-        var error = motor.configAllSettings(motorConfig);
-        if (error.value != 0) {
-            DriverStation.reportWarning("issues setting current limits for motor: " + super.name + ". Error: " + error.name(), false);
-        }
+        applyConfig();
     }
 
     @Override
@@ -360,6 +352,17 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     /**
+     * Applies the current configuration to the TalonSRX motor controller.
+     * This method will apply the current configuration to the TalonSRX motor controller.
+     */
+    private void applyConfig(){
+        var error = motor.configAllSettings(config);
+        if (error.value != 0) {
+            DriverStation.reportWarning("issues applying config for motor: " + super.name + ". Error: " + error.name(), false);
+        }
+    }
+
+    /**
      * Sets the encoder type for the TalonSRX motor controller.
      * This method will configure the encoder that is connected directly to the TalonSRX motor controller.
      * @param encoderType The type of encoder that is connected to the TalonSRX motor controller.
@@ -369,13 +372,10 @@ public class BasicTalonSRX extends BasicMotor {
      *                       This will be desired units per rotation.
      */
     public void setEncoderType(EncoderType encoderType, int tickPerRevolution, double gearRatio, double unitConversion) {
-        motorConfig.primaryPID.selectedFeedbackSensor = encoderType.feedbackDevice;
-        motorConfig.primaryPID.selectedFeedbackCoefficient = 1.0 / tickPerRevolution;
+        config.primaryPID.selectedFeedbackSensor = encoderType.feedbackDevice;
+        config.primaryPID.selectedFeedbackCoefficient = 1.0 / tickPerRevolution;
 
-        var error = motor.configAllSettings(motorConfig);
-        if (error.value != 0) {
-            DriverStation.reportWarning("issues setting encoder type for motor: " + super.name + ". Error: " + error.name(), false);
-        }
+        applyConfig();
 
         if(defaultMeasurements instanceof TalonSRXMeasurements) {
             setDefaultMeasurements();

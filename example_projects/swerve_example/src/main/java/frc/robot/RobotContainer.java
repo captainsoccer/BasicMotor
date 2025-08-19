@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drivetrain.DriveTrain;
 
 public class RobotContainer {
-  private static DriveTrain driveTrain;
+  public static DriveTrain driveTrain;
 
   private static LoggedDashboardChooser<Command> chooser;
 

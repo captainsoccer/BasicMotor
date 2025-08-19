@@ -1,0 +1,37 @@
+{
+    "fileName": "BasicMotor-Full.json",
+    "name": "BasicMotor Full",
+    "version": "3.2.1",
+    "uuid": "93dea7aa-3062-46af-ae27-7a95825df614",
+    "frcYear": "2025",
+    "mavenUrls": [
+        "https://jitpack.io"
+    ],
+    "jsonUrl": "https://captainsoccer.github.io/BasicMotor/BasicMotor-Full.json",
+    "javaDependencies": [
+        {
+            "groupId": "com.github.captainsoccer.BasicMotor",
+            "artifactId": "basicmotor-core",
+            "version": "v3.2.1"
+        },
+        {
+            "groupId": "com.github.captainsoccer.BasicMotor",
+            "artifactId": "basicmotor-ctre",
+            "version": "v3.2.1"
+        },
+        {
+            "groupId": "com.github.captainsoccer.BasicMotor",
+            "artifactId": "basicmotor-ctre-brushed",
+            "version": "v3.2.1"
+        }
+    ],
+    "jniDependencies": [
+        
+    ],
+    "nativeDependencies": [
+        
+    ],
+    "cppDependencies": [
+        
+    ]
+}

@@ -1,8 +1,8 @@
 package frc.robot.subsystems.flywheel;
 
-import com.basicMotor.BasicMotor;
-import com.basicMotor.configuration.BasicMotorConfig;
-import com.basicMotor.configuration.BasicTalonFXConfig;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.BasicMotor.IdleMode;
+import io.github.captainsoccer.basicmotor.ctre.talonfx.BasicTalonFXConfig;
 
 public class FlywheelConstants {
     public static final double WHEEL_RADIUS = 0.0762; // in meters (3 inches)
@@ -14,7 +14,7 @@ public class FlywheelConstants {
         motorConfig.motorConfig.name = "Flywheel Motor";
         motorConfig.motorConfig.id = 1; // Example ID, change as needed
         motorConfig.motorConfig.inverted = false; // Set to true if the motor is inverted
-        motorConfig.motorConfig.idleMode = BasicMotor.IdleMode.COAST;
+        motorConfig.motorConfig.idleMode = IdleMode.COAST;
         motorConfig.motorConfig.gearRatio = 5; // Example gear ratio, change as needed
         motorConfig.motorConfig.unitConversion = WHEEL_RADIUS * 2 * Math.PI; // Convert radius to circumference for unit conversion
 

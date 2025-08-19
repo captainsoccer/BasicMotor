@@ -1,0 +1,37 @@
+{
+    "fileName": "BasicMotor-Full-Brushless.json",
+    "name": "BasicMotor Full Brushless",
+    "version": "3.2.1",
+    "uuid": "09f0a944-983e-4f0e-9ba3-589adaa23033",
+    "frcYear": "2025",
+    "mavenUrls": [
+        "https://jitpack.io"
+    ],
+    "jsonUrl": "https://captainsoccer.github.io/BasicMotor/BasicMotor-Full-Brushless.json",
+    "javaDependencies": [
+        {
+            "groupId": "com.github.captainsoccer.BasicMotor",
+            "artifactId": "basicmotor-core",
+            "version": "v3.2.1"
+        },
+        {
+            "groupId": "com.github.captainsoccer.BasicMotor",
+            "artifactId": "basicmotor-ctre",
+            "version": "v3.2.1"
+        },
+        {
+            "groupId": "com.github.captainsoccer.BasicMotor",
+            "artifactId": "basicmotor-rev",
+            "version": "v3.2.1"
+        }
+    ],
+    "jniDependencies": [
+        
+    ],
+    "nativeDependencies": [
+        
+    ],
+    "cppDependencies": [
+        
+    ]
+}

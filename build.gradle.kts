@@ -1,80 +1,158 @@
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+
 plugins {
-    `java-library`
-    `maven-publish`
+    base // keeps root free of Java source; provides clean/assemble tasks
 }
 
-group = "com.basicmotor"
-version = "2.0.0"
+version = providers.gradleProperty("libVersion").get()
+val versionStr = "v$version"
+group   = providers.gradleProperty("group").get()
 
-val wpilibVersion = "2025.3.2"
-val advantageKitVersion = "4.1.2"
-val phoenix6Version = "25.4.0"
-val revLibVersion = "2025.0.3"
+val wpilibVersion = providers.gradleProperty("wpilibVersion").get()
+val advantageKitVersion = providers.gradleProperty("advantageKitVersion").get()
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+
+// ---- Common repositories for every module ----
+allprojects {
+    repositories {
+        mavenCentral()
+        maven(url = "https://frcmaven.wpi.edu/artifactory/release/") // WPILib
+        maven(url = "https://frcmaven.wpi.edu/artifactory/littletonrobotics-mvn-release") // Littleton Robotics
+        // maven(url = "https://jitpack.io") // uncomment if you consume JitPack deps
     }
-    withJavadocJar()
-    withSourcesJar()
 }
 
+// ---- Shared config for all subprojects (modules) ----
+subprojects {
+    // Most modules will be Java libraries published somewhere
+    apply(plugin = "java-library")
+    apply(plugin = "maven-publish")
 
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
-            groupId = "com.basicmotor"
-            artifactId = "basic-motor"
-            version = version
+    // Group (Maven groupId). For JitPack publishing, you can set this to "com.github.captainsoccer".
+    group = rootProject.group
+    // Version: by default each module should set its own version in its own build.gradle.kts.
+    // If you want a fallback (for local dev), keep this:
+    version = rootProject.version
+
+    dependencies{
+        // WPILib dependencies
+        add("compileOnly", "edu.wpi.first.wpilibj:wpilibj-java:${wpilibVersion}")
+        add("compileOnly", "edu.wpi.first.wpimath:wpimath-java:${wpilibVersion}")
+        add("compileOnly", "edu.wpi.first.wpiutil:wpiutil-java:${wpilibVersion}")
+        add("compileOnly", "edu.wpi.first.wpiunits:wpiunits-java:${wpilibVersion}")
+        add("compileOnly", "org.littletonrobotics.akit:akit-java:${advantageKitVersion}")
+        add("compileOnly", "us.hebi.quickbuf:quickbuf-runtime:1.3.3")
+    }
+
+    plugins.withType<JavaPlugin> {
+        the<JavaPluginExtension>().sourceSets.configureEach {
+            java {
+                exclude("example_projects/**")
+            }
+            resources {
+                exclude("example_projects/**")
+            }
+        }
+    }
+
+    the<JavaPluginExtension>().apply {
+        toolchain { languageVersion.set(JavaLanguageVersion.of(17)) }
+        withSourcesJar()
+        withJavadocJar()
+    }
+}
+
+tasks.register("syncVendordepsVersion") {
+    group = "release"
+    description = "Updates the .version in all vendordeps/*.json"
+    doLast {
+        val dir = file("docs")
+        if (!dir.exists()) return@doLast
+        dir.listFiles { f -> f.name.endsWith(".json") }?.forEach { f ->
+            val obj = JsonSlurper().parse(f) as Map<*, *>
+            val mutable = obj.toMutableMap()
+
+            // 1) set the top-level version field
+            mutable["version"] = version
+
+            // 2) update nested dependency versions
+            fun bumpList(key: String) {
+                val list = (mutable[key] as? List<*>)?.map { it as Map<*, *> } ?: return
+                val newList = list.map { dep ->
+                    val dm = dep.toMutableMap()
+                    if (dm["version"] is String) dm["version"] = versionStr
+                    dm
+                }
+                mutable[key] = newList
+            }
+            bumpList("javaDependencies")
+
+            // 3) write back (pretty-printed, trailing newline)
+            f.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(mutable)) + "\n")
+            println("Updated ${f.name} -> version=$version")
         }
     }
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs("src/main/java")
-            exclude("**/example_projects/**")
+tasks.register("syncDocsVendordepsIntoExamples") {
+    group = "release"
+    description = "Copy vendordep JSONs from /docs into example projects if names match"
+
+    doLast {
+        val docsDir = file("docs")
+        val examplesRoot = file("example_projects")
+
+        if (!docsDir.exists() || !examplesRoot.exists()) {
+            println("No docs/ or template_projects/ directory found.")
+            return@doLast
         }
+
+        val docsJsons = docsDir.listFiles { f -> f.isFile && f.extension == "json" }?.toList().orEmpty()
+        if (docsJsons.isEmpty()) {
+            println("No vendordep JSON files found in docs/.")
+            return@doLast
+        }
+
+        var replaced = 0
+        var skipped = 0
+
+        examplesRoot.listFiles { f -> f.isDirectory }?.forEach { example ->
+            val vendordepsDir = File(example, "vendordeps")
+            if (!vendordepsDir.exists()) return@forEach
+
+            docsJsons.forEach { src ->
+                val dest = File(vendordepsDir, src.name)
+                if (dest.exists()) {
+                    // only replace if content differs
+                    val same = src.readBytes().contentEquals(dest.readBytes())
+                    if (same) {
+                        skipped++
+                    } else {
+                        Files.copy(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                        println("Updated ${dest.relativeTo(rootDir)} from docs/${src.name}")
+                        replaced++
+                    }
+                }
+            }
+        }
+
+        println("Sync complete. Replaced $replaced file(s), skipped $skipped unchanged file(s).")
     }
 }
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    maven {
-        url = uri("https://frcmaven.wpi.edu/artifactory/release")
-    }
-    maven {
-        url = uri("https://frcmaven.wpi.edu/artifactory/littletonrobotics-mvn-release")
-    }
-    maven{
-        url = uri("https://maven.ctr-electronics.com/release/")
-    }
-    maven{
-        url = uri("https://maven.revrobotics.com/")
-    }
+tasks.named("syncDocsVendordepsIntoExamples") {
+    dependsOn("syncVendordepsVersion")
 }
 
-dependencies {
-    implementation("edu.wpi.first.wpilibj:wpilibj-java:${wpilibVersion}")
-    implementation("edu.wpi.first.wpimath:wpimath-java:${wpilibVersion}")
-    implementation("edu.wpi.first.wpiutil:wpiutil-java:${wpilibVersion}")
-    implementation("edu.wpi.first.wpiunits:wpiunits-java:${wpilibVersion}")
-    implementation("org.littletonrobotics.akit:akit-java:${advantageKitVersion}")
-    implementation("com.ctre.phoenix6:wpiapi-java:${phoenix6Version}")
-    implementation(("com.revrobotics.frc:REVLib-java:${revLibVersion}"))
-    implementation("us.hebi.quickbuf:quickbuf-runtime:1.3.3")
-
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
-
-tasks.named<Jar>("sourcesJar") {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+tasks.register("ReleaseBuild"){
+    group = "release"
+    description = "Run version syncing, then perform a normal build suitable for releases."
+    // Add any sync tasks you want to run BEFORE building:
+    dependsOn(
+        "syncDocsVendordepsIntoExamples",
+        "build"
+    )
 }

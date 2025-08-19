@@ -1,12 +1,11 @@
 package frc.robot.subsystems.Drivetrain;
 
-import com.basicMotor.BasicMotor;
-import com.basicMotor.controllers.Controller;
-import com.basicMotor.motors.simulation.BasicSimMotor;
-import com.basicMotor.motors.sparkBase.BasicSparkMAX;
-
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.RobotBase;
+import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.controllers.Controller;
+import io.github.captainsoccer.basicmotor.rev.BasicSparkMAX;
+import io.github.captainsoccer.basicmotor.sim.motor.BasicMotorSim;
 
 /**
  * This is the basic motor implementation of the TankIO interface.
@@ -38,8 +37,8 @@ public class TankIOBasic implements TankIO{
             rightFollower.followMotor(leadRightMotor, TankConstants.followerInvertedToLead);
         }
         else{
-            leadLeftMotor = new BasicSimMotor(TankConstants.LEFT.leadMotorConfig);
-            leadRightMotor = new BasicSimMotor(TankConstants.RIGHT.leadMotorConfig);
+            leadLeftMotor = new BasicMotorSim(TankConstants.LEFT.leadMotorConfig);
+            leadRightMotor = new BasicMotorSim(TankConstants.RIGHT.leadMotorConfig);
         }
     }
 

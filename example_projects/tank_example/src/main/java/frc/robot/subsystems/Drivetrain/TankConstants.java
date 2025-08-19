@@ -1,16 +1,16 @@
 package frc.robot.subsystems.Drivetrain;
 
-import com.basicMotor.BasicMotor;
-import com.basicMotor.configuration.BasicMotorConfig;
-import com.basicMotor.configuration.BasicSparkBaseConfig;
-import com.basicMotor.configuration.BasicMotorConfig.FeedForwardConfig;
-import com.basicMotor.configuration.BasicMotorConfig.PIDConfig;
-import com.basicMotor.gains.ControllerFeedForwards;
-import com.basicMotor.gains.PIDGains;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
+import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig.FeedForwardConfig;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig.PIDConfig;
+import io.github.captainsoccer.basicmotor.gains.PIDGains;
+import io.github.captainsoccer.basicmotor.gains.FeedForwardsGains;
+import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig;
 
 /**
  * Constants for the tank drive system.
@@ -18,12 +18,12 @@ import edu.wpi.first.wpilibj.DriverStation;
 public enum TankConstants {
     LEFT(3, 4, false,
             new PIDGains(3, 0, 0), //The PID gains for the left side motors
-            new ControllerFeedForwards(4), //The feed forwards for the left side motors
+            new FeedForwardsGains(4), //The feed forwards for the left side motors
             0.4), //The kA constant for the left side motors (kv is the setpoint feed forward)
 
     RIGHT(5, 6, false,
             new PIDGains(3, 0, 0), //The PID gains for the right side motors
-            new ControllerFeedForwards(4), //The feed forwards for the right side motors
+            new FeedForwardsGains(4), //The feed forwards for the right side motors
             0.4); //The kA constant for the right side motors (kv is the setpoint feed forward)
 
     /**
@@ -71,7 +71,7 @@ public enum TankConstants {
      * @return A BasicMotorConfig object containing the common motor configuration.
      */
     private static BasicMotorConfig createCommonMotorConfig(){
-        var config = new BasicSparkBaseConfig();
+        var config = new BasicSparkConfig();
 
         config.motorConfig.gearRatio = GEAR_RATIO;
         config.motorConfig.unitConversion = WHEEL_RADIUS_METERS * 2 * Math.PI; // Convert wheel radius to circumference
@@ -141,7 +141,7 @@ public enum TankConstants {
      * @param feedForwards the feed forwards for the motor (for velocity control)
      * @param kA the kA constant for the motor (for simulation) (kv is the setpoint feed forward)
      */
-    TankConstants(int leadID, int followID, boolean inverted, PIDGains pidGains, ControllerFeedForwards feedForwards, double kA){
+    TankConstants(int leadID, int followID, boolean inverted, PIDGains pidGains, FeedForwardsGains feedForwards, double kA){
         leadMotorConfig = createCommonMotorConfig();
         leadMotorConfig.motorConfig.id = leadID;
         leadMotorConfig.motorConfig.name = this.name() + " Lead Motor";
@@ -153,7 +153,7 @@ public enum TankConstants {
         leadMotorConfig.simulationConfig.kV = feedForwards.getSetpointFeedForward();
         leadMotorConfig.simulationConfig.kA = kA;
 
-        followerMotorConfig = new BasicSparkBaseConfig();
+        followerMotorConfig = new BasicSparkConfig();
 
         followerMotorConfig.motorConfig.id = followID;
         followerMotorConfig.motorConfig.name = this.name() + " Follower Motor";

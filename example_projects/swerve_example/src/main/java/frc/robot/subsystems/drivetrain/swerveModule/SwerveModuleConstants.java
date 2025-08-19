@@ -6,17 +6,17 @@ package frc.robot.subsystems.drivetrain.swerveModule;
 
 import java.util.ArrayList;
 
-import com.basicMotor.BasicMotor;
-import com.basicMotor.configuration.BasicMotorConfig;
-import com.basicMotor.configuration.BasicSparkBaseConfig;
-import com.basicMotor.configuration.BasicTalonFXConfig;
-import com.basicMotor.configuration.BasicMotorConfig.FeedForwardConfig;
-import com.basicMotor.configuration.BasicMotorConfig.PIDConfig;
-import com.basicMotor.gains.ControllerConstraints;
-import com.basicMotor.gains.ControllerFeedForwards;
-import com.basicMotor.gains.PIDGains;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.BasicMotor.IdleMode;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig.FeedForwardConfig;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig.PIDConfig;
+import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig;
+import io.github.captainsoccer.basicmotor.ctre.talonfx.BasicTalonFXConfig;
+import io.github.captainsoccer.basicmotor.gains.FeedForwardsGains;
+import io.github.captainsoccer.basicmotor.gains.PIDGains;
+import io.github.captainsoccer.basicmotor.gains.ConstraintsGains.ConstraintType;
 
 /**
  * Constants for the swerve modules.
@@ -27,13 +27,13 @@ public enum SwerveModuleConstants {
             // PID gains for the drive motor
             3, new PIDGains(5, 0, 0),
             // The feed forwards for the drive motor (the setpoint feed forward is the kV)
-            new ControllerFeedForwards(2.7),
+            new FeedForwardsGains(2.7),
             0.011902948,
 
             // PID gains for the steer motor
             4, new PIDGains(20, 25, 0, 0.05, 4, 0.001),
             //The feed forwards for the steer motor
-            new ControllerFeedForwards(0, 0.35464),
+            new FeedForwardsGains(0, 0.35464),
             //The motor constants used in the simulation
             0.1,0.2,
             new Translation2d(0.29, 0.29)), //The translation of the modules relative to the center of the robot
@@ -42,13 +42,13 @@ public enum SwerveModuleConstants {
             // PID gains for the drive motor
             6, new PIDGains(5, 0, 0),
             // The feed forwards for the drive motor (the setpoint feed forward is the kV)
-            new ControllerFeedForwards(2.7),
+            new FeedForwardsGains(2.7),
             0.011902948,
 
             // PID gains for the steer motor
             7, new PIDGains(20, 25, 0, 0.05, 4, 0.001),
             //The feed forwards for the steer motor
-            new ControllerFeedForwards(0, 0.35464),
+            new FeedForwardsGains(0, 0.35464),
             //The motor constants used in the simulation
             0.1,0.2,
             new Translation2d(0.29, -0.29)),
@@ -57,13 +57,13 @@ public enum SwerveModuleConstants {
             // PID gains for the drive motor
             9, new PIDGains(5, 0, 0),
             // The feed forwards for the drive motor (the setpoint feed forward is the kV)
-            new ControllerFeedForwards(2.7),
+            new FeedForwardsGains(2.7),
             0.011902948,
 
             // PID gains for the steer motor
             10, new PIDGains(20, 25, 0, 0.05, 4, 0.001),
             //The feed forwards for the steer motor
-            new ControllerFeedForwards(0, 0.35464),
+            new FeedForwardsGains(0, 0.35464),
             //The motor constants used in the simulation
             0.1,0.2,
             new Translation2d(-0.29, 0.29)),
@@ -72,13 +72,13 @@ public enum SwerveModuleConstants {
             // PID gains for the drive motor
             12, new PIDGains(5, 0, 0),
             // The feed forwards for the drive motor (the setpoint feed forward is the kV)
-            new ControllerFeedForwards(2.7),
+            new FeedForwardsGains(2.7),
             0.011902948,
 
             // PID gains for the steer motor
             13, new PIDGains(20, 25, 0, 0.05, 4, 0.001),
             //The feed forwards for the steer motor
-            new ControllerFeedForwards(0, 0.35464),
+            new FeedForwardsGains(0, 0.35464),
             //The motor constants used in the simulation
             0.1,0.2,
             new Translation2d(-0.29, -0.29));
@@ -96,7 +96,7 @@ public enum SwerveModuleConstants {
 
         config.motorConfig.gearRatio = DRIVE_GEAR_RATIO;
         config.motorConfig.unitConversion = 2 * Math.PI * WHEEL_RADIUS_METERS;
-        config.motorConfig.idleMode = BasicMotor.IdleMode.BRAKE;
+        config.motorConfig.idleMode = IdleMode.BRAKE;
         config.motorConfig.motorType = DCMotor.getKrakenX60(1);
 
         config.currentLimitConfig.statorCurrentLimit = DRIVE_CURRENT_LIMIT;
@@ -107,15 +107,15 @@ public enum SwerveModuleConstants {
 
     // Common configurations for the steer motor
     private static BasicMotorConfig getSteerMotorCommonConfig() {
-        var config = new BasicSparkBaseConfig();
+        var config = new BasicSparkConfig();
 
         config.motorConfig.gearRatio = 12.75; // Adjust based on your gear ratio
-        config.motorConfig.idleMode = BasicMotor.IdleMode.BRAKE;
+        config.motorConfig.idleMode = IdleMode.BRAKE;
         config.motorConfig.motorType = DCMotor.getNEO(1); // Adjust based on your motor type
 
         config.currentLimitConfig.freeSpeedCurrentLimit = 40; // Adjust based on your motor's current limit
 
-        config.constraintsConfig.constraintType = ControllerConstraints.ConstraintType.CONTINUOUS;
+        config.constraintsConfig.constraintType = ConstraintType.CONTINUOUS;
         config.constraintsConfig.maxValue = 0.5; // Adjust based on your encoder's max value
         config.constraintsConfig.minValue = -0.5; // Adjust based on your encoder's min value
 
@@ -140,11 +140,11 @@ public enum SwerveModuleConstants {
             double zeroOffset,
             int driveMotorID,
             PIDGains drivePIDGains,
-            ControllerFeedForwards driveFeedForwards,
+            FeedForwardsGains driveFeedForwards,
             double driveKA,
             int steerMotorID,
             PIDGains steerPIDGains,
-            ControllerFeedForwards steerFeedForwards,
+            FeedForwardsGains steerFeedForwards,
             double steerKV,
             double steerKA,
             Translation2d location) {

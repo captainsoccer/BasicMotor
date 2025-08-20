@@ -88,10 +88,10 @@ public class BasicMotorSim extends BasicSimSystem {
             double unitConversion = config.motorConfig.unitConversion;
 
             Per<VoltageUnit, AngularVelocityUnit> kV =
-                    Units.Volts.per(Units.RotationsPerSecond).ofNative(simConfig.kV / unitConversion);
+                    Units.Volts.per(Units.RotationsPerSecond).ofNative(simConfig.kV * unitConversion);
 
             Per<VoltageUnit, AngularAccelerationUnit> kA =
-                    Units.Volts.per(Units.RotationsPerSecondPerSecond).ofNative(simConfig.kA / unitConversion);
+                    Units.Volts.per(Units.RotationsPerSecondPerSecond).ofNative(simConfig.kA * unitConversion);
 
             plant = LinearSystemId.createDCMotorSystem(kV.in(Units.VoltsPerRadianPerSecond), kA.in(Units.VoltsPerRadianPerSecondSquared));
         } else {

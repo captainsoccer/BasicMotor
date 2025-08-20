@@ -898,7 +898,7 @@ public abstract class BasicMotor {
             DriverStation.reportError("motor: " + name + " Trying to convert torque and current without config set.", false);
             return 0;
         }
-        return config.motorConfig.motorType.getCurrent(torque);
+        return config.motorConfig.motorType.getCurrent(torque / getDefaultMeasurements().getGearRatio());
     }
 
     /**
@@ -914,7 +914,7 @@ public abstract class BasicMotor {
             DriverStation.reportError("motor: " + name + " Trying to convert torque and current without config set.", false);
             return 0;
         }
-        return config.motorConfig.motorType.getTorque(current);
+        return config.motorConfig.motorType.getTorque(current) * getDefaultMeasurements().getGearRatio();
     }
 
     /**

@@ -8,7 +8,10 @@ import java.io.IOException;
 import java.util.function.BiConsumer;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.Util.SimGyroIO;
+import frc.robot.commands.FinishPathCommand;
 import frc.robot.subsystems.drivetrain.swerveModule.*;
 import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.AutoLog;
@@ -16,8 +19,10 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.DriveFeedforwards;
+import com.pathplanner.lib.util.PathPlannerLogging;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -30,6 +35,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.Util.GyroIO;
 import frc.Util.Pigeon2IO;
@@ -89,6 +95,16 @@ public class DriveTrain extends SubsystemBase {
     private final GyroIO gyro;
 
     /**
+     * The 2d field that sends the robot's pose to the dashboard
+     */
+    private final Field2d field;
+
+    /**
+     * The target pose of a path (the final pose of any path run will be updated to here)
+     */
+    private Pose2d pathPlannerTargetPose = Pose2d.kZero;
+
+    /**
      * Creates a new DriveTrain.
      */
     public DriveTrain() {
@@ -101,6 +117,7 @@ public class DriveTrain extends SubsystemBase {
             modulePositions[i] = new SwerveModulePosition();
 
             moduleInputs[i] = new SwerveModuleInputsAutoLogged();
+            inputs.currentStates[i] = moduleInputs[i].state;
         }
 
         if(RobotBase.isReal()){
@@ -114,6 +131,28 @@ public class DriveTrain extends SubsystemBase {
         poseEstimator = new SwerveDrivePoseEstimator(kinematics, Rotation2d.kZero, modulePositions, new Pose2d());
 
         configureAutoBuilder();
+
+        field = new Field2d();
+        SmartDashboard.putData("field", field);
+
+        PathPlannerLogging.setLogActivePathCallback(
+            (poses) -> {
+                var posesArr = poses.toArray(new Pose2d[0]);
+
+                Logger.recordOutput("DriveTrain/PathPlanner/active path", posesArr);
+            }
+        );
+
+        PathPlannerLogging.setLogTargetPoseCallback(
+            (pose) -> {
+                Logger.recordOutput("DriveTrain/PathPlanner/target pose", pose);
+                this.pathPlannerTargetPose = pose;
+            }
+        );
+
+        Command finishPath = new FinishPathCommand(this, DriveTrainConstants.PATH_FINISH_TRANSLATION_GAINS, DriveTrainConstants.PATH_FINISH_ROTATION_GAINS);
+
+        NamedCommands.registerCommand("Finish Path", finishPath);
     }
 
     /**
@@ -185,12 +224,13 @@ public class DriveTrain extends SubsystemBase {
 
         for (int i = 0; i < 4; i++) {
             targetStates[i].optimize(moduleInputs[i].state.angle);
+            targetStates[i].cosineScale(moduleInputs[i].state.angle);
 
             io[i].setTarget(targetStates[i]);
         }
 
-        Logger.recordOutput("Drive train/Target speeds", targetSpeed);
-        Logger.recordOutput("Drive train/targetStates", targetStates);
+        Logger.recordOutput("DriveTrain/Target speeds", targetSpeed);
+        Logger.recordOutput("DriveTrain/targetStates", targetStates);
     }
 
     /**
@@ -277,6 +317,15 @@ public class DriveTrain extends SubsystemBase {
         return poseEstimator.getEstimatedPosition();
     }
 
+    /**
+     * Gets the last pose of the last path run.
+     * Used to finish the path if needed.
+     * @return The final pose of the last run path
+     */
+    public Pose2d getPathFinalPose(){
+        return pathPlannerTargetPose;
+    }
+
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
@@ -295,8 +344,13 @@ public class DriveTrain extends SubsystemBase {
 
         poseEstimator.update(getGyroRotation2d(), modulePositions);
 
+        field.setRobotPose(poseEstimator.getEstimatedPosition());
         // Records the estimated pose and rotation
-        Logger.recordOutput("Drive train/Rotation", getRotation2d());
-        Logger.recordOutput("Drive train/Estimated pose", poseEstimator.getEstimatedPosition());
+        Logger.recordOutput("DriveTrain/Rotation", getRotation2d());
+        Logger.recordOutput("DriveTrain/Estimated pose", poseEstimator.getEstimatedPosition());
+
+        Command currentCommand = getCurrentCommand();
+
+        Logger.recordOutput("DriveTrain/Current Command", currentCommand == null ? "None" : currentCommand.getName());
     }
 }

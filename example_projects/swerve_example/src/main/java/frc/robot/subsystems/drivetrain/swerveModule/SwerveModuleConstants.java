@@ -27,8 +27,8 @@ public enum SwerveModuleConstants {
             // PID gains for the drive motor
             3, new PIDGains(5, 0, 0),
             // The feed forwards for the drive motor (the setpoint feed forward is the kV)
-            new FeedForwardsGains(2.7, 0.109),
-            0.0023431,
+            new FeedForwardsGains(3, 0.109),
+            1.2,
 
             // PID gains for the steer motor
             4, new PIDGains(8, 0, 0, 0.05, 4, 0.001),
@@ -42,8 +42,8 @@ public enum SwerveModuleConstants {
             // PID gains for the drive motor
             6, new PIDGains(5, 0, 0),
             // The feed forwards for the drive motor (the setpoint feed forward is the kV)
-            new FeedForwardsGains(2.7, 0.109),
-            0.023431,
+            new FeedForwardsGains(3, 0.109),
+            1.2,
 
             // PID gains for the steer motor
             7, new PIDGains(8, 0, 1, 0.05, 4, 0.001),
@@ -57,8 +57,8 @@ public enum SwerveModuleConstants {
             // PID gains for the drive motor
             9, new PIDGains(5, 0, 0),
             // The feed forwards for the drive motor (the setpoint feed forward is the kV)
-            new FeedForwardsGains(2.7, 0.109),
-            0.23431,
+            new FeedForwardsGains(3, 0.109),
+            1.2,
 
             // PID gains for the steer motor
             10, new PIDGains(8, 0, 1, 0.05, 4, 0.001),
@@ -72,8 +72,8 @@ public enum SwerveModuleConstants {
             // PID gains for the drive motor
             12, new PIDGains(5, 0, 0),
             // The feed forwards for the drive motor (the setpoint feed forward is the kV)
-            new FeedForwardsGains(2.7, 0.109),
-            0.023431,
+            new FeedForwardsGains(3, 0.109),
+            1.2,
 
             // PID gains for the steer motor
             13, new PIDGains(8, 0, 0, 0.05, 4, 0.001),
@@ -164,8 +164,8 @@ public enum SwerveModuleConstants {
         DRIVE_MOTOR_CONFIG.motorConfig.id = driveMotorID;
         DRIVE_MOTOR_CONFIG.pidConfig = PIDConfig.fromGains(drivePIDGains);
         DRIVE_MOTOR_CONFIG.feedForwardConfig = FeedForwardConfig.fromFeedForwards(driveFeedForwards);
-        DRIVE_MOTOR_CONFIG.simulationConfig.kV = 0.13208;
-        DRIVE_MOTOR_CONFIG.simulationConfig.kA = 0.013716;
+        DRIVE_MOTOR_CONFIG.simulationConfig.kV = driveFeedForwards.getSetpointFeedForward() / 6.75;
+        DRIVE_MOTOR_CONFIG.simulationConfig.kA = driveKA / 6.75;
 
         //apply specific configurations for the steer motor
         STEER_MOTOR_CONFIG.motorConfig.name = NAME + " Steer Motor";

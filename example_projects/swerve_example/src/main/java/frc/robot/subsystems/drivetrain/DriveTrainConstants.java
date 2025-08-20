@@ -10,6 +10,7 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.subsystems.drivetrain.swerveModule.SwerveModuleConstants;
+import io.github.captainsoccer.basicmotor.gains.PIDGains;
 
 
 /**
@@ -34,6 +35,16 @@ public class DriveTrainConstants {
             new PPHolonomicDriveController(
                     new PIDConstants(1), //PID constants for the translation PID controller
                     new PIDConstants(1)); //PID constants for the rotation PID controller
+
+    /**
+     * The PID gains used for the translation of the robot while running Finish Path command.
+     */
+    public static final PIDGains PATH_FINISH_TRANSLATION_GAINS = new PIDGains(1, 0, 0, 0.01);
+
+    /**
+     * The PID gains used for the rotation of the robot while running finish path command.
+     */
+    public static final PIDGains PATH_FINISH_ROTATION_GAINS = new PIDGains(1, 0, 0, 0.05);
 
     /**
      * Change this function according to your needs per season.

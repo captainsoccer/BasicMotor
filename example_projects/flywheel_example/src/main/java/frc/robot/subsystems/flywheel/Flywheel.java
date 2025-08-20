@@ -1,6 +1,7 @@
 package frc.robot.subsystems.flywheel;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -32,7 +33,8 @@ public class Flywheel extends SubsystemBase {
      * @param targetMetersPerSecond the target velocity in meters per second.
      */
     public void setTargetVelocity(double targetMetersPerSecond) {
-        io.setTargetVelocity(checkVelocity(targetMetersPerSecond));
+        double target = targetMetersPerSecond / FlywheelConstants.WHEEL_CIRCUMFERENCE_METERS;
+        setTargetRotationsPerSecond(target);
     }
 
     /**
@@ -40,9 +42,11 @@ public class Flywheel extends SubsystemBase {
      * @param targetRPM the target RPM to set.
      */
     public void setTargetRPM(double targetRPM) {
-        double targetMetersPerSecond = (targetRPM / 60.0) * (2 * Math.PI * FlywheelConstants.WHEEL_RADIUS);
+        setTargetRotationsPerSecond(targetRPM / 60);
+    }
 
-        io.setTargetVelocity(checkVelocity(targetMetersPerSecond));
+    public void setTargetRotationsPerSecond(double target){
+        io.setTargetVelocity(checkVelocity(target));
     }
 
     /**
@@ -98,5 +102,9 @@ public class Flywheel extends SubsystemBase {
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Flywheel", inputs);
+
+        Command currentCommand = getCurrentCommand();
+
+        Logger.recordOutput("FlyWheel/Current Command", currentCommand == null ? "None" : currentCommand.getName());
     }
 }

@@ -2,6 +2,7 @@ package io.github.captainsoccer.basicmotor.gains;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 
@@ -263,6 +264,10 @@ public class ControllerGains {
      * @param profileConstraints The constraints of the profile
      */
     public void setMotionProfileGains(TrapezoidProfile.Constraints profileConstraints) {
+        if(profileConstraints.maxVelocity < 0 || profileConstraints.maxAcceleration < 0) {
+            DriverStation.reportError("motion profile constraints must be greater than or equal to zero, disabling profile", false);
+            profileConstraints = new TrapezoidProfile.Constraints(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+        }
         this.motionProfileGains = profileConstraints;
         motionProfile = new TrapezoidProfile(profileConstraints);
     }

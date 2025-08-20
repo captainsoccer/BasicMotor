@@ -27,60 +27,60 @@ public enum SwerveModuleConstants {
             // PID gains for the drive motor
             3, new PIDGains(5, 0, 0),
             // The feed forwards for the drive motor (the setpoint feed forward is the kV)
-            new FeedForwardsGains(2.7),
-            0.011902948,
+            new FeedForwardsGains(3, 0.109),
+            1.2,
 
             // PID gains for the steer motor
-            4, new PIDGains(20, 25, 0, 0.05, 4, 0.001),
+            4, new PIDGains(10, 0, 1, 0.2, 12, 0.001),
             //The feed forwards for the steer motor
-            new FeedForwardsGains(0, 0.35464),
+            new FeedForwardsGains(),
             //The motor constants used in the simulation
-            0.1,0.2,
+            1.7245,0.15,
             new Translation2d(0.29, 0.29)), //The translation of the modules relative to the center of the robot
 
     FRONT_RIGHT(5, 0,
             // PID gains for the drive motor
             6, new PIDGains(5, 0, 0),
             // The feed forwards for the drive motor (the setpoint feed forward is the kV)
-            new FeedForwardsGains(2.7),
-            0.011902948,
+            new FeedForwardsGains(3, 0.109),
+            1.2,
 
             // PID gains for the steer motor
-            7, new PIDGains(20, 25, 0, 0.05, 4, 0.001),
+            7, new PIDGains(10, 0, 1, 0.2, 12, 0.001),
             //The feed forwards for the steer motor
-            new FeedForwardsGains(0, 0.35464),
+            new FeedForwardsGains(),
             //The motor constants used in the simulation
-            0.1,0.2,
+            1.7245,0.15,
             new Translation2d(0.29, -0.29)),
 
     BACK_LEFT(8, 0,
             // PID gains for the drive motor
             9, new PIDGains(5, 0, 0),
             // The feed forwards for the drive motor (the setpoint feed forward is the kV)
-            new FeedForwardsGains(2.7),
-            0.011902948,
+            new FeedForwardsGains(3, 0.109),
+            1.2,
 
             // PID gains for the steer motor
-            10, new PIDGains(20, 25, 0, 0.05, 4, 0.001),
+            10, new PIDGains(10, 0, 1, 0.2, 12, 0.001),
             //The feed forwards for the steer motor
-            new FeedForwardsGains(0, 0.35464),
+            new FeedForwardsGains(),
             //The motor constants used in the simulation
-            0.1,0.2,
+            1.7245,0.15,
             new Translation2d(-0.29, 0.29)),
 
     BACK_RIGHT(11, 0,
             // PID gains for the drive motor
             12, new PIDGains(5, 0, 0),
             // The feed forwards for the drive motor (the setpoint feed forward is the kV)
-            new FeedForwardsGains(2.7),
-            0.011902948,
+            new FeedForwardsGains(3, 0.109),
+            1.2,
 
             // PID gains for the steer motor
-            13, new PIDGains(20, 25, 0, 0.05, 4, 0.001),
+            13, new PIDGains(10, 0, 1, 0.2, 12, 0.001),
             //The feed forwards for the steer motor
-            new FeedForwardsGains(0, 0.35464),
+            new FeedForwardsGains(),
             //The motor constants used in the simulation
-            0.1,0.2,
+            1.7245,0.15,
             new Translation2d(-0.29, -0.29));
 
     // Drive motor constants

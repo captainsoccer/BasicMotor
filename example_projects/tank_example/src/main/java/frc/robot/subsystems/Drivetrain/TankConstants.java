@@ -19,12 +19,12 @@ public enum TankConstants {
     LEFT(3, 4, false,
             new PIDGains(3, 0, 0), //The PID gains for the left side motors
             new FeedForwardsGains(4), //The feed forwards for the left side motors
-            0.4), //The kA constant for the left side motors (kv is the setpoint feed forward)
+            1), //The kA constant for the left side motors (kv is the setpoint feed forward)
 
     RIGHT(5, 6, false,
             new PIDGains(3, 0, 0), //The PID gains for the right side motors
             new FeedForwardsGains(4), //The feed forwards for the right side motors
-            0.4); //The kA constant for the right side motors (kv is the setpoint feed forward)
+            1); //The kA constant for the right side motors (kv is the setpoint feed forward)
 
     /**
      * The radius of the wheels in meters.

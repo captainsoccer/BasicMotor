@@ -31,11 +31,11 @@ public enum SwerveModuleConstants {
             1.2,
 
             // PID gains for the steer motor
-            4, new PIDGains(8, 0, 0, 0.05, 4, 0.001),
+            4, new PIDGains(10, 0, 1, 0.2, 12, 0.001),
             //The feed forwards for the steer motor
-            new FeedForwardsGains(0, 0),
+            new FeedForwardsGains(),
             //The motor constants used in the simulation
-            0.1,0.02,
+            1.7245,0.15,
             new Translation2d(0.29, 0.29)), //The translation of the modules relative to the center of the robot
 
     FRONT_RIGHT(5, 0,
@@ -46,11 +46,11 @@ public enum SwerveModuleConstants {
             1.2,
 
             // PID gains for the steer motor
-            7, new PIDGains(8, 0, 1, 0.05, 4, 0.001),
+            7, new PIDGains(10, 0, 1, 0.2, 12, 0.001),
             //The feed forwards for the steer motor
-            new FeedForwardsGains(0, 0),
+            new FeedForwardsGains(),
             //The motor constants used in the simulation
-            0.1,0.02,
+            1.7245,0.15,
             new Translation2d(0.29, -0.29)),
 
     BACK_LEFT(8, 0,
@@ -61,11 +61,11 @@ public enum SwerveModuleConstants {
             1.2,
 
             // PID gains for the steer motor
-            10, new PIDGains(8, 0, 1, 0.05, 4, 0.001),
+            10, new PIDGains(10, 0, 1, 0.2, 12, 0.001),
             //The feed forwards for the steer motor
-            new FeedForwardsGains(0, 0),
+            new FeedForwardsGains(),
             //The motor constants used in the simulation
-            0.1,0.02,
+            1.7245,0.15,
             new Translation2d(-0.29, 0.29)),
 
     BACK_RIGHT(11, 0,
@@ -76,11 +76,11 @@ public enum SwerveModuleConstants {
             1.2,
 
             // PID gains for the steer motor
-            13, new PIDGains(8, 0, 0, 0.05, 4, 0.001),
+            13, new PIDGains(10, 0, 1, 0.2, 12, 0.001),
             //The feed forwards for the steer motor
-            new FeedForwardsGains(0, 0),
+            new FeedForwardsGains(),
             //The motor constants used in the simulation
-            0.1,0.02,
+            1.7245,0.15,
             new Translation2d(-0.29, -0.29));
 
     // Drive motor constants
@@ -164,8 +164,8 @@ public enum SwerveModuleConstants {
         DRIVE_MOTOR_CONFIG.motorConfig.id = driveMotorID;
         DRIVE_MOTOR_CONFIG.pidConfig = PIDConfig.fromGains(drivePIDGains);
         DRIVE_MOTOR_CONFIG.feedForwardConfig = FeedForwardConfig.fromFeedForwards(driveFeedForwards);
-        DRIVE_MOTOR_CONFIG.simulationConfig.kV = driveFeedForwards.getSetpointFeedForward() / 6.75;
-        DRIVE_MOTOR_CONFIG.simulationConfig.kA = driveKA / 6.75;
+        DRIVE_MOTOR_CONFIG.simulationConfig.kV = driveFeedForwards.getSetpointFeedForward();
+        DRIVE_MOTOR_CONFIG.simulationConfig.kA = driveKA;
 
         //apply specific configurations for the steer motor
         STEER_MOTOR_CONFIG.motorConfig.name = NAME + " Steer Motor";

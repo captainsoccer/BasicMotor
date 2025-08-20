@@ -39,12 +39,12 @@ public class DriveTrainConstants {
     /**
      * The PID gains used for the translation of the robot while running Finish Path command.
      */
-    public static final PIDGains PATH_FINISH_TRANSLATION_GAINS = new PIDGains(1, 0, 0, 0.1);
+    public static final PIDGains PATH_FINISH_TRANSLATION_GAINS = new PIDGains(1, 0, 0, 0.01);
 
     /**
      * The PID gains used for the rotation of the robot while running finish path command.
      */
-    public static final PIDGains PATH_FINISH_ROTATION_GAINS = new PIDGains(1, 0, 0, 0.2);
+    public static final PIDGains PATH_FINISH_ROTATION_GAINS = new PIDGains(1, 0, 0, 0.05);
 
     /**
      * Change this function according to your needs per season.

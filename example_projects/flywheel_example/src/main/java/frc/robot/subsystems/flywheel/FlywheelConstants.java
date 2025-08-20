@@ -32,7 +32,10 @@ public class FlywheelConstants {
         motorConfig.constraintsConfig.minOutput = -10; // Minimum output in Volts
 
         motorConfig.simulationConfig.kV = 0.564263323;
-        motorConfig.simulationConfig.kA = 0.1;
+        motorConfig.simulationConfig.kA = 0.2;
+
+        motorConfig.profileConfig.maximumMeasurementVelocity = 3;
+        motorConfig.profileConfig.maximumMeasurementAcceleration = 1000;
 
         var talonFXConfig = (BasicTalonFXConfig) motorConfig;
         talonFXConfig.currentLimitConfig.supplyCurrentLimit = 40; // Supply current limit in Amperes

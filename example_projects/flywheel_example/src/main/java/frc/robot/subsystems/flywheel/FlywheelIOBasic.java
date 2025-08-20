@@ -26,7 +26,7 @@ public class FlywheelIOBasic implements  FlywheelIO {
 
     @Override
     public void setTargetVelocity(double targetMetersPerSecond) {
-        motor.setControl(targetMetersPerSecond, ControlMode.VELOCITY);
+        motor.setControl(targetMetersPerSecond, ControlMode.PROFILED_VELOCITY);
     }
 
     @Override

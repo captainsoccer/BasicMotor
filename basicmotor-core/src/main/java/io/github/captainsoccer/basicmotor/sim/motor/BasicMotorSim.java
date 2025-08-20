@@ -115,4 +115,13 @@ public class BasicMotorSim extends BasicSimSystem {
     protected Measurements getDefaultMeasurements() {
         return defaultMeasurements;
     }
+
+    /**
+     * Gets the DCMotorSim instance used by this BasicMotorSim.
+     *
+     * @return The DCMotorSim instance used by this BasicMotorSim.
+     */
+    public DCMotorSim getMotorSim() {
+        return motor;
+    }
 }

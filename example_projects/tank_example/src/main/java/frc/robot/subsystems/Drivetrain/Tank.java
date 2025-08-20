@@ -5,6 +5,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPLTVController;
 import com.pathplanner.lib.util.DriveFeedforwards;
+import com.pathplanner.lib.util.PathPlannerLogging;
+
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -13,6 +15,9 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.Util.GyroIO;
 import frc.Util.Pigeon2IO;
@@ -56,6 +61,11 @@ public class Tank extends SubsystemBase {
     private final DifferentialDrivePoseEstimator poseEstimator;
 
     /**
+     * The field that holds the robot pose for the dashboard
+     */
+    private final Field2d field;
+
+    /**
      * Constructor for the Tank subsystem.
      * Initializes the IO, gyro, kinematics, and pose estimator.
      */
@@ -69,6 +79,17 @@ public class Tank extends SubsystemBase {
         poseEstimator = new DifferentialDrivePoseEstimator(kinematics, Rotation2d.kZero, 0, 0, Pose2d.kZero);
 
         configureAutoBuilder();
+
+        field = new Field2d();
+        SmartDashboard.putData("field", field);
+
+        PathPlannerLogging.setLogActivePathCallback(
+            (poses) -> Logger.recordOutput("Tank/PathPlanner/active path", poses.toArray(new Pose2d[0]))
+        );
+
+        PathPlannerLogging.setLogTargetPoseCallback(
+            (pose) -> Logger.recordOutput("Tank/PathPlanner/target Pose", pose)
+        );
     }
 
     /**
@@ -235,8 +256,13 @@ public class Tank extends SubsystemBase {
 
         poseEstimator.update(getGyroAngle(), inputs.wheelPositions);
 
+        field.setRobotPose(getPose());
         Logger.recordOutput("Tank/EstimatedPose", poseEstimator.getEstimatedPosition());
         Logger.recordOutput("Tank/ChassisSpeeds", getChassisSpeeds());
+
+        Command currentCommand = getCurrentCommand();
+
+        Logger.recordOutput("Tank/Current Command", currentCommand == null ? "None" : currentCommand.getName());
     }
 }
 

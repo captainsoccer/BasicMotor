@@ -20,7 +20,7 @@ public class RobotContainer {
 
     configureBindings();
 
-    autoChooser = new LoggedDashboardChooser<>("auto chooser", AutoBuilder.buildAutoChooser());
+    autoChooser = new LoggedDashboardChooser<>("Auto chooser", AutoBuilder.buildAutoChooser());
   }
 
   private void configureBindings() {

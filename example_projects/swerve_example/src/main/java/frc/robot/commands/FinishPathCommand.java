@@ -36,19 +36,19 @@ public class FinishPathCommand extends Command {
     xController = new PIDController(translationConstants.getK_P(), translationConstants.getK_I(), translationConstants.getK_D());
     xController.setIZone(translationConstants.getI_Zone());
     xController.setIntegratorRange(-translationConstants.getI_MaxAccum(), translationConstants.getI_MaxAccum());
-    xController.setTolerance(translationConstants.getTolerance());
+    xController.setTolerance(translationConstants.getTolerance(), 0.1);
 
     // Sets the PID for the YController
     yController = new PIDController(translationConstants.getK_P(), translationConstants.getK_I(), translationConstants.getK_D());
     yController.setIZone(translationConstants.getI_Zone());
     yController.setIntegratorRange(-translationConstants.getI_MaxAccum(), translationConstants.getI_MaxAccum());
-    yController.setTolerance(translationConstants.getTolerance());
+    yController.setTolerance(translationConstants.getTolerance(), 0.1);
 
     // Sets the PID for the thetaCotnroller
     thetaController = new PIDController(rotationConstants.getK_P(), rotationConstants.getK_I(), rotationConstants.getK_D());
     thetaController.setIZone(rotationConstants.getI_Zone());
     thetaController.setIntegratorRange(-rotationConstants.getI_MaxAccum(), rotationConstants.getI_MaxAccum());
-    thetaController.setTolerance(rotationConstants.getTolerance());
+    thetaController.setTolerance(rotationConstants.getTolerance(), 0.05);
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
   }
 

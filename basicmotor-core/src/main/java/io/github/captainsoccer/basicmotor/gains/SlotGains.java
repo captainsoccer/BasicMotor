@@ -18,6 +18,15 @@ public class SlotGains {
         return slotGains;
     }
 
+    public SlotGains() {}
+
+    public SlotGains(PIDGains pidGains, FeedForwardsGains feedForwardsGains, TrapezoidProfile.Constraints motionProfileGains) {
+        this.pidGains = pidGains;
+        this.feedForwardsGains = feedForwardsGains;
+        this.motionProfileGains = motionProfileGains;
+        this.motionProfile = new TrapezoidProfile(motionProfileGains);
+    }
+
     /**
      * The PID gains of the controller.
      */

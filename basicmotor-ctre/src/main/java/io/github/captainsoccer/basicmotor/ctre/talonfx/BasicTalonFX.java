@@ -306,21 +306,11 @@ public class BasicTalonFX extends BasicMotor {
     protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
         StatusCode error =
                 switch (mode) {
-                    case POSITION, PROFILED_POSITION -> {
-                        // Set the PID slot for position control
-                        // Uses direct property assignment following the pattern of EnableFOC
-                        positionRequest.Slot = slot;
-                        yield motor.setControl(
-                                positionRequest.withPosition(setpoint).withFeedForward(feedForward));
-                    }
+                    case POSITION, PROFILED_POSITION -> motor.setControl(
+                                positionRequest.withPosition(setpoint).withFeedForward(feedForward).withSlot(slot));
 
-                    case VELOCITY, PROFILED_VELOCITY -> {
-                        // Set the PID slot for velocity control
-                        // Uses direct property assignment following the pattern of EnableFOC
-                        velocityRequest.Slot = slot;
-                        yield motor.setControl(
-                                velocityRequest.withVelocity(setpoint).withFeedForward(feedForward));
-                    }
+                    case VELOCITY, PROFILED_VELOCITY -> motor.setControl(
+                                velocityRequest.withVelocity(setpoint).withFeedForward(feedForward).withSlot(slot));
 
                     case VOLTAGE -> motor.setControl(voltageRequest.withOutput(setpoint));
 
@@ -336,7 +326,6 @@ public class BasicTalonFX extends BasicMotor {
                             DriverStation.reportError("motor " + name + " is not pro licensed and cannot use current or torque control modes", false);
                             yield motor.setControl(torqueCurrentRequest.withOutput(setpoint));
                         }
-
                         // there is already error handling in the torqueCurrentRequest
                         yield StatusCode.OK;
                     }

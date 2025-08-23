@@ -31,8 +31,26 @@ public class ControllerGains {
      */
     private Runnable setHasConstraintsChanged;
 
+    /**
+     * Creates a controller gains object with default values.
+     * PID gains are all set to 0, constraints are set to default values.
+     */
     public ControllerGains() {
         // Default constructor
+    }
+
+    /**
+     * Creates a controller gains object with the given slot gains and constraints.
+     *
+     * @param slotGains        The individual slot gains of the controller.
+     * @param constraintsGains The constraints of the controller (soft limits, deadband, etc.)
+     */
+    public ControllerGains(SlotGains[] slotGains, ConstraintsGains constraintsGains) {
+        if (slotGains.length != this.slotGains.length) {
+            throw new IllegalArgumentException("slotGains array must have length " + this.slotGains.length);
+        }
+        System.arraycopy(slotGains, 0, this.slotGains, 0, slotGains.length);
+        this.constraintsGains = constraintsGains;
     }
 
     /**

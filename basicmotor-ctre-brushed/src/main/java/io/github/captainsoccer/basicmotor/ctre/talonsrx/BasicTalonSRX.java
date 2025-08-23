@@ -97,6 +97,12 @@ public class BasicTalonSRX extends BasicMotor {
     private PIDGains motorGains;
 
     /**
+     * The currently selected PID slot.
+     * This is used to determine which PID slot to use when setting the PID gains.
+     */
+    private int selectedSlot = 0;
+
+    /**
      * Creates a BasicTalonSRX instance with the provided motor ID and name.
      * This will make the motor only open loop controllable,
      * Until changed by the {@link #setMeasurements(Measurements)} method or the {@link #setEncoderType(EncoderType, int)}.
@@ -284,16 +290,22 @@ public class BasicTalonSRX extends BasicMotor {
 
     @Override
     protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
+
+        if(slot != this.selectedSlot){
+            this.selectedSlot = slot;
+            motor.selectProfileSlot(slot, 0);
+        }
+
         switch (mode) {
             // Converts voltage to percent output based on the ideal voltage of the motor
             case VOLTAGE -> motor.set(TalonSRXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage);
 
             // Converts the voltage feedforward to percent output based on the ideal voltage of the motor
-            case POSITION, PROFILED_POSITION -> motor.set(TalonSRXControlMode.Position, setpoint, slot,
+            case POSITION, PROFILED_POSITION -> motor.set(TalonSRXControlMode.Position, setpoint,
                     DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.motorIdealVoltage);
 
             // Converts the velocity feedforward to percent output based on the ideal voltage of the motor
-            case VELOCITY, PROFILED_VELOCITY -> motor.set(TalonSRXControlMode.Velocity, setpoint, slot,
+            case VELOCITY, PROFILED_VELOCITY -> motor.set(TalonSRXControlMode.Velocity, setpoint,
                     DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.motorIdealVoltage);
 
             case STOP -> stopMotorOutput();

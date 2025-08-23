@@ -670,15 +670,17 @@ public abstract class BasicMotor {
         updateLogFrameData(motorOutput);
 
         // sets the motor output
+        int slot = controller.getRequest().slot();
         if (controllerLocation == ControllerLocation.RIO)
             // all the pid and feedforward outputs are already calculated in the controller frame
-            setMotorOutput(motorOutput.totalOutput(), 0, Controller.ControlMode.VOLTAGE);
+            setMotorOutput(motorOutput.totalOutput(), 0, Controller.ControlMode.VOLTAGE, slot);
         else
             setMotorOutput(
                     // converts the setpoint to the motor units if needed
                     checkMotorSetpoint(motorOutput),
                     motorOutput.feedForwardOutput().totalOutput(),
-                    motorOutput.mode());
+                    motorOutput.mode(),
+                    slot);
     }
 
     /**
@@ -934,8 +936,9 @@ public abstract class BasicMotor {
      * @param feedForward The voltage feedforward to apply to the motor output.
      *                    This is used only when the pid controller is on the motor controller.
      * @param mode        The control mode of the motor.
+     * @param slot        The PID slot to use for the control request (0, 1, or 2).
      */
-    protected abstract void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode);
+    protected abstract void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot);
 
     /**
      * Stops the motor output.

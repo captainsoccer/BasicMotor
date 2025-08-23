@@ -283,17 +283,17 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     @Override
-    protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode) {
+    protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
         switch (mode) {
             // Converts voltage to percent output based on the ideal voltage of the motor
             case VOLTAGE -> motor.set(TalonSRXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage);
 
             // Converts the voltage feedforward to percent output based on the ideal voltage of the motor
-            case POSITION, PROFILED_POSITION -> motor.set(TalonSRXControlMode.Position, setpoint,
+            case POSITION, PROFILED_POSITION -> motor.set(TalonSRXControlMode.Position, setpoint, slot,
                     DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.motorIdealVoltage);
 
             // Converts the velocity feedforward to percent output based on the ideal voltage of the motor
-            case VELOCITY, PROFILED_VELOCITY -> motor.set(TalonSRXControlMode.Velocity, setpoint,
+            case VELOCITY, PROFILED_VELOCITY -> motor.set(TalonSRXControlMode.Velocity, setpoint, slot,
                     DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.motorIdealVoltage);
 
             case STOP -> stopMotorOutput();

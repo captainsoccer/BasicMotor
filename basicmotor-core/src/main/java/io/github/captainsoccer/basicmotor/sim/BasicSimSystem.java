@@ -114,7 +114,7 @@ public abstract class BasicSimSystem extends BasicMotor {
   }
 
   @Override
-  protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode) {
+  protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
     if (mode.requiresPID()){
       DriverStation.reportError("Simulation systems do not support direct PID control.", true);
       return;

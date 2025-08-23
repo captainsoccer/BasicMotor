@@ -303,14 +303,24 @@ public class BasicTalonFX extends BasicMotor {
     }
 
     @Override
-    protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode) {
+    protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
         StatusCode error =
                 switch (mode) {
-                    case POSITION, PROFILED_POSITION -> motor.setControl(
-                            positionRequest.withPosition(setpoint).withFeedForward(feedForward));
+                    case POSITION, PROFILED_POSITION -> {
+                        // Set the PID slot for position control
+                        // Uses direct property assignment following the pattern of EnableFOC
+                        positionRequest.Slot = slot;
+                        yield motor.setControl(
+                                positionRequest.withPosition(setpoint).withFeedForward(feedForward));
+                    }
 
-                    case VELOCITY, PROFILED_VELOCITY -> motor.setControl(
-                            velocityRequest.withVelocity(setpoint).withFeedForward(feedForward));
+                    case VELOCITY, PROFILED_VELOCITY -> {
+                        // Set the PID slot for velocity control
+                        // Uses direct property assignment following the pattern of EnableFOC
+                        velocityRequest.Slot = slot;
+                        yield motor.setControl(
+                                velocityRequest.withVelocity(setpoint).withFeedForward(feedForward));
+                    }
 
                     case VOLTAGE -> motor.setControl(voltageRequest.withOutput(setpoint));
 

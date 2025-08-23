@@ -232,6 +232,7 @@ public class BasicMotorConfig {
 
         /**
          * Bunches up all the configurations into one class
+         * @return The slot gains which include PID gains, feed forwards, and motion profile constraints
          */
         public SlotGains getSlotGains() {
             return new SlotGains(

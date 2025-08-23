@@ -146,9 +146,9 @@ public class ControllerGains {
      * @param hasPIDGainsChanged The function that is called when the PID gains are changed.
      */
     public void setHasPIDGainsChanged(Consumer<Integer> hasPIDGainsChanged) {
-        if(slotGains[0].hasPIDGainsRunnableSet()) return;
+        if (slotGains[0].hasPIDGainsRunnableSet()) return;
 
-        for(int i = 0; i < slotGains.length; i++) {
+        for (int i = 0; i < slotGains.length; i++) {
             final int index = i;
             slotGains[i].setHasPIDGainsChanged(() -> hasPIDGainsChanged.accept(index));
         }
@@ -170,6 +170,7 @@ public class ControllerGains {
     /**
      * Gets the PID gains of the controller
      *
+     * @param slot The slot to get the PID gains from (0-2)
      * @return The PID gains of the controller
      */
     public PIDGains getPidGains(int slot) {
@@ -188,6 +189,7 @@ public class ControllerGains {
     /**
      * Gets the feed forwards of the controller
      *
+     * @param slot The slot to get the feed forwards from (0-2)
      * @return The feed forwards of the controller
      */
     public FeedForwardsGains getControllerFeedForwards(int slot) {
@@ -197,6 +199,7 @@ public class ControllerGains {
     /**
      * Gets the constraints of the profile
      *
+     * @param slot The slot to get the profile constraints from (0-2)
      * @return The constraints of the profile
      */
     public TrapezoidProfile getMotionProfile(int slot) {
@@ -207,6 +210,7 @@ public class ControllerGains {
      * Checks if the controller is profiled.
      * The Controller is profiled if both the maximum velocity and maximum acceleration are changed from the default value.
      *
+     * @param slot The slot to check if the controller is profiled (0-2)
      * @return True if the controller is profiled, false otherwise.
      */
     public boolean isProfiled(int slot) {
@@ -218,12 +222,20 @@ public class ControllerGains {
      * Sets the PID gains of the controller.
      * Calls the {@link #setHasPIDGainsChanged} function to notify that the PID gains have changed.
      *
+     * @param slot     The slot to set the PID gains for (0-2)
      * @param pidGains The PID gains of the controller
      */
     public void setPidGains(PIDGains pidGains, int slot) {
         slotGains[slot].setPIDGains(pidGains);
     }
 
+    /**
+     * Sets the PID gains of the controller.
+     * Calls the {@link #setHasPIDGainsChanged} function to notify that the PID gains have changed.
+     * This will set the pid gains for slot 0.
+     *
+     * @param pidGains The PID gains of the controller
+     */
     public void setPidGains(PIDGains pidGains) {
         setPidGains(pidGains, 0);
     }
@@ -232,14 +244,24 @@ public class ControllerGains {
      * Sets the PID gains of the controller.
      * Calls the {@link #setHasPIDGainsChanged} function to notify that the PID gains have changed.
      *
-     * @param k_P The proportional gain (>= 0) (volts per unit of control)
-     * @param k_I The integral gain (>= 0) (volts second per unit of control)
-     * @param k_D The derivative gain (>= 0) (volts per unit of control per second)
+     * @param k_P  The proportional gain (>= 0) (volts per unit of control)
+     * @param k_I  The integral gain (>= 0) (volts second per unit of control)
+     * @param k_D  The derivative gain (>= 0) (volts per unit of control per second)
+     * @param slot The slot to set the PID gains for (0-2)
      */
     public void setPidGains(double k_P, double k_I, double k_D, int slot) {
         setPidGains(new PIDGains(k_P, k_I, k_D), slot);
     }
 
+    /**
+     * Sets the PID gains of the controller.
+     * Calls the {@link #setHasPIDGainsChanged} function to notify that the PID gains have changed.
+     * This will set the pid gains for slot 0.
+     *
+     * @param k_P The proportional gain (>= 0) (volts per unit of control)
+     * @param k_I The integral gain (>= 0) (volts second per unit of control)
+     * @param k_D The derivative gain (>= 0) (volts per unit of control per second)
+     */
     public void setPidGains(double k_P, double k_I, double k_D) {
         setPidGains(k_P, k_I, k_D, 0);
     }
@@ -258,12 +280,19 @@ public class ControllerGains {
     /**
      * Sets the feed forwards of the controller.
      *
+     * @param slot              The slot to set the feed forwards for (0-2)
      * @param feedForwardsGains The feed forwards of the controller
      */
     public void setFeedForwardsGains(FeedForwardsGains feedForwardsGains, int slot) {
         slotGains[slot].setFeedForwardsGains(feedForwardsGains);
     }
 
+    /**
+     * Sets the feed forwards of the controller.
+     * This will set the feed forwards for slot 0.
+     *
+     * @param feedForwardsGains The feed forwards of the controller
+     */
     public void setFeedForwardsGains(FeedForwardsGains feedForwardsGains) {
         setFeedForwardsGains(feedForwardsGains, 0);
     }
@@ -272,16 +301,23 @@ public class ControllerGains {
      * Sets the constraints of the profile, used for motion profiling.
      *
      * @param profileConstraints The constraints of the profile
+     * @param slot               The slot to set the profile constraints for (0-2)
      */
     public void setMotionProfileGains(TrapezoidProfile.Constraints profileConstraints, int slot) {
-        if(profileConstraints.maxVelocity < 0 || profileConstraints.maxAcceleration < 0) {
+        if (profileConstraints.maxVelocity < 0 || profileConstraints.maxAcceleration < 0) {
             DriverStation.reportError("motion profile constraints must be greater than or equal to zero, disabling profile", false);
-            profileConstraints = new TrapezoidProfile.Constraints(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
-        }
 
-        slotGains[slot].setMotionProfileGains(profileConstraints);
+            slotGains[slot].setMotionProfileGains(new TrapezoidProfile.Constraints(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY));
+        } else
+            slotGains[slot].setMotionProfileGains(profileConstraints);
     }
 
+    /**
+     * Sets the constraints of the profile, used for motion profiling.
+     * This will set the profile constraints for slot 0.
+     *
+     * @param profileConstraints The constraints of the profile
+     */
     public void setMotionProfileGains(TrapezoidProfile.Constraints profileConstraints) {
         setMotionProfileGains(profileConstraints, 0);
     }

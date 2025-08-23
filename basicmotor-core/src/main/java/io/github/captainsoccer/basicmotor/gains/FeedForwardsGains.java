@@ -203,6 +203,7 @@ public class FeedForwardsGains {
      *
      * @param value The value to set the feed forward gain to (must be greater than or equal to zero)
      * @param type  The type of feed forward gain to change.
+     * @return A new FeedForwardsGains object with the updated feed forward gain.
      */
     public FeedForwardsGains changeValue(double value, ChangeType type) {
         var array = new Double[]{simpleFeedForward, frictionFeedForward, setpointFeedForward};

@@ -4,11 +4,21 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 
+/**
+ * This class is used to store and manage the gains for a motor controller slot.
+ * This includes PID gains, feed forward gains, and motion profile constraints.
+ * Values here can be updated from the dashboard through the {@link BasicMotor}.
+ * You can create multiple slots with different gains to switch between different control modes.
+ * For example, you can have one slot for position control and another for velocity control.
+ * Or one slot for a mechanism that needs high torque and another for a mechanism that needs high speed.
+ * You can also use different slots for different parts of a match (like one for climbing and another for driving).
+ */
 public class SlotGains {
     /**
      * The default slot gains.
      * This will include default PID gains, feed forwards, and motion profile constraints.
      * This is used to initialize the slot gains in the {@link BasicMotor}.
+     * @return an array of 3 SlotGains with default values.
      */
     public static SlotGains[] getDefaultSlotGains(){
         SlotGains[] slotGains = new SlotGains[3];
@@ -18,8 +28,20 @@ public class SlotGains {
         return slotGains;
     }
 
+    /**
+     * Creates a new SlotGains object with default values.
+     * PID gains are all 0.
+     * Feed forwards are all 0.
+     * Motion profile constraints are infinite.
+     */
     public SlotGains() {}
 
+    /**
+     * Creates a new SlotGains object with the given values.
+     * @param pidGains the PID gains of the slot
+     * @param feedForwardsGains the feed forwards of the slot
+     * @param motionProfileGains the motion profile constraints of the slot
+     */
     public SlotGains(PIDGains pidGains, FeedForwardsGains feedForwardsGains, TrapezoidProfile.Constraints motionProfileGains) {
         this.pidGains = pidGains;
         this.feedForwardsGains = feedForwardsGains;

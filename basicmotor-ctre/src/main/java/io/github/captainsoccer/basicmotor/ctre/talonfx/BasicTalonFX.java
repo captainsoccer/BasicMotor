@@ -172,10 +172,27 @@ public class BasicTalonFX extends BasicMotor {
     }
 
     @Override
-    protected void updatePIDGainsToMotor(PIDGains pidGains) {
-        config.Slot0.kP = pidGains.getK_P();
-        config.Slot0.kI = pidGains.getK_I();
-        config.Slot0.kD = pidGains.getK_D();
+    protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
+        // Thanks ctre for making them different types of configs for each slot
+        switch (slot) {
+            case 0 -> {
+                config.Slot0.kP = pidGains.getK_P();
+                config.Slot0.kI = pidGains.getK_I();
+                config.Slot0.kD = pidGains.getK_D();
+            }
+
+            case 1 -> {
+                config.Slot1.kP = pidGains.getK_P();
+                config.Slot1.kI = pidGains.getK_I();
+                config.Slot1.kD = pidGains.getK_D();
+            }
+
+            case 2 -> {
+                config.Slot2.kP = pidGains.getK_P();
+                config.Slot2.kI = pidGains.getK_I();
+                config.Slot2.kD = pidGains.getK_D();
+            }
+        }
 
         if (getControllerLocation() == MotorManager.ControllerLocation.MOTOR) {
             // changes made in phoenix 6 api

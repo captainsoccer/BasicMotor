@@ -47,7 +47,7 @@ public abstract class BasicSimSystem extends BasicMotor {
   }
 
   @Override
-  protected void updatePIDGainsToMotor(PIDGains pidGains) {
+  protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
     // does nothing, as this is a simulation system
   }
 

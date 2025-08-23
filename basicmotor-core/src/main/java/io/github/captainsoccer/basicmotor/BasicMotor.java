@@ -12,7 +12,9 @@ import io.github.captainsoccer.basicmotor.motorManager.MotorManager.ControllerLo
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * The Basic motor base class.
@@ -96,7 +98,7 @@ public abstract class BasicMotor {
      * If the PID gains have changed (then it updates the motor controller on the slower thread).
      * The controller updates this value when the PID gains change.
      */
-    private volatile boolean hasPIDGainsChanged = false;
+    private final Boolean[] hasPIDGainsChanged;
 
     /**
      * Sends the PID gains to the motor controller.
@@ -105,7 +107,7 @@ public abstract class BasicMotor {
      *
      * @param pidGains The PID gains to set on the motor controller.
      */
-    protected abstract void updatePIDGainsToMotor(PIDGains pidGains);
+    protected abstract void updatePIDGainsToMotor(PIDGains pidGains, int slot);
 
     /**
      * If the constraints have changed (then it updates the motor controller on the slower thread).
@@ -175,7 +177,10 @@ public abstract class BasicMotor {
         Objects.requireNonNull(controllerGains);
         Objects.requireNonNull(name);
 
-        Runnable setHasPIDGainsChanged = () -> hasPIDGainsChanged = true;
+        // only 3 slots are supported
+        hasPIDGainsChanged = new Boolean[]{false, false, false};
+
+        Consumer<Integer> setHasPIDGainsChanged = (slot) -> hasPIDGainsChanged[slot] = true;
         Runnable setHasConstraintsChanged = () -> hasConstraintsChanged = true;
         controller = new Controller(controllerGains, setHasPIDGainsChanged, setHasConstraintsChanged);
 
@@ -206,10 +211,12 @@ public abstract class BasicMotor {
 
         var controllerGains = controller.getControllerGains();
 
-        var motorPIDGains =
-                controllerGains.getPidGains().convertToMotorGains(gearRatio, unitConversion, getInternalPIDLoopTime());
+        for(int i = 0; i < 3; i ++){
+            var motorPIDGains =
+                    controllerGains.getPidGains(i).convertToMotorGains(gearRatio, unitConversion, getInternalPIDLoopTime());
 
-        updatePIDGainsToMotor(motorPIDGains);
+            updatePIDGainsToMotor(motorPIDGains, i);
+        }
 
         var motorConstraintsGains =
                 controllerGains.getControllerConstrains().convertToMotorConstraints(gearRatio, unitConversion);
@@ -870,7 +877,8 @@ public abstract class BasicMotor {
      * @param motorOutput The motor output to update the log frame with.
      */
     private void updateLogFrameData(LogFrame.ControllerFrame motorOutput) {
-        double tolerance = controller.getControllerGains().getPidGains().getTolerance();
+        int slot = controller.getRequest().slot();
+        double tolerance = controller.getControllerGains().getPidGains(slot).getTolerance();
 
         boolean atSetpoint = Math.abs(motorOutput.error()) <= tolerance;
         logFrame.atSetpoint = atSetpoint;
@@ -950,22 +958,24 @@ public abstract class BasicMotor {
             logFrame.appliedTorque = getTorqueFromCurrent(logFrame.sensorData.currentOutput());
         }
 
-        if(!hasConstraintsChanged && !hasPIDGainsChanged) return;
+        if(!hasConstraintsChanged && Arrays.stream(hasPIDGainsChanged).noneMatch(value -> value)) return;
 
         double gearRatio = getDefaultMeasurements().getGearRatio();
         double unitConversion = getDefaultMeasurements().getUnitConversion();
 
         // if the pid has changed, then update the built-in motor pid
-        if (hasPIDGainsChanged) {
-            hasPIDGainsChanged = false;
+        for(int i = 0; i < 3; i ++){
+            if(hasPIDGainsChanged[i]){
+                hasPIDGainsChanged[i] = false;
 
-            var convertedGains =
-                    controller
-                            .getControllerGains()
-                            .getPidGains()
-                            .convertToMotorGains(gearRatio, unitConversion, getInternalPIDLoopTime());
+                var convertedGains =
+                        controller
+                                .getControllerGains()
+                                .getPidGains(i)
+                                .convertToMotorGains(gearRatio, unitConversion, getInternalPIDLoopTime());
 
-            updatePIDGainsToMotor(convertedGains);
+                updatePIDGainsToMotor(convertedGains, i);
+            }
         }
 
         // if the constraints have changed, then update the built-in motor pid

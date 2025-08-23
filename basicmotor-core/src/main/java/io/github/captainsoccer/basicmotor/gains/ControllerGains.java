@@ -6,56 +6,30 @@ import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 
+import java.util.function.Consumer;
+
 /**
  * This class stores all the controller gains, constraints, and feed forwards for a motor controller.
  * It is used directly by the {@link Controller}.
  */
 public class ControllerGains {
+
     /**
-     * The PID gains of the controller.
+     * The individual slot gains of the controller.
+     * Contains the PID gains, feed forwards, and motion profile constraints for each slot.
      */
-    private PIDGains pidGains = new PIDGains();
+    private final SlotGains[] slotGains = SlotGains.getDefaultSlotGains();
+
     /**
      * The constraints of the controller. (soft limits, deadband, etc.)
      */
     private ConstraintsGains constraintsGains = new ConstraintsGains();
-    /**
-     * The feed forwards of the controller.
-     */
-    private FeedForwardsGains feedForwardsGains = new FeedForwardsGains();
-
-    /**
-     * The constraints of the profile (used for motion profiling).
-     * Has the maximum velocity and maximum acceleration.
-     * (changes based on the control mode)
-     */
-    private TrapezoidProfile.Constraints motionProfileGains =
-            new TrapezoidProfile.Constraints(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
-
-    /**
-     * The trapezoid profile used for motion profiling.
-     * It uses the {@link #motionProfileGains} to calculate the profile.
-     * changes only when the profile constraints are changed.
-     */
-    private TrapezoidProfile motionProfile = new TrapezoidProfile(motionProfileGains);
-
-    /**
-     * The function that is called when the PID gains are changed.
-     * Used to set a flag in the {@link BasicMotor} to update the PID gains on the slower thread.
-     */
-    private Runnable setHasPIDGainsChanged;
 
     /**
      * The function that is called when the constraints are changed.
      * Used to set a flag in the {@link BasicMotor} to update the constraints on the slower thread.
      */
     private Runnable setHasConstraintsChanged;
-
-    /**
-     * Creates an empty controller gains object (no PID gains, no feed forwards, no constraints).
-     */
-    public ControllerGains() {
-    }
 
     /**
      * Creates a controller gains object with the given PID gains.
@@ -65,7 +39,7 @@ public class ControllerGains {
      * @param k_D The derivative gain (>= 0) (volts per unit of control per second)
      */
     public ControllerGains(double k_P, double k_I, double k_D) {
-        pidGains = new PIDGains(k_P, k_I, k_D);
+        slotGains[0].setPIDGains(new PIDGains(k_P, k_I, k_D), false);
     }
 
     /**
@@ -74,7 +48,7 @@ public class ControllerGains {
      * @param pidGains The PID gains
      */
     public ControllerGains(PIDGains pidGains) {
-        this.pidGains = pidGains;
+        slotGains[0].setPIDGains(pidGains, false);
     }
 
     /**
@@ -83,7 +57,7 @@ public class ControllerGains {
      * @param feedForwardsGains The feed forwards of the controller.
      */
     public ControllerGains(FeedForwardsGains feedForwardsGains) {
-        this.feedForwardsGains = feedForwardsGains;
+        slotGains[0].setFeedForwardsGains(feedForwardsGains);
     }
 
     /**
@@ -93,7 +67,7 @@ public class ControllerGains {
      * @param constraintsGains The constraints of the controller (soft limits, deadband, etc.)
      */
     public ControllerGains(PIDGains pidGains, ConstraintsGains constraintsGains) {
-        this.pidGains = pidGains;
+        slotGains[0].setPIDGains(pidGains, false);
         this.constraintsGains = constraintsGains;
     }
 
@@ -104,8 +78,8 @@ public class ControllerGains {
      * @param feedForwardsGains The feed forwards of the controller
      */
     public ControllerGains(PIDGains pidGains, FeedForwardsGains feedForwardsGains) {
-        this.pidGains = pidGains;
-        this.feedForwardsGains = feedForwardsGains;
+        slotGains[0].setPIDGains(pidGains, false);
+        slotGains[0].setFeedForwardsGains(feedForwardsGains);
     }
 
     /**
@@ -116,9 +90,9 @@ public class ControllerGains {
      * @param feedForwardsGains The feed forwards of the controller
      */
     public ControllerGains(PIDGains pidGains, ConstraintsGains constraintsGains, FeedForwardsGains feedForwardsGains) {
-        this.pidGains = pidGains;
+        slotGains[0].setPIDGains(pidGains, false);
+        slotGains[0].setFeedForwardsGains(feedForwardsGains);
         this.constraintsGains = constraintsGains;
-        this.feedForwardsGains = feedForwardsGains;
     }
 
     /**
@@ -134,12 +108,11 @@ public class ControllerGains {
             ConstraintsGains constraintsGains,
             FeedForwardsGains feedForwardsGains,
             TrapezoidProfile.Constraints motionProfileGains) {
-        this.pidGains = pidGains;
-        this.constraintsGains = constraintsGains;
-        this.feedForwardsGains = feedForwardsGains;
-        this.motionProfileGains = motionProfileGains;
 
-        this.motionProfile = new TrapezoidProfile(motionProfileGains);
+        slotGains[0].setPIDGains(pidGains, false);
+        this.constraintsGains = constraintsGains;
+        slotGains[0].setFeedForwardsGains(feedForwardsGains);
+        slotGains[0].setMotionProfileGains(motionProfileGains);
     }
 
     /**
@@ -150,9 +123,13 @@ public class ControllerGains {
      *
      * @param hasPIDGainsChanged The function that is called when the PID gains are changed.
      */
-    public void setHasPIDGainsChanged(Runnable hasPIDGainsChanged) {
-        if (this.setHasPIDGainsChanged != null) return;
-        this.setHasPIDGainsChanged = hasPIDGainsChanged;
+    public void setHasPIDGainsChanged(Consumer<Integer> hasPIDGainsChanged) {
+        if(slotGains[0].hasPIDGainsRunnableSet()) return;
+
+        for(int i = 0; i < slotGains.length; i++) {
+            final int index = i;
+            slotGains[i].setHasPIDGainsChanged(() -> hasPIDGainsChanged.accept(index));
+        }
     }
 
     /**
@@ -173,8 +150,8 @@ public class ControllerGains {
      *
      * @return The PID gains of the controller
      */
-    public PIDGains getPidGains() {
-        return pidGains;
+    public PIDGains getPidGains(int slot) {
+        return slotGains[slot].getPIDGains();
     }
 
     /**
@@ -191,8 +168,8 @@ public class ControllerGains {
      *
      * @return The feed forwards of the controller
      */
-    public FeedForwardsGains getControllerFeedForwards() {
-        return feedForwardsGains;
+    public FeedForwardsGains getControllerFeedForwards(int slot) {
+        return slotGains[slot].getFeedForwardsGains();
     }
 
     /**
@@ -200,8 +177,8 @@ public class ControllerGains {
      *
      * @return The constraints of the profile
      */
-    public TrapezoidProfile getMotionProfile() {
-        return motionProfile;
+    public TrapezoidProfile getMotionProfile(int slot) {
+        return slotGains[slot].getMotionProfile();
     }
 
     /**
@@ -210,9 +187,9 @@ public class ControllerGains {
      *
      * @return True if the controller is profiled, false otherwise.
      */
-    public boolean isProfiled() {
-        return motionProfileGains.maxVelocity != Double.POSITIVE_INFINITY
-                && motionProfileGains.maxAcceleration != Double.POSITIVE_INFINITY;
+    public boolean isProfiled(int slot) {
+        var gains = slotGains[slot].getMotionProfileGains();
+        return gains.maxVelocity != Double.POSITIVE_INFINITY && gains.maxAcceleration != Double.POSITIVE_INFINITY;
     }
 
     /**
@@ -221,9 +198,12 @@ public class ControllerGains {
      *
      * @param pidGains The PID gains of the controller
      */
+    public void setPidGains(PIDGains pidGains, int slot) {
+        slotGains[slot].setPIDGains(pidGains);
+    }
+
     public void setPidGains(PIDGains pidGains) {
-        this.pidGains = pidGains;
-        setHasPIDGainsChanged.run();
+        setPidGains(pidGains, 0);
     }
 
     /**
@@ -234,8 +214,12 @@ public class ControllerGains {
      * @param k_I The integral gain (>= 0) (volts second per unit of control)
      * @param k_D The derivative gain (>= 0) (volts per unit of control per second)
      */
+    public void setPidGains(double k_P, double k_I, double k_D, int slot) {
+        setPidGains(new PIDGains(k_P, k_I, k_D), slot);
+    }
+
     public void setPidGains(double k_P, double k_I, double k_D) {
-        setPidGains(new PIDGains(k_P, k_I, k_D));
+        setPidGains(k_P, k_I, k_D, 0);
     }
 
     /**
@@ -254,8 +238,12 @@ public class ControllerGains {
      *
      * @param feedForwardsGains The feed forwards of the controller
      */
+    public void setFeedForwardsGains(FeedForwardsGains feedForwardsGains, int slot) {
+        slotGains[slot].setFeedForwardsGains(feedForwardsGains);
+    }
+
     public void setFeedForwardsGains(FeedForwardsGains feedForwardsGains) {
-        this.feedForwardsGains = feedForwardsGains;
+        setFeedForwardsGains(feedForwardsGains, 0);
     }
 
     /**
@@ -263,13 +251,17 @@ public class ControllerGains {
      *
      * @param profileConstraints The constraints of the profile
      */
-    public void setMotionProfileGains(TrapezoidProfile.Constraints profileConstraints) {
+    public void setMotionProfileGains(TrapezoidProfile.Constraints profileConstraints, int slot) {
         if(profileConstraints.maxVelocity < 0 || profileConstraints.maxAcceleration < 0) {
             DriverStation.reportError("motion profile constraints must be greater than or equal to zero, disabling profile", false);
             profileConstraints = new TrapezoidProfile.Constraints(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
         }
-        this.motionProfileGains = profileConstraints;
-        motionProfile = new TrapezoidProfile(profileConstraints);
+
+        slotGains[slot].setMotionProfileGains(profileConstraints);
+    }
+
+    public void setMotionProfileGains(TrapezoidProfile.Constraints profileConstraints) {
+        setMotionProfileGains(profileConstraints, 0);
     }
 
     /**
@@ -281,23 +273,27 @@ public class ControllerGains {
      * @param builder The sendable builder to use for the controller gains.
      */
     public void initSendable(SendableBuilder builder) {
-        if (isProfiled()) {
+        var slot0 = slotGains[0];
+
+        if (isProfiled(0)) {
             builder.setSmartDashboardType("ProfiledPIDController");
 
             builder.addDoubleProperty(
                     "maxVelocity",
-                    () -> motionProfileGains.maxVelocity,
-                    (x) -> setMotionProfileGains(new TrapezoidProfile.Constraints(x, motionProfileGains.maxAcceleration)));
+                    () -> slot0.getMotionProfileGains().maxVelocity,
+                    (x) -> setMotionProfileGains(
+                            new TrapezoidProfile.Constraints(x, slot0.getMotionProfileGains().maxAcceleration)));
 
             builder.addDoubleProperty(
                     "maxAcceleration",
-                    () -> motionProfileGains.maxAcceleration,
-                    (x) -> setMotionProfileGains(new TrapezoidProfile.Constraints(motionProfileGains.maxVelocity, x)));
+                    () -> slot0.getMotionProfileGains().maxAcceleration,
+                    (x) -> setMotionProfileGains(
+                            new TrapezoidProfile.Constraints(slot0.getMotionProfileGains().maxVelocity, x)));
 
         } else builder.setSmartDashboardType("PIDController");
 
-        buildPIDSendable(builder);
-        buildFeedForwardSendable(builder);
+        buildPIDSendable(builder, slot0);
+        buildFeedForwardSendable(builder, slot0);
     }
 
     /**
@@ -305,29 +301,29 @@ public class ControllerGains {
      *
      * @param builder The sendable builder
      */
-    private void buildFeedForwardSendable(SendableBuilder builder) {
+    private void buildFeedForwardSendable(SendableBuilder builder, SlotGains slot0) {
         builder.addDoubleProperty(
                 "simpleFeedForward",
-                feedForwardsGains::getSimpleFeedForward,
+                () -> slot0.getFeedForwardsGains().getSimpleFeedForward(),
 
                 (value) ->
-                        feedForwardsGains.updateFeedForwards(
+                        slot0.updateFeedForwardsGains(
                                 value, FeedForwardsGains.ChangeType.SIMPLE_FEED_FORWARD));
 
         builder.addDoubleProperty(
                 "frictionFeedForward",
-                feedForwardsGains::getFrictionFeedForward,
+                () -> slot0.getFeedForwardsGains().getFrictionFeedForward(),
 
                 (value) ->
-                        feedForwardsGains.updateFeedForwards(
+                        slot0.updateFeedForwardsGains(
                                 value, FeedForwardsGains.ChangeType.FRICTION_FEED_FORWARD));
 
         builder.addDoubleProperty(
                 "setpointFeedForward",
-                feedForwardsGains::getSetpointFeedForward,
+                () -> slot0.getFeedForwardsGains().getSetpointFeedForward(),
 
                 (value) ->
-                        feedForwardsGains.updateFeedForwards(
+                        slot0.updateFeedForwardsGains(
                                 value, FeedForwardsGains.ChangeType.SETPOINT_FEED_FORWARD));
     }
 
@@ -336,42 +332,31 @@ public class ControllerGains {
      *
      * @param builder The sendable builder
      */
-    private void buildPIDSendable(SendableBuilder builder) {
+    private void buildPIDSendable(SendableBuilder builder, SlotGains slot0) {
         builder.addDoubleProperty(
-                "p", pidGains::getK_P, (value) -> updatePIDGains(value, PIDGains.ChangeType.K_P));
+                "p", () -> slot0.getPIDGains().getK_P(),
+                (value) -> slot0.updatePIDGains(value, PIDGains.ChangeType.K_P));
 
         builder.addDoubleProperty(
-                "i", pidGains::getK_I, (value) -> updatePIDGains(value, PIDGains.ChangeType.K_I));
+                "i", () -> slot0.getPIDGains().getK_I(),
+                (value) -> slot0.updatePIDGains(value, PIDGains.ChangeType.K_I));
 
         builder.addDoubleProperty(
-                "d", pidGains::getK_D, (value) -> updatePIDGains(value, PIDGains.ChangeType.K_D));
+                "d", () -> slot0.getPIDGains().getK_D(),
+                (value) -> slot0.updatePIDGains(value, PIDGains.ChangeType.K_D));
 
         builder.addDoubleProperty(
-                "izone", pidGains::getI_Zone, (value) -> updatePIDGains(value, PIDGains.ChangeType.I_ZONE));
+                "izone", () -> slot0.getPIDGains().getI_Zone(),
+                (value) -> slot0.updatePIDGains(value, PIDGains.ChangeType.I_ZONE));
 
         builder.addDoubleProperty(
                 "iMaxAccum",
-                pidGains::getI_MaxAccum,
-                (value) -> updatePIDGains(value, PIDGains.ChangeType.I_MAX_ACCUM));
+                () -> slot0.getPIDGains().getI_MaxAccum(),
+                (value) -> slot0.updatePIDGains(value, PIDGains.ChangeType.I_MAX_ACCUM));
 
         builder.addDoubleProperty(
                 "tolerance",
-                pidGains::getTolerance,
-                (value) -> updatePIDGains(value, PIDGains.ChangeType.TOLERANCE));
+                () -> slot0.getPIDGains().getTolerance(),
+                (value) -> slot0.updatePIDGains(value, PIDGains.ChangeType.TOLERANCE));
     }
-
-    /**
-     * Sets the PID gains of the controller.
-     * Calls the {@link #setHasPIDGainsChanged} function to notify that the PID gains have changed.
-     *
-     * @param value      The value to set the gain to (must be greater than or equal to zero)
-     * @param changeType Which gain to change
-     */
-    private void updatePIDGains(double value, PIDGains.ChangeType changeType) {
-        boolean hasChanged = pidGains.updatePIDGains(value, changeType);
-
-        if (hasChanged) setHasPIDGainsChanged.run();
-    }
-
-
 }

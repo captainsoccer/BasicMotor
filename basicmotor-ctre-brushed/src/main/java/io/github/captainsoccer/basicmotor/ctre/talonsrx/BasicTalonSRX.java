@@ -163,10 +163,16 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     @Override
-    protected void updatePIDGainsToMotor(PIDGains pidGains) {
+    protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
         motorGains = pidGains.convertToDutyCycle();
 
-        var pidConfig = config.slot0;
+        var pidConfig = switch (slot){
+            case 0 -> config.slot0;
+            case 1 -> config.slot1;
+            case 2 -> config.slot2;
+
+            default -> config.slot0;
+        };
 
         pidConfig.kP = motorGains.getK_P();
         pidConfig.kI = motorGains.getK_I();

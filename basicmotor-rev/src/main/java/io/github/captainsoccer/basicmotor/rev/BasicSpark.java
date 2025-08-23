@@ -296,13 +296,15 @@ public abstract class BasicSpark extends BasicMotor {
     }
 
     @Override
-    protected void updatePIDGainsToMotor(PIDGains pidGains) {
+    protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
         var gains = pidGains.convertToDutyCycle();
 
+        ClosedLoopSlot closedLoopSlot = ClosedLoopSlot.values()[slot];
+
         // sets the PID gains for the closed loop controller
-        config.closedLoop.pid(gains.getK_P(), gains.getK_I(), gains.getK_D());
-        config.closedLoop.iZone(gains.getI_Zone());
-        config.closedLoop.iMaxAccum(gains.getI_MaxAccum());
+        config.closedLoop.pid(gains.getK_P(), gains.getK_I(), gains.getK_D(), closedLoopSlot);
+        config.closedLoop.iZone(gains.getI_Zone(), closedLoopSlot);
+        config.closedLoop.iMaxAccum(gains.getI_MaxAccum(), closedLoopSlot);
 
         if (gains.getTolerance() != 0 && getControllerLocation() == MotorManager.ControllerLocation.MOTOR) {
             DriverStation.reportWarning(

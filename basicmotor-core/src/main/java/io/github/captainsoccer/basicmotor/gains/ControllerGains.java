@@ -31,6 +31,10 @@ public class ControllerGains {
      */
     private Runnable setHasConstraintsChanged;
 
+    public ControllerGains() {
+        // Default constructor
+    }
+
     /**
      * Creates a controller gains object with the given PID gains.
      *

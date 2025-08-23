@@ -104,7 +104,7 @@ public class BasicVictorSPX extends BasicMotor {
     }
 
     @Override
-    protected void updatePIDGainsToMotor(PIDGains pidGains) {
+    protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
         // Does nothing, as the victorSPX does not support PID gains directly.
     }
 

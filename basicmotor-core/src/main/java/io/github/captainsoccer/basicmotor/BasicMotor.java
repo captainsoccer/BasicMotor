@@ -506,8 +506,8 @@ public abstract class BasicMotor {
      * @param setpoint The setpoint of the motor (units depending on the mode).
      * @param mode     The control mode of the motor (position, velocity, voltage, percent output).
      */
-    public void setControl(double setpoint, Controller.ControlMode mode) {
-        controller.setControl(setpoint, mode);
+    public void setControl(double setpoint, Controller.ControlMode mode, int slot) {
+        controller.setControl(setpoint, mode, slot);
     }
 
     /**
@@ -517,8 +517,8 @@ public abstract class BasicMotor {
      * @param mode                 The control mode of the motor (position, velocity, voltage, percent output).
      * @param arbitraryFeedForward The arbitrary feed forward to apply to the motor output.
      */
-    public void setControl(double setpoint, Controller.ControlMode mode, double arbitraryFeedForward) {
-        controller.setControl(new Controller.ControllerRequest(setpoint, mode, arbitraryFeedForward));
+    public void setControl(double setpoint, Controller.ControlMode mode, double arbitraryFeedForward, int slot) {
+        controller.setControl(new Controller.ControllerRequest(setpoint, mode, arbitraryFeedForward, slot));
     }
 
     /**
@@ -528,7 +528,7 @@ public abstract class BasicMotor {
      * @param volts The voltage to output to the motor.
      */
     public void setVoltage(double volts) {
-        controller.setControl(volts, Controller.ControlMode.VOLTAGE);
+        controller.setControl(volts, Controller.ControlMode.VOLTAGE, 0);
     }
 
     /**
@@ -539,7 +539,7 @@ public abstract class BasicMotor {
      * @param percentOutput The percentage of the maximum output to set the motor to.
      */
     public void setPrecentOutput(double percentOutput) {
-        controller.setControl(percentOutput, Controller.ControlMode.PERCENT_OUTPUT);
+        controller.setControl(percentOutput, Controller.ControlMode.PERCENT_OUTPUT, 0);
     }
 
     /**

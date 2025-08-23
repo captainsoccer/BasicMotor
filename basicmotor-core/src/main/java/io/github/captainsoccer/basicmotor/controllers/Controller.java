@@ -113,8 +113,8 @@ public class Controller implements Sendable {
      * @param setpoint    The new setpoint (the goal if using a profiled control).
      * @param controlMode The mode of control.
      */
-    public void setControl(double setpoint, ControlMode controlMode) {
-        setControl(new ControllerRequest(setpoint, controlMode));
+    public void setControl(double setpoint, ControlMode controlMode, int slot) {
+        setControl(new ControllerRequest(setpoint, controlMode, slot));
     }
 
     /**
@@ -127,12 +127,12 @@ public class Controller implements Sendable {
      *                     velocity)
      * @param controlMode  The control mode of the controller. (must be a profiled control mode)
      */
-    public void setControl(double goal, double goalVelocity, ControlMode controlMode) {
+    public void setControl(double goal, double goalVelocity, ControlMode controlMode, int slot) {
         if (!controlMode.isProfiled()) {
             DriverStation.reportWarning("Using a function made for profiled control for a non profiled control mode", true);
         }
 
-        setControl(new ControllerRequest(goal, goalVelocity, controlMode));
+        setControl(new ControllerRequest(goal, goalVelocity, controlMode, slot));
     }
 
     /**
@@ -142,12 +142,12 @@ public class Controller implements Sendable {
      * @param goal        The new goal for the controller.
      * @param controlMode The control mode of the controller. (must be a profiled control mode)
      */
-    public void setControl(TrapezoidProfile.State goal, ControlMode controlMode) {
+    public void setControl(TrapezoidProfile.State goal, ControlMode controlMode, int slot) {
         if (!controlMode.isProfiled()) {
             DriverStation.reportWarning("Using a function made for profiled control for a non profiled control mode", true);
         }
 
-        setControl(new ControllerRequest(goal, controlMode));
+        setControl(new ControllerRequest(goal, controlMode, slot));
     }
 
     /**
@@ -319,7 +319,7 @@ public class Controller implements Sendable {
 
         //this acts both as the setpoint and the goal of the controller
         builder.addDoubleProperty(
-                "setpoint", () -> setpoint.position, (value) -> setControl(value, request.controlMode));
+                "setpoint", () -> setpoint.position, (value) -> setControl(value, request.controlMode, request.slot));
     }
 
     /**
@@ -463,6 +463,19 @@ public class Controller implements Sendable {
      */
     public record ControllerRequest(
             TrapezoidProfile.State goal, ControlMode controlMode, double arbFeedForward, int slot) {
+
+        /**
+         * Creates a controller request with a custom goal.
+         * use only when using profiled control.
+         * Use this when you want to control the goal velocity.
+         *
+         * @param goal        The goal of the controller.
+         * @param controlMode The control mode used to control the motor.
+         */
+        public ControllerRequest(TrapezoidProfile.State goal, ControlMode controlMode, int slot) {
+            this(goal, controlMode, 0, slot);
+        }
+
         /**
          * Creates a controller request with a goal.
          *
@@ -473,23 +486,13 @@ public class Controller implements Sendable {
             this(new TrapezoidProfile.State(goal, 0), controlMode, 0, slot);
         }
 
-        /**
-         * Creates a controller request with a custom goal.
-         * use only when using profiled control.
-         * Use this when you want to control the goal velocity.
-         *
-         * @param goal        The goal of the controller.
-         * @param controlMode The control mode used to control the motor.
-         */
-        public ControllerRequest(TrapezoidProfile.State goal, ControlMode controlMode) {
-            this(goal, controlMode, 0);
-        }
+
 
         /**
          * Creates a controller request with a goal and a setpoint velocity.
          * use only when using profiled control.
          * Use this when you want to control the goal velocity.
-         * Same as {@link #ControllerRequest(TrapezoidProfile.State goal, ControlMode controlMode)}
+         * Same as {@link #ControllerRequest(TrapezoidProfile.State goal, ControlMode controlMode, int slot)}
          *
          * @param goal         The new goal of the controller.
          * @param goalVelocity The goal velocity of the controller.
@@ -497,7 +500,7 @@ public class Controller implements Sendable {
          * @param controlMode  The control mode used to control the motor.
          */
         public ControllerRequest(double goal, double goalVelocity, ControlMode controlMode, int slot) {
-            this(new TrapezoidProfile.State(goal, goalVelocity), controlMode, 0);
+            this(new TrapezoidProfile.State(goal, goalVelocity), controlMode, 0, slot);
         }
 
         /**
@@ -516,7 +519,7 @@ public class Controller implements Sendable {
          * @param arbFeedForward A voltage feedforward given by the user that will be added to the motor output.
          */
         public ControllerRequest(double goal, ControlMode controlMode, double arbFeedForward, int slot) {
-            this(new TrapezoidProfile.State(goal, 0), controlMode, arbFeedForward);
+            this(new TrapezoidProfile.State(goal, 0), controlMode, arbFeedForward, slot);
         }
 
         /**
@@ -528,8 +531,8 @@ public class Controller implements Sendable {
          * @param controlMode    The control mode used to control the motor.
          * @param arbFeedForward A voltage feedforward given by the user that will be added to the motor output.
          */
-        public ControllerRequest(double goal, double goalVelocity, ControlMode controlMode, double arbFeedForward) {
-            this(new TrapezoidProfile.State(goal, goalVelocity), controlMode, arbFeedForward);
+        public ControllerRequest(double goal, double goalVelocity, ControlMode controlMode, double arbFeedForward, int slot) {
+            this(new TrapezoidProfile.State(goal, goalVelocity), controlMode, arbFeedForward, slot);
         }
     }
 }

@@ -20,12 +20,6 @@ import java.util.function.Consumer;
  */
 public class Controller implements Sendable {
     /**
-     * Counts the number of instances of the controller.
-     * This is used to give each Controller a unique number when sending it to the dashboard.
-     */
-    private static int instances = 0;
-
-    /**
      * The gains of the controller.
      * This stores the PID gains, feedforward, constraints, and profile of the controller.
      */
@@ -58,11 +52,14 @@ public class Controller implements Sendable {
      * @param hasConstraintsChangeRunnable The function to run when the constraints are changed.
      *                                     This function is to flag when the constraints are changed
      *                                     so the motor can send the updates to the motor controller on a slower thread.
+     * @param name                         The name of the controller (used for the sendable registry).
+     *                                     This will be the name of the controller that will appear on the dashboard.
      */
     public Controller(
             ControllerGains controllerGains,
             Consumer<Integer> hasPIDGainsChangeRunnable,
-            Runnable hasConstraintsChangeRunnable) {
+            Runnable hasConstraintsChangeRunnable,
+            String name) {
         this.controllerGains = controllerGains;
         //sets the callbacks for when the PID gains or constraints are changed
         this.controllerGains.setHasPIDGainsChanged(hasPIDGainsChangeRunnable);
@@ -73,11 +70,8 @@ public class Controller implements Sendable {
             this.pidController[i] = new BasicPIDController(this.controllerGains.getPidGains(i));
         }
 
-        //increments the instance count and registers the controller with the sendable registry
-        instances++;
-
         // registers the controller with the sendable registry (used when sending to the dashboard)
-        SendableRegistry.add(this, "MotorController", instances);
+        SendableRegistry.add(this, name + " Controller");
     }
 
     /**

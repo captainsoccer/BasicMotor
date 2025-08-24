@@ -183,7 +183,7 @@ public abstract class BasicMotor {
 
         Consumer<Integer> setHasPIDGainsChanged = (slot) -> hasPIDGainsChanged[slot] = true;
         Runnable setHasConstraintsChanged = () -> hasConstraintsChanged = true;
-        controller = new Controller(controllerGains, setHasPIDGainsChanged, setHasConstraintsChanged);
+        controller = new Controller(controllerGains, setHasPIDGainsChanged, setHasConstraintsChanged, name);
 
         this.name = name;
 

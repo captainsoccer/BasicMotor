@@ -442,13 +442,25 @@ public class BasicMotorConfig {
         public double voltageDeadband = 0;
 
         /**
+         * The voltage ramp rate of the motor controller units are: (voltage / second)
+         *
+         * <p>This is used to limit how fast the motor controller can change its output voltage.
+         * This is used to prevent sudden changes in acceleration which can cause mechanical stress
+         * and damage to the mechanism.
+         * A value of 0 means no ramping is applied.
+         * This is useful for mechanisms like elevators and arms where sudden changes in acceleration
+         * can cause oscillations and instability.
+         */
+        public double voltageRampRate = 0;
+
+        /**
          * Gets the constraints of the controller
          *
          * @return The constraints of the controller
          */
         public ConstraintsGains getConstraints() {
             return new ConstraintsGains(
-                    constraintType, minValue, maxValue, maxOutput, minOutput, voltageDeadband);
+                    constraintType, minValue, maxValue, maxOutput, minOutput, voltageDeadband, voltageRampRate);
         }
 
         /**
@@ -466,6 +478,7 @@ public class BasicMotorConfig {
             copy.maxOutput = this.maxOutput;
             copy.minOutput = this.minOutput;
             copy.voltageDeadband = this.voltageDeadband;
+            copy.voltageRampRate = this.voltageRampRate;
 
             return copy;
         }
@@ -485,6 +498,7 @@ public class BasicMotorConfig {
             config.maxOutput = constraints.getMaxMotorOutput();
             config.minOutput = constraints.getMinMotorOutput();
             config.voltageDeadband = constraints.getVoltageDeadband();
+            config.voltageRampRate = constraints.getVoltageRampRate();
 
             return config;
         }

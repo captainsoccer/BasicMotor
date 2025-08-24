@@ -1,7 +1,7 @@
 {
     "fileName": "BasicMotor-Full.json",
     "name": "BasicMotor Full",
-    "version": "3.2.8",
+    "version": "4.0.0-beta",
     "uuid": "1f465ef0-4980-47b8-b76c-703129064140",
     "frcYear": "2025",
     "mavenUrls": [
@@ -12,22 +12,22 @@
         {
             "groupId": "com.github.captainsoccer.BasicMotor",
             "artifactId": "basicmotor-core",
-            "version": "v3.2.8"
+            "version": "v4.0.0-beta"
         },
         {
             "groupId": "com.github.captainsoccer.BasicMotor",
             "artifactId": "basicmotor-ctre",
-            "version": "v3.2.8"
+            "version": "v4.0.0-beta"
         },
         {
             "groupId": "com.github.captainsoccer.BasicMotor",
             "artifactId": "basicmotor-rev",
-            "version": "v3.2.8"
+            "version": "v4.0.0-beta"
         },
         {
             "groupId": "com.github.captainsoccer.BasicMotor",
             "artifactId": "basicmotor-ctre-brushed",
-            "version": "v3.2.8"
+            "version": "v4.0.0-beta"
         }
     ],
     "jniDependencies": [

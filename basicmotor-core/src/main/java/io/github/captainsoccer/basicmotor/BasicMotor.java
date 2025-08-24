@@ -518,6 +518,28 @@ public abstract class BasicMotor {
     }
 
     /**
+     * Sets the control of the motor.
+     * This will send a command to the motor with the given setpoint and mode.
+     *
+     * @param setpoint The setpoint of the motor (units depending on the mode).
+     * @param mode     The control mode of the motor (position, velocity, voltage, percent output).
+     */
+    public void setControl(double setpoint, Controller.ControlMode mode) {
+        controller.setControl(setpoint, mode);
+    }
+
+    /**
+     * Sets the control of the motor with an arbitrary feed forward.
+     *
+     * @param setpoint             The setpoint of the motor (units depending on the mode).
+     * @param mode                 The control mode of the motor (position, velocity, voltage, percent output).
+     * @param arbitraryFeedForward The arbitrary feed forward to apply to the motor output.
+     */
+    public void setControl(double setpoint, Controller.ControlMode mode, double arbitraryFeedForward) {
+        controller.setControl(new Controller.ControllerRequest(setpoint, mode, arbitraryFeedForward, 0));
+    }
+
+    /**
      * Sets the control of the motor with an arbitrary feed forward.
      *
      * @param setpoint             The setpoint of the motor (units depending on the mode).

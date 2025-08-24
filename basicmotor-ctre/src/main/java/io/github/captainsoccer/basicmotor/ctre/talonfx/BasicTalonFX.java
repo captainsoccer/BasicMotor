@@ -261,6 +261,14 @@ public class BasicTalonFX extends BasicMotor {
         config.MotorOutput.DutyCycleNeutralDeadband =
                 constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
 
+        // Converts the voltage ramp rate to the ramp time in seconds (time to go from 0 to 12 volts)
+        double rampTime = 12 / constraints.getVoltageRampRate();
+
+        config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = rampTime;
+        config.OpenLoopRamps.VoltageOpenLoopRampPeriod = rampTime;
+        config.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = rampTime;
+        config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = rampTime;
+
         // sets continuous wrap to false (it is calculated on the rio if needed)
         config.ClosedLoopGeneral.ContinuousWrap = false;
 

@@ -95,7 +95,7 @@ public class SlotGains {
         if(oldValue == value) return;
 
         this.pidGains = this.pidGains.changeValue(value, changeType);
-        setHasPIDGainsChanged.run();
+        if(setHasPIDGainsChanged != null) setHasPIDGainsChanged.run();
     }
 
     /**

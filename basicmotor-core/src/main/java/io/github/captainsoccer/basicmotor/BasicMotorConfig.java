@@ -505,13 +505,23 @@ public class BasicMotorConfig {
         public double voltageDeadband = 0;
 
         /**
+         * The ramp rate of the motor controller units are: Seconds
+         * This is the time it takes for the motor controller to go from 0 to full output.
+         * This is used to prevent sudden changes in output which can cause mechanical stress and
+         * current spikes.
+         *
+         * <p>A value of 0 means no ramping is applied.
+         */
+        public double rampRate = 0;
+
+        /**
          * Gets the constraints of the controller
          *
          * @return The constraints of the controller
          */
         public ConstraintsGains getConstraints() {
             return new ConstraintsGains(
-                    constraintType, minValue, maxValue, maxOutput, minOutput, voltageDeadband);
+                    constraintType, minValue, maxValue, maxOutput, minOutput, voltageDeadband, rampRate);
         }
 
         /**
@@ -529,6 +539,7 @@ public class BasicMotorConfig {
             copy.maxOutput = this.maxOutput;
             copy.minOutput = this.minOutput;
             copy.voltageDeadband = this.voltageDeadband;
+            copy.rampRate = this.rampRate;
 
             return copy;
         }
@@ -548,6 +559,7 @@ public class BasicMotorConfig {
             config.maxOutput = constraints.getMaxMotorOutput();
             config.minOutput = constraints.getMinMotorOutput();
             config.voltageDeadband = constraints.getVoltageDeadband();
+            config.rampRate = constraints.getRampRate();
 
             return config;
         }

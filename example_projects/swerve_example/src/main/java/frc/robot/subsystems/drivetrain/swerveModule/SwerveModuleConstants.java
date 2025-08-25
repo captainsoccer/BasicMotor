@@ -162,16 +162,18 @@ public enum SwerveModuleConstants {
         //apply specific configurations for the drive and steer motors
         DRIVE_MOTOR_CONFIG.motorConfig.name = NAME + " Drive Motor";
         DRIVE_MOTOR_CONFIG.motorConfig.id = driveMotorID;
-        DRIVE_MOTOR_CONFIG.pidConfig = PIDConfig.fromGains(drivePIDGains);
-        DRIVE_MOTOR_CONFIG.feedForwardConfig = FeedForwardConfig.fromFeedForwards(driveFeedForwards);
+
+        DRIVE_MOTOR_CONFIG.slot0Config.pidConfig = PIDConfig.fromGains(drivePIDGains);
+        DRIVE_MOTOR_CONFIG.slot0Config.feedForwardConfig = FeedForwardConfig.fromFeedForwards(driveFeedForwards);
+
         DRIVE_MOTOR_CONFIG.simulationConfig.kV = driveFeedForwards.getSetpointFeedForward();
         DRIVE_MOTOR_CONFIG.simulationConfig.kA = driveKA;
 
         //apply specific configurations for the steer motor
         STEER_MOTOR_CONFIG.motorConfig.name = NAME + " Steer Motor";
         STEER_MOTOR_CONFIG.motorConfig.id = steerMotorID;
-        STEER_MOTOR_CONFIG.pidConfig = PIDConfig.fromGains(steerPIDGains);
-        STEER_MOTOR_CONFIG.feedForwardConfig = FeedForwardConfig.fromFeedForwards(steerFeedForwards);
+        STEER_MOTOR_CONFIG.slot0Config.pidConfig = PIDConfig.fromGains(steerPIDGains);
+        STEER_MOTOR_CONFIG.slot0Config.feedForwardConfig = FeedForwardConfig.fromFeedForwards(steerFeedForwards);
         STEER_MOTOR_CONFIG.simulationConfig.kV = steerKV;
         STEER_MOTOR_CONFIG.simulationConfig.kA = steerKA;
     }

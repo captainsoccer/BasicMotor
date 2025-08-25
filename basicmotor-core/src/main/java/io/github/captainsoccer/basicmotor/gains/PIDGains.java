@@ -45,7 +45,7 @@ public class PIDGains {
     /**
      * The PID elements of the PID controller.
      */
-    private double k_P, k_I, K_D;
+    private final double k_P, k_I, K_D;
 
     /**
      * The integrator limiters.
@@ -53,13 +53,13 @@ public class PIDGains {
      * The i_Zone is the zone where the integrator is active,
      * and the i_maxAccum is the maximum value that the integrator can accumulate.
      */
-    private double i_Zone, i_maxAccum;
+    private final double i_Zone, i_maxAccum;
 
     /**
      * The error tolerance of the PID controller.
      * Any error less than this value will be considered as at setpoint.
      */
-    private double tolerance;
+    private final double tolerance;
 
     /**
      * Creates a PID gains object with the given values.
@@ -269,55 +269,12 @@ public class PIDGains {
     }
 
     /**
-     * Updates the PID gains based on the change type.
-     * If the value is negative, it will be ignored.
-     * If the value is the same as the current value, it will not change.
-     *
-     * @param value      The value to set the PID gain to (must be greater than or equal to zero)
-     * @param changeType Which gain to change
-     * @return True if the value has changed, false otherwise.
-     */
-    public boolean updatePIDGains(double value, ChangeType changeType) {
-        //ignore negative values for gains
-        if (value < 0) return false;
-
-        double oldValue = getValue(changeType);
-
-        if (oldValue == value) {
-            return false; // no change
-        }
-
-        setValue(value, changeType);
-        return true; // value has changed
-    }
-
-    /**
-     * Sets the value of the PID gain based on the change type.
-     * Any value sent to here must be post checking for negative values.
-     * Used by the {@link #updatePIDGains(double, ChangeType)} method
-     *
-     * @param value      The value to set the PID gain to (must be greater than or equal to zero)
-     * @param changeType Which gain to change
-     */
-    private void setValue(double value, ChangeType changeType) {
-        switch (changeType) {
-            case K_P -> k_P = value;
-            case K_I -> k_I = value;
-            case K_D -> K_D = value;
-            case I_ZONE -> i_Zone = value;
-            case I_MAX_ACCUM -> i_maxAccum = value;
-            case TOLERANCE -> tolerance = value;
-        }
-    }
-
-    /**
      * Gets the current value of the PID gain based on the change type.
-     * Used for the {@link #updatePIDGains(double, ChangeType)} method
      *
      * @param changeType Which gain to get the value of
      * @return The current value of the PID gain
      */
-    private double getValue(ChangeType changeType) {
+    public double getValue(ChangeType changeType) {
         return switch (changeType) {
             case K_P -> k_P;
             case K_I -> k_I;
@@ -326,5 +283,29 @@ public class PIDGains {
             case I_MAX_ACCUM -> i_maxAccum;
             case TOLERANCE -> tolerance;
         };
+    }
+
+    /**
+     * Changes the value of the PID gain based on the change type.
+     * Returns a new PIDGains object with the updated value.
+     *
+     * @param value      The new value to set
+     * @param changeType Which gain to change
+     * @return A new PIDGains object with the updated value
+     */
+    public PIDGains changeValue(double value, ChangeType changeType) {
+        //Converts to array for easy manipulation
+        Double[] values = new Double[] {k_P, k_I, K_D, i_Zone, i_maxAccum, tolerance};
+        //Gets the index of the change type
+        int index = changeType.ordinal();
+
+        //If the value is the same, return the same object
+        if(values[index] == value) return this;
+
+        //Change the value at the index
+        values[index] = value;
+
+        //Return a new PIDGains object with the new values
+        return new PIDGains(values[0], values[1], values[2], values[3], values[4], values[5], loopTimeSeconds);
     }
 }

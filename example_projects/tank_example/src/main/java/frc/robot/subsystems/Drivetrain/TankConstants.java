@@ -147,8 +147,8 @@ public enum TankConstants {
         leadMotorConfig.motorConfig.name = this.name() + " Lead Motor";
         leadMotorConfig.motorConfig.inverted = inverted;
 
-        leadMotorConfig.pidConfig = PIDConfig.fromGains(pidGains);
-        leadMotorConfig.feedForwardConfig = FeedForwardConfig.fromFeedForwards(feedForwards);
+        leadMotorConfig.slot0Config.pidConfig = PIDConfig.fromGains(pidGains);
+        leadMotorConfig.slot0Config.feedForwardConfig = FeedForwardConfig.fromFeedForwards(feedForwards);
 
         leadMotorConfig.simulationConfig.kV = feedForwards.getSetpointFeedForward();
         leadMotorConfig.simulationConfig.kA = kA;

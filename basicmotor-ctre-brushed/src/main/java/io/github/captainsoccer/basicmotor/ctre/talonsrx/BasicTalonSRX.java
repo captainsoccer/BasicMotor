@@ -97,6 +97,12 @@ public class BasicTalonSRX extends BasicMotor {
     private PIDGains motorGains;
 
     /**
+     * The currently selected PID slot.
+     * This is used to determine which PID slot to use when setting the PID gains.
+     */
+    private int selectedSlot = 0;
+
+    /**
      * Creates a BasicTalonSRX instance with the provided motor ID and name.
      * This will make the motor only open loop controllable,
      * Until changed by the {@link #setMeasurements(Measurements)} method or the {@link #setEncoderType(EncoderType, int)}.
@@ -163,10 +169,16 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     @Override
-    protected void updatePIDGainsToMotor(PIDGains pidGains) {
+    protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
         motorGains = pidGains.convertToDutyCycle();
 
-        var pidConfig = config.slot0;
+        var pidConfig = switch (slot){
+            case 0 -> config.slot0;
+            case 1 -> config.slot1;
+            case 2 -> config.slot2;
+
+            default -> config.slot0;
+        };
 
         pidConfig.kP = motorGains.getK_P();
         pidConfig.kI = motorGains.getK_I();
@@ -277,7 +289,13 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     @Override
-    protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode) {
+    protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
+
+        if(slot != this.selectedSlot){
+            this.selectedSlot = slot;
+            motor.selectProfileSlot(slot, 0);
+        }
+
         switch (mode) {
             // Converts voltage to percent output based on the ideal voltage of the motor
             case VOLTAGE -> motor.set(TalonSRXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage);

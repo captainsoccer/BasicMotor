@@ -116,8 +116,8 @@ public class ConstraintsGains {
         this.minValue = minValue;
         this.maxValue = maxValue;
 
-        this.maxMotorOutput = MathUtil.clamp(Math.abs(maxMotorOutput), 0, MotorManager.config.defaultMaxMotorOutput);
-        this.minMotorOutput = -MathUtil.clamp(Math.abs(minMotorOutput), 0, MotorManager.config.defaultMaxMotorOutput);
+        this.maxMotorOutput = Math.max(maxMotorOutput, 0);
+        this.minMotorOutput = Math.min(-Math.abs(maxMotorOutput), 0);
 
         this.voltageDeadband = Math.abs(deadband);
     }

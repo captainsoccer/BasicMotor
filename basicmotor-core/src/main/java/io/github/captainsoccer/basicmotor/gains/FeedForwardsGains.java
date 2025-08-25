@@ -43,13 +43,13 @@ public class FeedForwardsGains {
      * This is useful for mechanisms that have a constant force applied to them.
      * (Like an elevator)
      */
-    private double simpleFeedForward;
+    private final double simpleFeedForward;
 
     /**
      * A constant voltage added to the motor output based on the direction of travel.(volts)
      * This is used to counteract friction in the mechanism.
      */
-    private double frictionFeedForward;
+    private final double frictionFeedForward;
 
     /**
      * A voltage that is multiplied by the setpoint of the motor, then added to the output.(volts per unit of control)
@@ -57,7 +57,7 @@ public class FeedForwardsGains {
      * For example, a flywheel that requires a certain voltage to reach a certain speed.
      * Or any closed loop that controls velocity.
      */
-    private double setpointFeedForward;
+    private final double setpointFeedForward;
 
     /**
      * A functions that takes the setpoint of the controller and returns a Voltage that is added to the output.(volts per unit of control)
@@ -203,24 +203,15 @@ public class FeedForwardsGains {
      *
      * @param value The value to set the feed forward gain to (must be greater than or equal to zero)
      * @param type  The type of feed forward gain to change.
+     * @return A new FeedForwardsGains object with the updated feed forward gain.
      */
-    public void updateFeedForwards(double value, ChangeType type) {
-        if (value < 0 && type != ChangeType.SIMPLE_FEED_FORWARD) {
-            //ignore negative values
-            return;
-        }
+    public FeedForwardsGains changeValue(double value, ChangeType type) {
+        var array = new Double[]{simpleFeedForward, frictionFeedForward, setpointFeedForward};
 
-        //set the value based on the type
-        switch (type) {
-            case SIMPLE_FEED_FORWARD:
-                simpleFeedForward = value;
-                break;
-            case FRICTION_FEED_FORWARD:
-                frictionFeedForward = value;
-                break;
-            case SETPOINT_FEED_FORWARD:
-                setpointFeedForward = value;
-                break;
-        }
+        if(array[type.ordinal()] == value) return this;
+
+        array[type.ordinal()] = value;
+
+        return new FeedForwardsGains(array[0], array[1], array[2], feedForwardFunction);
     }
 }

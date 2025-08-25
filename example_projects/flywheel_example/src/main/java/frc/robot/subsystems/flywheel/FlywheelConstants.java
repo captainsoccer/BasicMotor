@@ -21,12 +21,12 @@ public class FlywheelConstants {
         motorConfig.motorConfig.gearRatio = 5; // Example gear ratio, change as needed
         motorConfig.motorConfig.motorType = DCMotor.getFalcon500(1);
 
-        motorConfig.pidConfig.kP = 4; // Proportional gain
-        motorConfig.pidConfig.kI = 0; // Integral gain
-        motorConfig.pidConfig.kD = 0; // Derivative gain
+        motorConfig.slot0Config.pidConfig.kP = 4; // Proportional gain
+        motorConfig.slot0Config.pidConfig.kI = 0; // Integral gain
+        motorConfig.slot0Config.pidConfig.kD = 0; // Derivative gain
 
-        motorConfig.feedForwardConfig.setpointFeedForward = 0.56; // Feedforward for setpoint
-        motorConfig.feedForwardConfig.frictionFeedForward = 0.05; // Friction feedforward
+        motorConfig.slot0Config.feedForwardConfig.setpointFeedForward = 0.56; // Feedforward for setpoint
+        motorConfig.slot0Config.feedForwardConfig.frictionFeedForward = 0.05; // Friction feedforward
 
         motorConfig.constraintsConfig.maxOutput = 10; // Maximum output in Volts
         motorConfig.constraintsConfig.minOutput = -10; // Minimum output in Volts
@@ -34,8 +34,8 @@ public class FlywheelConstants {
         motorConfig.simulationConfig.kV = 0.564263323;
         motorConfig.simulationConfig.kA = 0.2;
 
-        motorConfig.profileConfig.maximumMeasurementVelocity = 3;
-        motorConfig.profileConfig.maximumMeasurementAcceleration = 1000;
+        motorConfig.slot0Config.profileConfig.maximumMeasurementVelocity = 3;
+        motorConfig.slot0Config.profileConfig.maximumMeasurementAcceleration = 1000;
 
         var talonFXConfig = (BasicTalonFXConfig) motorConfig;
         talonFXConfig.currentLimitConfig.supplyCurrentLimit = 40; // Supply current limit in Amperes

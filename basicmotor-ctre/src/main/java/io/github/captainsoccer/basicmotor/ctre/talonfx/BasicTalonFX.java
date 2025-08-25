@@ -43,12 +43,6 @@ public class BasicTalonFX extends BasicMotor {
     private final TalonFXConfiguration config;
 
     /**
-     * Whether the TalonFX motor controller is licensed with Phoenix Pro.
-     * This is used to determine if the motor controller can use FOC and time synchronization.
-     */
-    private final boolean isProLicensed;
-
-    /**
      * The object that handles the sensors for the TalonFX motor controller.
      */
     private final TalonFXSensors sensors;
@@ -114,8 +108,6 @@ public class BasicTalonFX extends BasicMotor {
 
         sensors = new TalonFXSensors(motor, super::getControllerLocation);
 
-        isProLicensed = motor.getIsProLicensed(true).getValue();
-
         motor.optimizeBusUtilization();
     }
 
@@ -156,8 +148,6 @@ public class BasicTalonFX extends BasicMotor {
 
         sensors = new TalonFXSensors(motor, super::getControllerLocation);
 
-        isProLicensed = motor.getIsProLicensed(true).getValue();
-
         motor.optimizeBusUtilization();
 
         if (!isSpecificConfig) return;
@@ -172,10 +162,27 @@ public class BasicTalonFX extends BasicMotor {
     }
 
     @Override
-    protected void updatePIDGainsToMotor(PIDGains pidGains) {
-        config.Slot0.kP = pidGains.getK_P();
-        config.Slot0.kI = pidGains.getK_I();
-        config.Slot0.kD = pidGains.getK_D();
+    protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
+        // Thanks ctre for making them different types of configs for each slot
+        switch (slot) {
+            case 0 -> {
+                config.Slot0.kP = pidGains.getK_P();
+                config.Slot0.kI = pidGains.getK_I();
+                config.Slot0.kD = pidGains.getK_D();
+            }
+
+            case 1 -> {
+                config.Slot1.kP = pidGains.getK_P();
+                config.Slot1.kI = pidGains.getK_I();
+                config.Slot1.kD = pidGains.getK_D();
+            }
+
+            case 2 -> {
+                config.Slot2.kP = pidGains.getK_P();
+                config.Slot2.kI = pidGains.getK_I();
+                config.Slot2.kD = pidGains.getK_D();
+            }
+        }
 
         if (getControllerLocation() == MotorManager.ControllerLocation.MOTOR) {
             // changes made in phoenix 6 api
@@ -286,14 +293,14 @@ public class BasicTalonFX extends BasicMotor {
     }
 
     @Override
-    protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode) {
+    protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
         StatusCode error =
                 switch (mode) {
                     case POSITION, PROFILED_POSITION -> motor.setControl(
-                            positionRequest.withPosition(setpoint).withFeedForward(feedForward));
+                                positionRequest.withPosition(setpoint).withFeedForward(feedForward).withSlot(slot));
 
                     case VELOCITY, PROFILED_VELOCITY -> motor.setControl(
-                            velocityRequest.withVelocity(setpoint).withFeedForward(feedForward));
+                                velocityRequest.withVelocity(setpoint).withFeedForward(feedForward).withSlot(slot));
 
                     case VOLTAGE -> motor.setControl(voltageRequest.withOutput(setpoint));
 
@@ -304,15 +311,7 @@ public class BasicTalonFX extends BasicMotor {
                         yield StatusCode.OK; // no error when stopping the motor
                     }
 
-                    case CURRENT, TORQUE -> {
-                        if(!isProLicensed){
-                            DriverStation.reportError("motor " + name + " is not pro licensed and cannot use current or torque control modes", false);
-                            yield motor.setControl(torqueCurrentRequest.withOutput(setpoint));
-                        }
-
-                        // there is already error handling in the torqueCurrentRequest
-                        yield StatusCode.OK;
-                    }
+                    case CURRENT, TORQUE -> motor.setControl(torqueCurrentRequest.withOutput(setpoint));
                 };
 
         if (error != StatusCode.OK) {
@@ -409,11 +408,6 @@ public class BasicTalonFX extends BasicMotor {
      * @param enable Whether to enable or disable FOC.
      */
     public void enableFOC(boolean enable) {
-        if(!isProLicensed) {
-            DriverStation.reportError("Motor " + name + " is not pro licensed and cannot use FOC", false);
-            return;
-        }
-
         velocityRequest.EnableFOC = enable;
         positionRequest.EnableFOC = enable;
         voltageRequest.EnableFOC = enable;
@@ -426,11 +420,6 @@ public class BasicTalonFX extends BasicMotor {
      * @param enable Whether to enable time synchronization.
      */
     public void enableTimeSync(boolean enable) {
-        if(!isProLicensed) {
-            DriverStation.reportError("Motor " + name + " is not pro licensed and cannot use time sync", false);
-            return;
-        }
-
         sensors.setWaitForAll(enable);
 
         if(!(defaultMeasurements instanceof TalonFXMeasurements measurements)) {
@@ -537,11 +526,6 @@ public class BasicTalonFX extends BasicMotor {
      *                               (the value of the can coder to get the mechanism value)
      */
     public void useFusedCanCoder(CANcoder canCoder, double sensorToMotorRatio, double unitConversion, double mechanismToSensorRatio){
-        if(!isProLicensed) {
-            DriverStation.reportError("Motor " + name + " is not pro licensed and cannot use fused can coder", false);
-            return;
-        }
-
         configureCanCoder(canCoder, sensorToMotorRatio, unitConversion, mechanismToSensorRatio, FeedbackSensorSourceValue.FusedCANcoder);
     }
 

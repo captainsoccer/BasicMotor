@@ -1,10 +1,7 @@
 package io.github.captainsoccer.basicmotor;
 
+import io.github.captainsoccer.basicmotor.gains.*;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManagerConfig;
-import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
-import io.github.captainsoccer.basicmotor.gains.FeedForwardsGains;
-import io.github.captainsoccer.basicmotor.gains.ControllerGains;
-import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -25,27 +22,30 @@ public class BasicMotorConfig {
      * (id, name, gear ratio, unit conversion, inverted, idle mode, motor type)
      */
     public MotorConfig motorConfig = new MotorConfig();
-    /**
-     * The pid configuration for the motor controller (kP, kI, kD, iZone, iMaxAccum, tolerance)
-     */
-    public PIDConfig pidConfig = new PIDConfig();
-    /**
-     * The feed forward configuration for the motor controller
-     * (simple feed forward, friction feed forward, setpoint feed forward, feed forward function)
-     */
-    public FeedForwardConfig feedForwardConfig = new FeedForwardConfig();
-    /**
-     * The constraints configuration for the motor controller
-     * (type of constraint (none, limited, continuous),
-     * max value of the constraint, min value of the constraint, max output, min output, voltage deadband)
-     */
-    public ConstraintsConfig constraintsConfig = new ConstraintsConfig();
 
     /**
-     * The profile configuration for the motor controller, used for motion profiling
-     * (max control velocity, max control acceleration)
+     * The configuration for slot 0 of the motor controller.
+     * (PID, feed forward, motion profile)
      */
-    public ProfileConfig profileConfig = new ProfileConfig();
+    public SlotConfig slot0Config = new SlotConfig();
+
+    /**
+     * The configuration for slot 1 of the motor controller.
+     * (PID, feed forward, motion profile)
+     */
+    public SlotConfig slot1Config = new SlotConfig();
+
+    /**
+     * The configuration for slot 2 of the motor controller.
+     * (PID, feed forward, motion profile)
+     */
+    public SlotConfig slot2Config = new SlotConfig();
+
+    /**
+     * The Constraints configuration of the motor controller
+     * (constraint type, min value, max value, max output, min output, voltage deadband)
+     */
+    public ConstraintsConfig constraintsConfig = new ConstraintsConfig();
 
     /**
      * The simulation configuration for the motor controller, used for simulating the motor in different scenarios
@@ -59,11 +59,9 @@ public class BasicMotorConfig {
      * @return The controller gains which include PID gains, constraints, and feed forwards
      */
     public ControllerGains getControllerGains() {
-        return new ControllerGains(
-                pidConfig.getGains(),
-                constraintsConfig.getConstraints(),
-                feedForwardConfig.getFeedForwards(),
-                profileConfig.getProfileConstraints());
+        var slots = new SlotGains[]{slot0Config.getSlotGains(), slot1Config.getSlotGains(), slot2Config.getSlotGains()};
+
+        return new ControllerGains(slots, constraintsConfig.getConstraints());
     }
 
     /**
@@ -89,11 +87,12 @@ public class BasicMotorConfig {
     public BasicMotorConfig copy(BasicMotorConfig copy) {
 
         copy.motorConfig = this.motorConfig.copy();
-        copy.pidConfig = this.pidConfig.copy();
-        copy.feedForwardConfig = this.feedForwardConfig.copy();
         copy.constraintsConfig = this.constraintsConfig.copy();
-        copy.profileConfig = this.profileConfig.copy();
         copy.simulationConfig = this.simulationConfig.copy();
+
+        copy.slot0Config = this.slot0Config.copy();
+        copy.slot1Config = this.slot1Config.copy();
+        copy.slot2Config = this.slot2Config.copy();
 
         return copy;
     }
@@ -192,6 +191,70 @@ public class BasicMotorConfig {
             copy.motorType = this.motorType;
 
             return copy;
+        }
+    }
+
+    /**
+     * The configuration for a specific slot of the motor controller.
+     * This is used to store different configurations for different control modes.
+     */
+    public static class SlotConfig {
+        /**
+         * The PID configuration of the motor controller
+         */
+        public PIDConfig pidConfig = new PIDConfig();
+
+        /**
+         * The feed forward configuration of the motor controller
+         */
+        public FeedForwardConfig feedForwardConfig = new FeedForwardConfig();
+
+        /**
+         * The constraints configuration of the motor controller
+         */
+        public ProfileConfig profileConfig = new ProfileConfig();
+
+        /**
+         * Creates a copy of the SlotConfig instance.
+         * This is useful when you want to create a new instance with the same values as the original.
+         *
+         * @return A new instance of SlotConfig with the same values as this instance with no references to the original instance.
+         */
+        public SlotConfig copy() {
+            var copy = new SlotConfig();
+
+            copy.pidConfig = this.pidConfig.copy();
+            copy.feedForwardConfig = this.feedForwardConfig.copy();
+            copy.profileConfig = this.profileConfig.copy();
+
+            return copy;
+        }
+
+        /**
+         * Bunches up all the configurations into one class
+         * @return The slot gains which include PID gains, feed forwards, and motion profile constraints
+         */
+        public SlotGains getSlotGains() {
+            return new SlotGains(
+                    pidConfig.getGains(),
+                    feedForwardConfig.getFeedForwards(),
+                    profileConfig.getProfileConstraints());
+        }
+
+        /**
+         * Creates a SlotConfig from the given SlotGains object.
+         *
+         * @param slotGains The SlotGains object to convert into a SlotConfig.
+         * @return The SlotConfig instance with the values from the SlotGains object.
+         */
+        public static SlotConfig fromSlotGains(SlotGains slotGains) {
+            var config = new SlotConfig();
+
+            config.pidConfig = PIDConfig.fromGains(slotGains.getPIDGains());
+            config.feedForwardConfig = FeedForwardConfig.fromFeedForwards(slotGains.getFeedForwardsGains());
+            config.profileConfig = ProfileConfig.fromProfileConstraints(slotGains.getMotionProfileGains());
+
+            return config;
         }
     }
 

@@ -82,7 +82,7 @@ public class ConstraintsGains {
     private final double voltageDeadband;
 
     /**
-     * The rate at the voltage can change.
+     * The rate at which the voltage can change.
      * This will be how much time does it take the motor to go from 0 volts to full volts (maxMotorOutput).
      * Seconds to go from 0 to full output.
      * 0 means no ramping.
@@ -110,7 +110,7 @@ public class ConstraintsGains {
      *                       (default is -13.0), can be defined in {@link MotorManager#config}.
      * @param deadband       The minimum output voltage of the motor.
      *                       any value (absolute value) below this will be ignored.
-     * @param rampRate       The maximum rate the voltage can change per second.(in volts per second)
+     * @param rampRate       The time in seconds to go from 0 volts to full output (maxMotorOutput).
      *                       This is used to prevent the motor from changing too quickly and causing damage to the mechanism.
      */
     public ConstraintsGains(ConstraintType type, double minValue, double maxValue, double maxMotorOutput, double minMotorOutput, double deadband, double rampRate) {
@@ -197,7 +197,7 @@ public class ConstraintsGains {
      *                        (default is -13.0), can be defined in {@link MotorManager#config}
      * @param voltageDeadband The minimum output voltage of the motor.
      *                        any value (absolute value) below this will be ignored.
-     * @param rampRate        The maximum rate the voltage can change per second.(in volts per second)
+     * @param rampRate        The time (in seconds) over which the voltage can change from zero to maximum.
      *                        This is used to prevent the motor from changing too quickly and causing damage to the mechanism.
      */
     public ConstraintsGains(double maxMotorOutput, double minMotorOutput, double voltageDeadband, double rampRate) {

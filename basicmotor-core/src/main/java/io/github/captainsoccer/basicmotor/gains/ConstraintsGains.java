@@ -425,9 +425,9 @@ public class ConstraintsGains {
     }
 
     /**
-     * Gets the maximum rate the voltage can change per second.
+     * Gets the ramp rate, which is the time in seconds to reach full output.
      *
-     * @return The maximum rate the voltage can change per second. (in volts per second)
+     * @return The time in seconds to reach full output.
      */
     public double getRampRate() {
         return rampRate;

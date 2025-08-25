@@ -117,11 +117,8 @@ public class BasicVictorSPX extends BasicMotor {
         motor.configNominalOutputForward(constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage);
         motor.configNominalOutputReverse(-constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage);
 
-        // Configure voltage ramp rate to time to full power.
-        double timeToFull = MotorManager.config.motorIdealVoltage / constraints.getVoltageRampRate();
-
-        motor.configClosedloopRamp(timeToFull);
-        motor.configOpenloopRamp(timeToFull);
+        motor.configClosedloopRamp(constraints.getRampRate());
+        motor.configOpenloopRamp(constraints.getRampRate());
     }
 
     @Override

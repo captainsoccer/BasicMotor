@@ -327,11 +327,8 @@ public abstract class BasicSpark extends BasicMotor {
         config.closedLoop.maxOutput(constraints.getMaxMotorOutput() / idealVoltage);
         config.closedLoop.minOutput(constraints.getMinMotorOutput() / idealVoltage);
 
-        // sets the closed loop ramp rate to the voltage ramp rate
-        double timeToFull = idealVoltage / constraints.getVoltageRampRate();
-
-        config.closedLoopRampRate(timeToFull);
-        config.openLoopRampRate(timeToFull);
+        config.closedLoopRampRate(constraints.getRampRate());
+        config.openLoopRampRate(constraints.getRampRate());
 
         //if the constraints are continuous, ignores them.
         //the rio code handles the continuous constraints.

@@ -82,10 +82,12 @@ public class ConstraintsGains {
     private final double voltageDeadband;
 
     /**
-     * The maximum rate the voltage can change per second.(in volts per second)
-     * This is used to prevent the motor from changing too quickly and causing damage to the mechanism.
+     * The rate at the voltage can change.
+     * This will be how much time does it take the motor to go from 0 volts to full volts (maxMotorOutput).
+     * Seconds to go from 0 to full output.
+     * 0 means no ramping.
      */
-    private final double voltageRampRate;
+    private final double rampRate;
 
     /**
      * Creates a constraints object with the given type and limits.
@@ -129,7 +131,7 @@ public class ConstraintsGains {
 
         this.voltageDeadband = Math.abs(deadband);
 
-        this.voltageRampRate = Math.abs(rampRate);
+        this.rampRate = Math.abs(rampRate);
     }
 
     /**
@@ -427,8 +429,8 @@ public class ConstraintsGains {
      *
      * @return The maximum rate the voltage can change per second. (in volts per second)
      */
-    public double getVoltageRampRate() {
-        return voltageRampRate;
+    public double getRampRate() {
+        return rampRate;
     }
 
     /**
@@ -449,6 +451,6 @@ public class ConstraintsGains {
                 maxMotorOutput,
                 minMotorOutput,
                 voltageDeadband,
-                voltageRampRate);
+                rampRate);
     }
 }

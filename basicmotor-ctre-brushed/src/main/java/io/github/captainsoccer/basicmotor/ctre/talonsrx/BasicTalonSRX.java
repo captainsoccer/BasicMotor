@@ -207,8 +207,8 @@ public class BasicTalonSRX extends BasicMotor {
         config.nominalOutputReverse = -constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
 
         // How much time to go from 0 to 100% output in seconds, based on the voltage ramp rate
-        config.closedloopRamp = MotorManager.config.motorIdealVoltage / constraints.getVoltageRampRate();
-        config.openloopRamp = config.closedloopRamp;
+        config.closedloopRamp = constraints.getRampRate();
+        config.openloopRamp = constraints.getRampRate();
 
         if (constraints.getConstraintType() == ConstraintsGains.ConstraintType.LIMITED
                 && getDefaultMeasurements() instanceof TalonSRXMeasurements talonMeasurements) {

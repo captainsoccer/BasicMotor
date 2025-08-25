@@ -104,7 +104,7 @@ public class BasicVictorSPX extends BasicMotor {
     }
 
     @Override
-    protected void updatePIDGainsToMotor(PIDGains pidGains) {
+    protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
         // Does nothing, as the victorSPX does not support PID gains directly.
     }
 
@@ -192,7 +192,7 @@ public class BasicVictorSPX extends BasicMotor {
     }
 
     @Override
-    protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode) {
+    protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
         // Because victorSPX does not have a built-in encoder and does not have a connection for an external encoder,
         // it cannot support direct PID control.
         // but it can support percent output, voltage, current, and torque control modes.

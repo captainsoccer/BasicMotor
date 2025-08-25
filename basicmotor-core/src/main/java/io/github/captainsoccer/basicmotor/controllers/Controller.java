@@ -12,18 +12,13 @@ import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.gains.FeedForwardsGains;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * This class is used to control the {@link BasicMotor}.
  * It handles the PID loop, feedforward, constraints, and profiling of the motor.
  */
 public class Controller implements Sendable {
-    /**
-     * Counts the number of instances of the controller.
-     * This is used to give each Controller a unique number when sending it to the dashboard.
-     */
-    private static int instances = 0;
-
     /**
      * The gains of the controller.
      * This stores the PID gains, feedforward, constraints, and profile of the controller.
@@ -33,7 +28,7 @@ public class Controller implements Sendable {
     /**
      * The PID controller used to calculate the PID output of the controller.
      */
-    private final BasicPIDController pidController;
+    private final BasicPIDController[] pidController = new BasicPIDController[3];
 
     /**
      * The latest request of the controller this contains the control mode and the goal.
@@ -57,24 +52,26 @@ public class Controller implements Sendable {
      * @param hasConstraintsChangeRunnable The function to run when the constraints are changed.
      *                                     This function is to flag when the constraints are changed
      *                                     so the motor can send the updates to the motor controller on a slower thread.
+     * @param name                         The name of the controller (used for the sendable registry).
+     *                                     This will be the name of the controller that will appear on the dashboard.
      */
     public Controller(
             ControllerGains controllerGains,
-            Runnable hasPIDGainsChangeRunnable,
-            Runnable hasConstraintsChangeRunnable) {
+            Consumer<Integer> hasPIDGainsChangeRunnable,
+            Runnable hasConstraintsChangeRunnable,
+            String name) {
         this.controllerGains = controllerGains;
         //sets the callbacks for when the PID gains or constraints are changed
         this.controllerGains.setHasPIDGainsChanged(hasPIDGainsChangeRunnable);
         this.controllerGains.setHasConstraintsChanged(hasConstraintsChangeRunnable);
 
         //creates the PID controller with the given gains
-        this.pidController = new BasicPIDController(controllerGains.getPidGains());
-
-        //increments the instance count and registers the controller with the sendable registry
-        instances++;
+        for (int i = 0; i < pidController.length; i++) {
+            this.pidController[i] = new BasicPIDController(this.controllerGains.getPidGains(i));
+        }
 
         // registers the controller with the sendable registry (used when sending to the dashboard)
-        SendableRegistry.add(this, "MotorController", instances);
+        SendableRegistry.add(this, name + " Controller");
     }
 
     /**
@@ -97,7 +94,11 @@ public class Controller implements Sendable {
         Objects.requireNonNull(request.controlMode);
         Objects.requireNonNull(request.goal);
 
-        if (request.controlMode.isProfiled() && !controllerGains.isProfiled()) {
+        if (request.slot < 0 || request.slot >= pidController.length) {
+            throw new IllegalArgumentException("Invalid slot: " + request.slot);
+        }
+
+        if (request.controlMode.isProfiled() && !controllerGains.isProfiled(request.slot)) {
             DriverStation.reportWarning("Using a profiled control mode without a profile set in the controller gains. using normal request", false);
         }
 
@@ -109,9 +110,39 @@ public class Controller implements Sendable {
      *
      * @param setpoint    The new setpoint (the goal if using a profiled control).
      * @param controlMode The mode of control.
+     * @param slot        Which slot to use for Feedback and Feedforwards.
+     */
+    public void setControl(double setpoint, ControlMode controlMode, int slot) {
+        setControl(new ControllerRequest(setpoint, controlMode, slot));
+    }
+
+    /**
+     * Sets the reference of the controller
+     *
+     * @param setpoint    The new setpoint (the goal if using a profiled control).
+     * @param controlMode The mode of control.
      */
     public void setControl(double setpoint, ControlMode controlMode) {
-        setControl(new ControllerRequest(setpoint, controlMode));
+        setControl(setpoint, controlMode, 0);
+    }
+
+    /**
+     * Sets the reference of the controller.
+     * This function is used when you want to control the end velocity of the movement.
+     * use this function only when using profiled control.
+     *
+     * @param goal         the new goal
+     * @param goalVelocity The setpoint velocity of the controller (used for profiled position and
+     *                     velocity)
+     * @param controlMode  The control mode of the controller. (must be a profiled control mode)
+     * @param slot         Which slot to use for Feedback and Feedforwards.
+     */
+    public void setControl(double goal, double goalVelocity, ControlMode controlMode, int slot) {
+        if (!controlMode.isProfiled()) {
+            DriverStation.reportWarning("Using a function made for profiled control for a non profiled control mode", true);
+        }
+
+        setControl(new ControllerRequest(goal, goalVelocity, controlMode, slot));
     }
 
     /**
@@ -125,11 +156,23 @@ public class Controller implements Sendable {
      * @param controlMode  The control mode of the controller. (must be a profiled control mode)
      */
     public void setControl(double goal, double goalVelocity, ControlMode controlMode) {
+        setControl(goal, goalVelocity, controlMode, 0);
+    }
+
+    /**
+     * Sets the reference of the controller.
+     * Use this only when using profiled control.
+     *
+     * @param goal        The new goal for the controller.
+     * @param controlMode The control mode of the controller. (must be a profiled control mode)
+     * @param slot        Which slot to use for Feedback and Feedforwards.
+     */
+    public void setControl(TrapezoidProfile.State goal, ControlMode controlMode, int slot) {
         if (!controlMode.isProfiled()) {
             DriverStation.reportWarning("Using a function made for profiled control for a non profiled control mode", true);
         }
 
-        setControl(new ControllerRequest(goal, goalVelocity, controlMode));
+        setControl(new ControllerRequest(goal, controlMode, slot));
     }
 
     /**
@@ -140,11 +183,7 @@ public class Controller implements Sendable {
      * @param controlMode The control mode of the controller. (must be a profiled control mode)
      */
     public void setControl(TrapezoidProfile.State goal, ControlMode controlMode) {
-        if (!controlMode.isProfiled()) {
-            DriverStation.reportWarning("Using a function made for profiled control for a non profiled control mode", true);
-        }
-
-        setControl(new ControllerRequest(goal, controlMode));
+        setControl(goal, controlMode, 0);
     }
 
     /**
@@ -223,7 +262,9 @@ public class Controller implements Sendable {
      *                            If Velocity control is used, this should be the current acceleration of the motor.
      */
     public void reset(double measurement, double measurementVelocity) {
-        this.pidController.reset();
+        for (var pid : pidController) {
+            pid.reset();
+        }
         this.setpoint = new TrapezoidProfile.State(measurement, measurementVelocity);
     }
 
@@ -240,7 +281,7 @@ public class Controller implements Sendable {
      * @return The PID output of the controller. (in volts)
      */
     public LogFrame.PIDOutput calculatePID(double measurement, double dt) {
-        return this.pidController.calculate(this.setpoint.position, measurement, dt);
+        return this.pidController[request.slot].calculate(this.setpoint.position, measurement, dt);
     }
 
     /**
@@ -264,7 +305,7 @@ public class Controller implements Sendable {
      */
     public LogFrame.FeedForwardOutput calculateFeedForward(double directionOfTravel) {
         return controllerGains
-                .getControllerFeedForwards()
+                .getControllerFeedForwards(request.slot)
                 .calculateFeedForwardOutput(
                         this.setpoint.position, directionOfTravel, request.arbFeedForward);
     }
@@ -278,7 +319,7 @@ public class Controller implements Sendable {
      * @param dt The time since the last calculation
      */
     public void calculateProfile(double dt) {
-        var profile = this.controllerGains.getMotionProfile();
+        var profile = this.controllerGains.getMotionProfile(request.slot);
 
         setpoint = profile.calculate(dt, setpoint, request.goal);
     }
@@ -314,7 +355,7 @@ public class Controller implements Sendable {
 
         //this acts both as the setpoint and the goal of the controller
         builder.addDoubleProperty(
-                "setpoint", () -> setpoint.position, (value) -> setControl(value, request.controlMode));
+                "setpoint", () -> setpoint.position, (value) -> setControl(value, request.controlMode, request.slot));
     }
 
     /**
@@ -419,6 +460,7 @@ public class Controller implements Sendable {
         /**
          * Checks if the control mode is a current control.
          * Current control is both CURRENT and TORQUE.
+         *
          * @return True if the control mode is a current control
          */
         public boolean isCurrentControl() {
@@ -455,18 +497,10 @@ public class Controller implements Sendable {
      * @param arbFeedForward A voltage feedforward given by the user that will be added to the motor output.
      *                       Useful when using outside calculations easily.
      *                       Similar to the function feedForward in the {@link FeedForwardsGains}
+     * @param slot           Which slot to use for Feedback and Feedforwards.
      */
     public record ControllerRequest(
-            TrapezoidProfile.State goal, ControlMode controlMode, double arbFeedForward) {
-        /**
-         * Creates a controller request with a goal.
-         *
-         * @param goal        The new goal (if not using a motion profile, this will be the setpoint).
-         * @param controlMode The new control mode used to control the motor.
-         */
-        public ControllerRequest(double goal, ControlMode controlMode) {
-            this(new TrapezoidProfile.State(goal, 0), controlMode, 0);
-        }
+            TrapezoidProfile.State goal, ControlMode controlMode, double arbFeedForward, int slot) {
 
         /**
          * Creates a controller request with a custom goal.
@@ -475,24 +509,38 @@ public class Controller implements Sendable {
          *
          * @param goal        The goal of the controller.
          * @param controlMode The control mode used to control the motor.
+         * @param slot        Which slot to use for Feedback and Feedforwards.
          */
-        public ControllerRequest(TrapezoidProfile.State goal, ControlMode controlMode) {
-            this(goal, controlMode, 0);
+        public ControllerRequest(TrapezoidProfile.State goal, ControlMode controlMode, int slot) {
+            this(goal, controlMode, 0, slot);
         }
+
+        /**
+         * Creates a controller request with a goal.
+         *
+         * @param goal        The new goal (if not using a motion profile, this will be the setpoint).
+         * @param controlMode The new control mode used to control the motor.
+         * @param slot        Which slot to use for Feedback and Feedforwards.
+         */
+        public ControllerRequest(double goal, ControlMode controlMode, int slot) {
+            this(new TrapezoidProfile.State(goal, 0), controlMode, 0, slot);
+        }
+
 
         /**
          * Creates a controller request with a goal and a setpoint velocity.
          * use only when using profiled control.
          * Use this when you want to control the goal velocity.
-         * Same as {@link #ControllerRequest(TrapezoidProfile.State goal, ControlMode controlMode)}
+         * Same as {@link #ControllerRequest(TrapezoidProfile.State goal, ControlMode controlMode, int slot)}
          *
          * @param goal         The new goal of the controller.
          * @param goalVelocity The goal velocity of the controller.
          *                     (i.e. the velocity the motor should be at when reaching the goal)
          * @param controlMode  The control mode used to control the motor.
+         * @param slot         Which slot to use for Feedback and Feedforwards.
          */
-        public ControllerRequest(double goal, double goalVelocity, ControlMode controlMode) {
-            this(new TrapezoidProfile.State(goal, goalVelocity), controlMode, 0);
+        public ControllerRequest(double goal, double goalVelocity, ControlMode controlMode, int slot) {
+            this(new TrapezoidProfile.State(goal, goalVelocity), controlMode, 0, slot);
         }
 
         /**
@@ -509,9 +557,10 @@ public class Controller implements Sendable {
          * @param goal           The new goal of the controller. (if not using a motion profile, this will be the setpoint).
          * @param controlMode    The control mode used to control the motor.
          * @param arbFeedForward A voltage feedforward given by the user that will be added to the motor output.
+         * @param slot           Which slot to use for Feedback and Feedforwards.
          */
-        public ControllerRequest(double goal, ControlMode controlMode, double arbFeedForward) {
-            this(new TrapezoidProfile.State(goal, 0), controlMode, arbFeedForward);
+        public ControllerRequest(double goal, ControlMode controlMode, double arbFeedForward, int slot) {
+            this(new TrapezoidProfile.State(goal, 0), controlMode, arbFeedForward, slot);
         }
 
         /**
@@ -522,9 +571,10 @@ public class Controller implements Sendable {
          *                       (i.e. the velocity the motor should be at when reaching the goal)
          * @param controlMode    The control mode used to control the motor.
          * @param arbFeedForward A voltage feedforward given by the user that will be added to the motor output.
+         * @param slot           Which slot to use for Feedback and Feedforwards.
          */
-        public ControllerRequest(double goal, double goalVelocity, ControlMode controlMode, double arbFeedForward) {
-            this(new TrapezoidProfile.State(goal, goalVelocity), controlMode, arbFeedForward);
+        public ControllerRequest(double goal, double goalVelocity, ControlMode controlMode, double arbFeedForward, int slot) {
+            this(new TrapezoidProfile.State(goal, goalVelocity), controlMode, arbFeedForward, slot);
         }
     }
 }

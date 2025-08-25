@@ -234,7 +234,7 @@ public abstract class BasicSpark extends BasicMotor {
     }
 
     @Override
-    protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode) {
+    protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
         switch (mode) {
             // stop the motor output
             case STOP -> stopMotorOutput();
@@ -244,12 +244,12 @@ public abstract class BasicSpark extends BasicMotor {
             case PERCENT_OUTPUT -> motor.set(setpoint);
             // set the motor output to a position
             case POSITION, PROFILED_POSITION -> setClosedLoopOutput(
-                    setpoint, feedForward, SparkBase.ControlType.kPosition);
+                    setpoint, feedForward, SparkBase.ControlType.kPosition, slot);
             // set the motor output to a velocity
             case VELOCITY, PROFILED_VELOCITY -> setClosedLoopOutput(
-                    setpoint, feedForward, SparkBase.ControlType.kVelocity);
+                    setpoint, feedForward, SparkBase.ControlType.kVelocity, slot);
 
-            case TORQUE, CURRENT -> setClosedLoopOutput(setpoint, 0, SparkBase.ControlType.kCurrent);
+            case TORQUE, CURRENT -> setClosedLoopOutput(setpoint, 0, SparkBase.ControlType.kCurrent, slot);
         }
     }
 
@@ -261,10 +261,13 @@ public abstract class BasicSpark extends BasicMotor {
      * @param setpoint    The setpoint for the closed loop output.
      * @param feedForward The feed forward value for the closed loop output. (in volts)
      * @param mode        The control type for the closed loop output.
+     * @param slot        The PID slot to use for the control request (0, 1, or 2).
      */
-    private void setClosedLoopOutput(double setpoint, double feedForward, SparkBase.ControlType mode) {
+    private void setClosedLoopOutput(double setpoint, double feedForward, SparkBase.ControlType mode, int slot) {
+        ClosedLoopSlot closedLoopSlot = ClosedLoopSlot.values()[slot];
+        
         //sets the closed loop output for the Spark MAX motor controller
-        var errorSignal = motor.getClosedLoopController().setReference(setpoint, mode, ClosedLoopSlot.kSlot0, feedForward);
+        var errorSignal = motor.getClosedLoopController().setReference(setpoint, mode, closedLoopSlot, feedForward);
 
         //if there was an error setting the closed loop output, report it
         if (errorSignal != REVLibError.kOk) {
@@ -296,13 +299,15 @@ public abstract class BasicSpark extends BasicMotor {
     }
 
     @Override
-    protected void updatePIDGainsToMotor(PIDGains pidGains) {
+    protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
         var gains = pidGains.convertToDutyCycle();
 
+        ClosedLoopSlot closedLoopSlot = ClosedLoopSlot.values()[slot];
+
         // sets the PID gains for the closed loop controller
-        config.closedLoop.pid(gains.getK_P(), gains.getK_I(), gains.getK_D());
-        config.closedLoop.iZone(gains.getI_Zone());
-        config.closedLoop.iMaxAccum(gains.getI_MaxAccum());
+        config.closedLoop.pid(gains.getK_P(), gains.getK_I(), gains.getK_D(), closedLoopSlot);
+        config.closedLoop.iZone(gains.getI_Zone(), closedLoopSlot);
+        config.closedLoop.iMaxAccum(gains.getI_MaxAccum(), closedLoopSlot);
 
         if (gains.getTolerance() != 0 && getControllerLocation() == MotorManager.ControllerLocation.MOTOR) {
             DriverStation.reportWarning(

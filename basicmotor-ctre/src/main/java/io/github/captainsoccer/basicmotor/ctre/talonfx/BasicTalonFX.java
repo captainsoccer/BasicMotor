@@ -268,7 +268,6 @@ public class BasicTalonFX extends BasicMotor {
         config.MotorOutput.DutyCycleNeutralDeadband =
                 constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
 
-
         config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = constraints.getRampRate();
         config.OpenLoopRamps.VoltageOpenLoopRampPeriod = constraints.getRampRate();
         config.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = constraints.getRampRate();

@@ -116,6 +116,9 @@ public class BasicVictorSPX extends BasicMotor {
 
         motor.configNominalOutputForward(constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage);
         motor.configNominalOutputReverse(-constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage);
+
+        motor.configClosedloopRamp(constraints.getRampRate());
+        motor.configOpenloopRamp(constraints.getRampRate());
     }
 
     @Override

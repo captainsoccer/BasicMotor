@@ -82,6 +82,14 @@ public class ConstraintsGains {
     private final double voltageDeadband;
 
     /**
+     * The rate at which the voltage can change.
+     * This will be how much time does it take the motor to go from 0 volts to full volts (maxMotorOutput).
+     * Seconds to go from 0 to full output.
+     * 0 means no ramping.
+     */
+    private final double rampRate;
+
+    /**
      * Creates a constraints object with the given type and limits.
      *
      * @param type           The type of the constraints (continuous, limited, none).
@@ -102,8 +110,10 @@ public class ConstraintsGains {
      *                       (default is -13.0), can be defined in {@link MotorManager#config}.
      * @param deadband       The minimum output voltage of the motor.
      *                       any value (absolute value) below this will be ignored.
+     * @param rampRate       The time in seconds to go from 0 volts to full output (maxMotorOutput).
+     *                       This is used to prevent the motor from changing too quickly and causing damage to the mechanism.
      */
-    public ConstraintsGains(ConstraintType type, double minValue, double maxValue, double maxMotorOutput, double minMotorOutput, double deadband) {
+    public ConstraintsGains(ConstraintType type, double minValue, double maxValue, double maxMotorOutput, double minMotorOutput, double deadband, double rampRate) {
         // if the type is null, set it to NONE
         if (type == null) this.constraintType = ConstraintType.NONE;
         else this.constraintType = type;
@@ -120,6 +130,8 @@ public class ConstraintsGains {
         this.minMotorOutput = Math.min(-Math.abs(maxMotorOutput), 0);
 
         this.voltageDeadband = Math.abs(deadband);
+
+        this.rampRate = Math.abs(rampRate);
     }
 
     /**
@@ -137,7 +149,7 @@ public class ConstraintsGains {
      *                 - If limited, this is the maximum value of the limits.
      */
     public ConstraintsGains(ConstraintType type, double minValue, double maxValue) {
-        this(type, minValue, maxValue, MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, 0);
+        this(type, minValue, maxValue, MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, 0, 0);
     }
 
     /**
@@ -157,7 +169,7 @@ public class ConstraintsGains {
      *                        any value (absolute value) below this will be ignored.
      */
     public ConstraintsGains(ConstraintType type, double minValue, double maxValue, double voltageDeadband) {
-        this(type, minValue, maxValue, MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, voltageDeadband);
+        this(type, minValue, maxValue, MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, voltageDeadband, 0);
     }
 
     /**
@@ -171,7 +183,25 @@ public class ConstraintsGains {
      *                       (default is -13.0), can be defined in {@link MotorManager#config}
      */
     public ConstraintsGains(double maxMotorOutput, double minMotorOutput) {
-        this(ConstraintType.NONE, 0, 0, maxMotorOutput, minMotorOutput, 0);
+        this(ConstraintType.NONE, 0, 0, maxMotorOutput, minMotorOutput, 0, 0);
+    }
+
+    /**
+     * Creates a constraints object with only output limits and a voltage deadband.
+     *
+     * @param maxMotorOutput  The maximum output of the motor (in volts).
+     *                        This is used for capping the output of the motor.
+     *                        (default is 13.0), can be defined in {@link MotorManager#config}.
+     * @param minMotorOutput  The minimum output of the motor (in volts).
+     *                        This is used for capping the output of the motor.
+     *                        (default is -13.0), can be defined in {@link MotorManager#config}
+     * @param voltageDeadband The minimum output voltage of the motor.
+     *                        any value (absolute value) below this will be ignored.
+     * @param rampRate        The time (in seconds) over which the voltage can change from zero to maximum.
+     *                        This is used to prevent the motor from changing too quickly and causing damage to the mechanism.
+     */
+    public ConstraintsGains(double maxMotorOutput, double minMotorOutput, double voltageDeadband, double rampRate) {
+        this(ConstraintType.NONE, 0, 0, maxMotorOutput, minMotorOutput, voltageDeadband, rampRate);
     }
 
     /**
@@ -187,7 +217,7 @@ public class ConstraintsGains {
      *                        any value (absolute value) below this will be ignored.
      */
     public ConstraintsGains(double maxMotorOutput, double minMotorOutput, double voltageDeadband) {
-        this(ConstraintType.NONE, 0, 0, maxMotorOutput, minMotorOutput, voltageDeadband);
+        this(ConstraintType.NONE, 0, 0, maxMotorOutput, minMotorOutput, voltageDeadband, 0);
     }
 
     /**
@@ -395,6 +425,15 @@ public class ConstraintsGains {
     }
 
     /**
+     * Gets the ramp rate, which is the time in seconds to reach full output.
+     *
+     * @return The time in seconds to reach full output.
+     */
+    public double getRampRate() {
+        return rampRate;
+    }
+
+    /**
      * Converts the constraints to motor constraints.
      * When setting the constraint to the motor controller, it needs to account for the gear ratio and unit conversion.
      *
@@ -411,6 +450,7 @@ public class ConstraintsGains {
                 (maxValue / unitConversion) * gearRatio,
                 maxMotorOutput,
                 minMotorOutput,
-                voltageDeadband);
+                voltageDeadband,
+                rampRate);
     }
 }

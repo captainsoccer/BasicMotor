@@ -1,4 +1,4 @@
-package io.github.captainsoccer.basicmotor.ctre;
+package io.github.captainsoccer.basicmotor.ctre.victorspx;
 
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
@@ -101,29 +101,6 @@ public class BasicVictorSPX extends BasicMotor {
             defaultMeasurements = new EmptyMeasurements();
             DriverStation.reportWarning("provided measurements for motor: " + name + " is null", false);
         }
-    }
-
-    @Override
-    protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
-        // Does nothing, as the victorSPX does not support PID gains directly.
-    }
-
-    @Override
-    protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
-        // Does nothing with soft limits.
-        motor.configPeakOutputForward(constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage);
-        motor.configPeakOutputReverse(-constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage);
-
-        motor.configNominalOutputForward(constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage);
-        motor.configNominalOutputReverse(-constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage);
-
-        motor.configClosedloopRamp(constraints.getRampRate());
-        motor.configOpenloopRamp(constraints.getRampRate());
-    }
-
-    @Override
-    protected Measurements getDefaultMeasurements() {
-        return defaultMeasurements;
     }
 
     @Override

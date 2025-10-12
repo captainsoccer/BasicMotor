@@ -240,7 +240,7 @@ public abstract class BasicMotor {
      *
      * @return The current measurements source of the motor.
      */
-    public Measurements getMeasurements() {
+    public final Measurements getMeasurements() {
         return measurements;
     }
 
@@ -250,7 +250,7 @@ public abstract class BasicMotor {
      *
      * @return The latest recorded measurement of the motor.
      */
-    public Measurements.Measurement getMeasurement() {
+    public final Measurements.Measurement getMeasurement() {
         return measurements.getMeasurement();
     }
 
@@ -260,7 +260,7 @@ public abstract class BasicMotor {
      *
      * @return The controller of the motor.
      */
-    public Controller getController() {
+    public final Controller getController() {
         return controller;
     }
 
@@ -278,7 +278,7 @@ public abstract class BasicMotor {
      * Stops the motor.
      * Sets a new command to the controller to stop the motor.
      */
-    public void stop() {
+    public final void stop() {
         controller.setControl(new Controller.ControllerRequest());
     }
 
@@ -296,7 +296,7 @@ public abstract class BasicMotor {
      *
      * @param mode The idle mode to set the motor to.
      */
-    public void setIdleMode(IdleMode mode){
+    public final void setIdleMode(IdleMode mode){
         motorInterface.setIdleMode(mode);
     }
 
@@ -308,7 +308,7 @@ public abstract class BasicMotor {
      *
      * @param inverted If the motor should be inverted (true for inverted, false for normal).
      */
-    public void setMotorInverted(boolean inverted){
+    public final void setMotorInverted(boolean inverted){
         motorInterface.setInverted(inverted);
     }
 
@@ -347,7 +347,7 @@ public abstract class BasicMotor {
      *
      * @return The location of the PID controller.
      */
-    public ControllerLocation getControllerLocation() {
+    public final ControllerLocation getControllerLocation() {
         return controllerLocation;
     }
 
@@ -390,7 +390,7 @@ public abstract class BasicMotor {
      * @param inverted If the motor should be inverted (opposite direction of the master).
      *                 Used for example when both of the motors are connected to one gear.
      */
-    public void followMotor(BasicMotor master, boolean inverted) {
+    public final void followMotor(BasicMotor master, boolean inverted) {
         // if it's the same motor, then we don't need to do anything
         if (master == this) {
             return;
@@ -409,7 +409,7 @@ public abstract class BasicMotor {
      * Stops following another motor.
      * This is used if the user no longer wants the motor to follow another motor.
      */
-    public void stopFollowing() {
+    public final void stopFollowing() {
         motorState = MotorState.STOPPED;
         stopMotorFollow();
         stopMotorOutput();
@@ -439,7 +439,7 @@ public abstract class BasicMotor {
      *
      * @param request The control request to set on the motor.
      */
-    public void setControl(Controller.ControllerRequest request) {
+    public final void setControl(Controller.ControllerRequest request) {
         controller.setControl(request);
     }
 
@@ -451,7 +451,7 @@ public abstract class BasicMotor {
      * @param mode     The control mode of the motor (position, velocity, voltage, percent output).
      * @param slot     The slot to use for this request (0, 1, or 2).
      */
-    public void setControl(double setpoint, Controller.ControlMode mode, int slot) {
+    public final void setControl(double setpoint, Controller.ControlMode mode, int slot) {
         controller.setControl(setpoint, mode, slot);
     }
 
@@ -462,7 +462,7 @@ public abstract class BasicMotor {
      * @param setpoint The setpoint of the motor (units depending on the mode).
      * @param mode     The control mode of the motor (position, velocity, voltage, percent output).
      */
-    public void setControl(double setpoint, Controller.ControlMode mode) {
+    public final void setControl(double setpoint, Controller.ControlMode mode) {
         controller.setControl(setpoint, mode);
     }
 
@@ -473,7 +473,7 @@ public abstract class BasicMotor {
      * @param mode                 The control mode of the motor (position, velocity, voltage, percent output).
      * @param arbitraryFeedForward The arbitrary feed forward to apply to the motor output.
      */
-    public void setControl(double setpoint, Controller.ControlMode mode, double arbitraryFeedForward) {
+    public final void setControl(double setpoint, Controller.ControlMode mode, double arbitraryFeedForward) {
         controller.setControl(new Controller.ControllerRequest(setpoint, mode, arbitraryFeedForward, 0));
     }
 
@@ -485,7 +485,7 @@ public abstract class BasicMotor {
      * @param arbitraryFeedForward The arbitrary feed forward to apply to the motor output.
      * @param slot                 The slot to use for this request (0, 1, or 2).
      */
-    public void setControl(double setpoint, Controller.ControlMode mode, double arbitraryFeedForward, int slot) {
+    public final void setControl(double setpoint, Controller.ControlMode mode, double arbitraryFeedForward, int slot) {
         controller.setControl(new Controller.ControllerRequest(setpoint, mode, arbitraryFeedForward, slot));
     }
 
@@ -495,7 +495,7 @@ public abstract class BasicMotor {
      *
      * @param volts The voltage to output to the motor.
      */
-    public void setVoltage(double volts) {
+    public final void setVoltage(double volts) {
         controller.setControl(volts, Controller.ControlMode.VOLTAGE, 0);
     }
 
@@ -506,7 +506,7 @@ public abstract class BasicMotor {
      *
      * @param percentOutput The percentage of the maximum output to set the motor to.
      */
-    public void setPrecentOutput(double percentOutput) {
+    public final void setPrecentOutput(double percentOutput) {
         controller.setControl(percentOutput, Controller.ControlMode.PERCENT_OUTPUT, 0);
     }
 
@@ -517,7 +517,7 @@ public abstract class BasicMotor {
      *
      * @return The current position of the motor.
      */
-    public double getPosition() {
+    public final double getPosition() {
         return measurements.getMeasurement().position();
     }
 
@@ -528,7 +528,7 @@ public abstract class BasicMotor {
      *
      * @return the current velocity of the motor
      */
-    public double getVelocity() {
+    public final double getVelocity() {
         return measurements.getMeasurement().velocity();
     }
 
@@ -548,7 +548,7 @@ public abstract class BasicMotor {
      *
      * @return The latest sensor data from the motor.
      */
-    public LogFrame.SensorData getSensorData() {
+    public final LogFrame.SensorData getSensorData() {
         return logFrame.sensorData;
     }
 
@@ -560,7 +560,7 @@ public abstract class BasicMotor {
      *
      * @return True if the motor is at the setpoint, false otherwise.
      */
-    public boolean atSetpoint() {
+    public final boolean atSetpoint() {
         return logFrame.atSetpoint;
     }
 
@@ -572,7 +572,7 @@ public abstract class BasicMotor {
      *
      * @return True if the motor is at the goal of the motion profile, false otherwise.
      */
-    public boolean atGoal() {
+    public final boolean atGoal() {
         return logFrame.atGoal;
     }
 
@@ -582,7 +582,7 @@ public abstract class BasicMotor {
      *
      * @param newPosition The new position of the motor.
      */
-    public void resetEncoder(double newPosition) {
+    public final void resetEncoder(double newPosition) {
         resetEncoder(newPosition, 0);
     }
 
@@ -594,7 +594,7 @@ public abstract class BasicMotor {
      * @param newPosition The new position of the motor
      * @param newVelocity The new velocity of the motor
      */
-    public void resetEncoder(double newPosition, double newVelocity) {
+    public final void resetEncoder(double newPosition, double newVelocity) {
         if (!controller.getControlMode().isVelocityControl()) controller.reset(newPosition, newVelocity);
         else controller.reset(newVelocity, 0);
 

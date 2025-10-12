@@ -1,6 +1,7 @@
 package io.github.captainsoccer.basicmotor.sim;
 
 import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
@@ -10,6 +11,10 @@ public abstract class SimSystemInterface extends MotorInterface {
 
     protected SimSystemInterface(String name) {
         super(name);
+    }
+
+    protected SimSystemInterface(BasicMotorConfig config) {
+        super(config);
     }
 
     @Override

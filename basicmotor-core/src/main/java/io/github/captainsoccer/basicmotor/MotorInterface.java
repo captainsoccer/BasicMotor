@@ -13,6 +13,10 @@ public abstract class MotorInterface {
         this.name = name;
     }
 
+    protected MotorInterface(BasicMotorConfig config) {
+        this.name = config.motorConfig.name;
+    }
+
     /**
      * Gets the default measurements for the motor.
      * This is used to get the original source of measurements for the motor.

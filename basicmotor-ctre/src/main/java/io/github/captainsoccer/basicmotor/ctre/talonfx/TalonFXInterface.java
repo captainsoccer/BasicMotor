@@ -44,7 +44,7 @@ public class TalonFXInterface extends MotorInterface {
     }
 
     public TalonFXInterface(BasicMotorConfig config){
-        super(config.motorConfig.name);
+        super(config);
 
         final String canBusName;
         if(config instanceof BasicTalonFXConfig talonConfig)

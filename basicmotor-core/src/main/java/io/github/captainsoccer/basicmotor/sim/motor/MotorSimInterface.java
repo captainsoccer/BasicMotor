@@ -34,7 +34,7 @@ public class MotorSimInterface extends SimSystemInterface {
      * @param config The configuration for the motor
      */
     public MotorSimInterface(BasicMotorConfig config) {
-        super(config.motorConfig.name);
+        super(config);
 
         var simConfig = config.simulationConfig;
 

@@ -26,6 +26,7 @@ public abstract class BasicSimSystem extends BasicMotor {
   /**
    * Creates a BasicSimSystem instance with the provided name and controller gains.
    *
+   * @param motorInterface The motor interface to use for the motor simulation
    * @param gains The controller gains to use for the motor simulation
    */
   public BasicSimSystem(SimSystemInterface motorInterface, ControllerGains gains) {
@@ -37,6 +38,7 @@ public abstract class BasicSimSystem extends BasicMotor {
    * Creates a BasicSimSystem instance with the provided configuration.
    * forces controller location to RIO, as simulation systems are always on the RoboRIO.
    *
+   * @param motorInterface The motor interface to use for the motor simulation
    * @param config The configuration for the motor simulation
    */
   public BasicSimSystem(SimSystemInterface motorInterface, BasicMotorConfig config) {

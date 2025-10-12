@@ -69,6 +69,7 @@ public class BasicTalonSRX extends BasicMotor {
         }
     }
 
+    /** The TalonSRX motor interface. */
     private final TalonSRXInterface motorInterface;
 
     /**

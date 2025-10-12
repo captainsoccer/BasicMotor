@@ -34,9 +34,8 @@ public class TalonFXSensors {
     private final double timeout;
 
     /**
-     * A supplier that provides the location of the controller.
-     * This is used to determine if the controller is on the motor controller or on the RIO.
-     * It is used to determine which signals to update and log.
+     * The location of the pid controller of the motor.
+     * This is used to determine which signals to update.
      */
     private MotorManager.ControllerLocation location;
 
@@ -209,6 +208,7 @@ public class TalonFXSensors {
      * If the controller is on the motor controller, it updates all signals.
      * If the controller is on the RIO, it only updates the sensor signals
      *
+     * @param location The location of the controller (MOTOR or RIO).
      */
     public void updateControllerLocation(MotorManager.ControllerLocation location) {
         this.location = location;

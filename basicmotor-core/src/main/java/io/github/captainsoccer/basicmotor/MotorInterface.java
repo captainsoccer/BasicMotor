@@ -14,12 +14,18 @@ public abstract class MotorInterface {
     /** The name of the motor controller */
     public final String name;
 
-    /** Creates a MotorInterface with the provided name. */
+    /**
+     * Creates a MotorInterface with the provided name.
+     * @param name the name of the motor
+     */
     protected MotorInterface(String name) {
         this.name = name;
     }
 
-    /** Creates a MotorInterface with the name provided in the configuration */
+    /**
+     * Creates a MotorInterface with the name provided in the configuration.
+     * @param config the configuration for the motor
+     */
     protected MotorInterface(BasicMotorConfig config) {
         this.name = config.motorConfig.name;
     }

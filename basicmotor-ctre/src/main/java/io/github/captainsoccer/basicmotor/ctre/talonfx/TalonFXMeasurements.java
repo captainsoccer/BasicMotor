@@ -10,8 +10,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 
-import java.util.function.DoubleConsumer;
-
 /**
  * This class is used to store and update the measurements of a TalonFX motor controller.
  * It handles updating the position, velocity, and acceleration of the motor.

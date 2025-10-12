@@ -13,6 +13,10 @@ import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 
+/**
+ * A motor interface for the TalonFX motor controller.
+ * This class handles the configuration and communication with the TalonFX motor controller.
+ */
 public class TalonFXInterface extends MotorInterface {
     /**
      * The name of the default can bus chain.
@@ -20,14 +24,25 @@ public class TalonFXInterface extends MotorInterface {
      */
     public static final String defaultCanBusName = "rio";
 
+    /** The TalonFX motor controller. */
     public final TalonFX motor;
 
+    /** The configuration for the TalonFX motor controller. */
     public final TalonFXConfiguration config;
 
+    /** The sensors for the TalonFX motor controller. */
     public final TalonFXSensors sensors;
 
+    /** The default measurements for the TalonFX motor controller. */
     private final TalonFXMeasurements defaultMeasurements;
 
+    /**
+     * Creates a TalonFXInterface with the provided name, id, gear ratio, and unit conversion.
+     * @param name the name of the motor
+     * @param id the CAN ID of the motor
+     * @param gearRatio the gear ratio of the motor
+     * @param unitConversion the unit conversion factor for the motor
+     */
     public TalonFXInterface(String name, int id, double gearRatio, double unitConversion) {
         super(name);
 
@@ -43,6 +58,11 @@ public class TalonFXInterface extends MotorInterface {
         motor.optimizeBusUtilization();
     }
 
+    /**
+     * Creates a TalonFXInterface with the provided configuration.
+     * If the config is not a {@link BasicTalonFXConfig}, it will use the default can bus name.
+     * @param config the configuration for the motor
+     */
     public TalonFXInterface(BasicMotorConfig config) {
         super(config);
 

@@ -16,18 +16,30 @@ import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import io.github.captainsoccer.basicmotor.rev.encoders.RevRelativeEncoder;
 
+/**
+ * A motor interface for the Spark MAX and Spark Flex motor controllers.
+ * This class handles the configuration and communication with the Spark motor controllers.
+ */
 public class SparkBaseInterface extends MotorInterface {
+    /** The default measurements for the Spark motor controller. */
     private final Measurements defaultMeasurements;
 
+    /** The Spark motor controller. */
     public final SparkBase motor;
 
+    /** The configuration for the Spark motor controller. */
     public final SparkBaseConfig config;
 
-    public SparkBaseInterface(SparkBase motor,
-                                 SparkBaseConfig motorConfig,
-                                 String name,
-                                 double gearRatio,
-                                 double unitConversion) {
+    /**
+     * Creates a SparkBaseInterface with the provided motor, configuration, name, gear ratio, and unit conversion.
+     *
+     * @param motor          The Spark motor controller (Spark MAX or Spark Flex)
+     * @param motorConfig   The configuration for the motor
+     * @param name           The name of the motor
+     * @param gearRatio      The gear ratio of the motor
+     * @param unitConversion The unit conversion factor for the motor
+     */
+    public SparkBaseInterface(SparkBase motor, SparkBaseConfig motorConfig, String name, double gearRatio, double unitConversion) {
         super(name);
 
         this.motor = motor;
@@ -42,6 +54,14 @@ public class SparkBaseInterface extends MotorInterface {
                 new EmptyMeasurements();
     }
 
+    /**
+     * Creates a SparkBaseInterface with the provided motor, configuration, and motor config.
+     * The motor config contains the name, gear ratio, and unit conversion factor for the motor.
+     *
+     * @param motor       The Spark motor controller (Spark MAX or Spark Flex)
+     * @param config      The configuration for the motor
+     * @param motorConfig The configuration for the motor, including name, gear ratio, and unit conversion
+     */
     public SparkBaseInterface(SparkBase motor, SparkBaseConfig config, BasicMotorConfig motorConfig){
         super(motorConfig);
         this.motor = motor;

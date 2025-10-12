@@ -62,6 +62,10 @@ public abstract class BasicMotor {
         COAST
     }
 
+    /**
+     * The motor interface for the specific motor controller.
+     * It is given in the constructor and used for the initial setup and communication with the motor controller.
+     */
     protected final MotorInterface motorInterface;
 
     /**
@@ -122,6 +126,7 @@ public abstract class BasicMotor {
     /**
      * Creates the motor.
      *
+     * @param motorInterface  The motor interface for the specific motor controller.
      * @param controllerGains The gains of the controller.
      */
     public BasicMotor(MotorInterface motorInterface, ControllerGains controllerGains) {
@@ -132,7 +137,8 @@ public abstract class BasicMotor {
     /**
      * Creates the motor with the given configuration.
      *
-     * @param config The configuration for the motor controller.
+     * @param motorInterface The motor interface for the specific motor controller.
+     * @param config         The configuration for the motor controller.
      */
     public BasicMotor(MotorInterface motorInterface, BasicMotorConfig config) {
         this(motorInterface, config.getControllerGains(), config);
@@ -160,15 +166,13 @@ public abstract class BasicMotor {
         controller = new Controller(controllerGains, setHasPIDGainsChanged, setHasConstraintsChanged, name);
 
 
-
         // if the user uses a bare minimum configuration,
         // then we will not set the idle mode, inverted, or current limits
         if (config != null) {
             this.config = config.copy();
             motorInterface.setIdleMode(config.motorConfig.idleMode);
             motorInterface.setInverted(config.motorConfig.inverted);
-        }
-        else this.config = null;
+        } else this.config = null;
 
         double gearRatio = motorInterface.getDefaultMeasurements().getGearRatio();
         double unitConversion = motorInterface.getDefaultMeasurements().getUnitConversion();
@@ -296,7 +300,7 @@ public abstract class BasicMotor {
      *
      * @param mode The idle mode to set the motor to.
      */
-    public final void setIdleMode(IdleMode mode){
+    public final void setIdleMode(IdleMode mode) {
         motorInterface.setIdleMode(mode);
     }
 
@@ -308,7 +312,7 @@ public abstract class BasicMotor {
      *
      * @param inverted If the motor should be inverted (true for inverted, false for normal).
      */
-    public final void setMotorInverted(boolean inverted){
+    public final void setMotorInverted(boolean inverted) {
         motorInterface.setInverted(inverted);
     }
 

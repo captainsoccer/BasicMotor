@@ -13,12 +13,18 @@ import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
  */
 public abstract class SimSystemInterface extends MotorInterface {
 
-    /** Creates a SimSystemInterface with the provided name. */
+    /**
+     * Creates a SimSystemInterface with the provided name.
+     * @param name the name of the motor
+     */
     protected SimSystemInterface(String name) {
         super(name);
     }
 
-    /** Creates a SimSystemInterface with the name provided in the configuration */
+    /**
+     * Creates a SimSystemInterface with the name provided in the configuration.
+     * @param config the configuration for the motor
+     */
     protected SimSystemInterface(BasicMotorConfig config) {
         super(config);
     }

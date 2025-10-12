@@ -11,14 +11,28 @@ import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 
+/**
+ * A motor interface for the TalonSRX motor controller.
+ * This class handles the configuration and communication with the TalonSRX motor controller.
+ */
 public class TalonSRXInterface extends MotorInterface {
+    /** The TalonSRX motor controller. */
     public final TalonSRX motor;
+
+    /** The configuration for the TalonSRX motor controller. */
     public final TalonSRXConfiguration config = new TalonSRXConfiguration();
 
+    /** The PID gains for the TalonSRX motor controller. */
     public PIDGains motorGains = new PIDGains();
 
+    /** The default measurements for the TalonSRX motor controller. */
     private final Measurements defaultMeasurements;
 
+    /**
+     * Creates a TalonSRXInterface with the provided motor ID and name.
+     * @param id The ID of the TalonSRX motor controller
+     * @param name The name of the motor controller
+     */
     public TalonSRXInterface(int id, String name) {
         super(name);
 

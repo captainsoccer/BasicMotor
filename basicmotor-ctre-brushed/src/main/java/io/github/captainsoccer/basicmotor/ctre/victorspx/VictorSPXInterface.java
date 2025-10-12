@@ -12,11 +12,24 @@ import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 
+/**
+ * A motor interface for the VictorSPX motor controller.
+ * This class handles the configuration and communication with the VictorSPX motor controller.
+ * Note that the VictorSPX does not support PID gains directly, so any closed loop control must be handled externally.
+ */
 public class VictorSPXInterface extends MotorInterface {
+    /** The VictorSPX motor controller. */
     public final VictorSPX motor;
 
+    /** The default measurements for the VictorSPX motor controller. */
     private final Measurements defaultMeasurements;
 
+    /**
+     * Creates a VictorSPXInterface with the provided motor ID and name.
+     * @param id The ID of the VictorSPX motor controller
+     * @param name The name of the motor controller
+     * @param defaultMeasurements The default measurements for the motor controller. If null, EmptyMeasurements will be used.
+     */
     public VictorSPXInterface(int id, String name, Measurements defaultMeasurements) {
         super(name);
 
@@ -27,10 +40,22 @@ public class VictorSPXInterface extends MotorInterface {
         this.defaultMeasurements = defaultMeasurements == null ? new EmptyMeasurements() : defaultMeasurements;
     }
 
+    /**
+     * Creates a VictorSPXInterface with the provided motor ID and name.
+     * Since no measurements are provided, it will use the default empty measurements.
+     * @param id The ID of the VictorSPX motor controller
+     * @param name The name of the motor controller
+     * @see #VictorSPXInterface(int, String, Measurements)
+     */
     public VictorSPXInterface(int id, String name) {
         this(id, name, new EmptyMeasurements());
     }
 
+    /**
+     * Creates a VictorSPXInterface with the provided configuration.
+     * @param config the configuration for the motor
+     * @param defaultMeasurements The default measurements for the motor controller. If null, EmptyMeasurements will be used.
+     */
     public VictorSPXInterface(BasicMotorConfig config, Measurements defaultMeasurements) {
         this(config.motorConfig.id, config.motorConfig.name, defaultMeasurements);
     }

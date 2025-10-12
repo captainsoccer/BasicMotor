@@ -24,21 +24,21 @@ public abstract class SimSystemInterface extends MotorInterface {
 
     @Override
     public void setInverted(boolean inverted) {
-
+        //Does nothing as this is a simulation
     }
 
     @Override
     public void setIdleMode(BasicMotor.IdleMode mode) {
-
+        // Does nothing as this is a simulation
     }
 
     @Override
     public void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
-
+        // Does nothing as this is a simulation
     }
 
     @Override
     public void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
-
+        // Does nothing as this is a simulation
     }
 }

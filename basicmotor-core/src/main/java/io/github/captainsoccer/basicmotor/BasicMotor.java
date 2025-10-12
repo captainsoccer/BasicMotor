@@ -401,7 +401,7 @@ public abstract class BasicMotor {
         }
 
         motorState = MotorState.FOLLOWING;
-        setMotorFollow(master, inverted);
+        setMotorFollow(master.motorInterface, inverted);
         stopRecordingMeasurements();
     }
 
@@ -423,7 +423,7 @@ public abstract class BasicMotor {
      * @param master   The motor to follow.
      * @param inverted If the motor should be inverted (opposite direction of the master).
      */
-    protected abstract void setMotorFollow(BasicMotor master, boolean inverted);
+    protected abstract void setMotorFollow(MotorInterface master, boolean inverted);
 
     /**
      * Stops the motor from following another motor.

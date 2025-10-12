@@ -4,12 +4,11 @@ package io.github.captainsoccer.basicmotor.ctre.talonsrx;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import io.github.captainsoccer.basicmotor.LogFrame;
+import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.ctre.victorspx.VictorSPXInterface;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
@@ -73,17 +72,6 @@ public class BasicTalonSRX extends BasicMotor {
     private final TalonSRXInterface motorInterface;
 
     /**
-     * The TalonSRX motor controller instance used by this BasicTalonSRX.
-     */
-    private final TalonSRX motor;
-
-    /**
-     * The configuration for the TalonSRX motor controller.
-     * This is used to configure the TalonSRX motor controller with the correct settings.
-     */
-    private final TalonSRXConfiguration config;
-
-    /**
      * The currently selected PID slot.
      * This is used to determine which PID slot to use when setting the PID gains.
      */
@@ -100,8 +88,6 @@ public class BasicTalonSRX extends BasicMotor {
         super(new VictorSPXInterface(id, name), new ControllerGains());
 
         this.motorInterface = (TalonSRXInterface) super.motorInterface;
-        this.motor = motorInterface.motor;
-        this.config = motorInterface.config;
     }
 
     /**
@@ -117,8 +103,6 @@ public class BasicTalonSRX extends BasicMotor {
         super(new TalonSRXInterface(id, name, encoderType, tickPerRevolution), controllerGains);
 
         this.motorInterface = (TalonSRXInterface) super.motorInterface;
-        this.motor = motorInterface.motor;
-        this.config = motorInterface.config;
     }
 
     /**
@@ -130,14 +114,14 @@ public class BasicTalonSRX extends BasicMotor {
         super(new TalonSRXInterface(motorConfig), motorConfig);
 
         this.motorInterface = (TalonSRXInterface) super.motorInterface;
-        this.motor = motorInterface.motor;
-        this.config = motorInterface.config;
 
         setCurrentLimits(motorConfig.currentLimitConfig.toCurrentLimits());
     }
 
     @Override
     public void setCurrentLimits(CurrentLimits currentLimits) {
+        var config = motorInterface.config;
+
         config.continuousCurrentLimit = currentLimits.getCurrentLimit();
 
         if (currentLimits instanceof TalonSRXCurrentLimits talonCurrentLimits &&
@@ -170,12 +154,12 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     @Override
-    protected void setMotorFollow(BasicMotor master, boolean inverted) {
-        BasicTalonSRX masterMotor = (BasicTalonSRX) master;
+    protected void setMotorFollow(MotorInterface master, boolean inverted) {
+        TalonSRXInterface masterMotor = (TalonSRXInterface) master;
 
-        motor.setInverted(inverted != masterMotor.motor.getInverted());
+        motorInterface.motor.setInverted(inverted != masterMotor.motor.getInverted());
 
-        motor.follow(masterMotor.motor);
+        motorInterface.motor.follow(masterMotor.motor);
     }
 
     @Override
@@ -185,6 +169,7 @@ public class BasicTalonSRX extends BasicMotor {
 
     @Override
     protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
+        var motor = motorInterface.motor;
 
         if(slot != this.selectedSlot){
             this.selectedSlot = slot;
@@ -217,11 +202,13 @@ public class BasicTalonSRX extends BasicMotor {
 
     @Override
     protected void stopMotorOutput() {
-        motor.set(ControlMode.PercentOutput, 0);
+        motorInterface.motor.set(ControlMode.PercentOutput, 0);
     }
 
     @Override
     protected LogFrame.SensorData getLatestSensorData() {
+        var motor = motorInterface.motor;
+
         double temperature = motor.getTemperature();
 
         double inputVoltage = motor.getBusVoltage();
@@ -246,6 +233,8 @@ public class BasicTalonSRX extends BasicMotor {
 
     @Override
     protected LogFrame.PIDOutput getPIDLatestOutput() {
+        var motor = motorInterface.motor;
+
         double iAccum = motor.getIntegralAccumulator();
         double derivative = motor.getErrorDerivative();
         double error = motor.getClosedLoopError();
@@ -276,6 +265,8 @@ public class BasicTalonSRX extends BasicMotor {
      *                       This will be desired units per rotation.
      */
     public void setEncoderType(EncoderType encoderType, int tickPerRevolution, double gearRatio, double unitConversion) {
+        var config = motorInterface.config;
+
         config.primaryPID.selectedFeedbackSensor = encoderType.feedbackDevice;
         config.primaryPID.selectedFeedbackCoefficient = 1.0 / tickPerRevolution;
 
@@ -284,7 +275,7 @@ public class BasicTalonSRX extends BasicMotor {
         if(motorInterface.getDefaultMeasurements() instanceof TalonSRXMeasurements) {
             setDefaultMeasurements();
         } else {
-            setMeasurements(new TalonSRXMeasurements(motor, tickPerRevolution, gearRatio, unitConversion), false);
+            setMeasurements(new TalonSRXMeasurements(motorInterface.motor, tickPerRevolution, gearRatio, unitConversion), false);
         }
     }
 

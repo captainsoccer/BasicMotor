@@ -19,9 +19,9 @@ import io.github.captainsoccer.basicmotor.rev.encoders.RevRelativeEncoder;
 public class SparkBaseInterface extends MotorInterface {
     private final Measurements defaultMeasurements;
 
-    private final SparkBase motor;
+    public final SparkBase motor;
 
-    private final SparkBaseConfig config;
+    public final SparkBaseConfig config;
 
     public SparkBaseInterface(SparkBase motor,
                                  SparkBaseConfig motorConfig,

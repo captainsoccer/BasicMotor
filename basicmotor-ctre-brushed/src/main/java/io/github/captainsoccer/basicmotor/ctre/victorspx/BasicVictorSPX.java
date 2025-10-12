@@ -3,6 +3,7 @@ package io.github.captainsoccer.basicmotor.ctre.victorspx;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
@@ -10,7 +11,6 @@ import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import edu.wpi.first.wpilibj.DriverStation;
 
 /**
@@ -19,10 +19,8 @@ import edu.wpi.first.wpilibj.DriverStation;
  * If you want full functionality, provide a measurements object.
  */
 public class BasicVictorSPX extends BasicMotor {
-    /**
-     * The VictorSPX motor controller instance used by this BasicVictorSPX.
-     */
-    private final VictorSPX motor;
+
+    private final VictorSPXInterface motorInterface;
 
     /**
      * Creates a BasicVictorSPX instance with the provided motor ID and name.
@@ -36,7 +34,7 @@ public class BasicVictorSPX extends BasicMotor {
     public BasicVictorSPX(int id, String name) {
         super(new VictorSPXInterface(id, name), new ControllerGains());
 
-        this.motor = ((VictorSPXInterface) super.motorInterface).motor;
+        this.motorInterface = (VictorSPXInterface) super.motorInterface;
     }
 
     /**
@@ -51,7 +49,7 @@ public class BasicVictorSPX extends BasicMotor {
     public BasicVictorSPX(int id, String name, Measurements measurements, ControllerGains controllerGains) {
         super(new VictorSPXInterface(id, name, measurements), controllerGains);
 
-        this.motor = ((VictorSPXInterface) super.motorInterface).motor;
+        this.motorInterface = (VictorSPXInterface) super.motorInterface;
 
         if(measurements != null) {
             setControllerLocation(MotorManager.ControllerLocation.RIO);
@@ -70,7 +68,7 @@ public class BasicVictorSPX extends BasicMotor {
     public BasicVictorSPX(BasicMotorConfig config, Measurements measurements) {
         super(new VictorSPXInterface(config, measurements), config);
 
-        this.motor = ((VictorSPXInterface) super.motorInterface).motor;
+        this.motorInterface = (VictorSPXInterface) super.motorInterface;
 
         if(measurements != null) {
             setControllerLocation(MotorManager.ControllerLocation.RIO);
@@ -104,14 +102,14 @@ public class BasicVictorSPX extends BasicMotor {
     }
 
     @Override
-    protected void setMotorFollow(BasicMotor master, boolean inverted) {
-        BasicVictorSPX motor = (BasicVictorSPX) master;
+    protected void setMotorFollow(MotorInterface master, boolean inverted) {
+        VictorSPXInterface motor = (VictorSPXInterface) master;
 
         boolean masterInverted = motor.motor.getInverted();
 
-        this.motor.setInverted(inverted != masterInverted);
+        this.motorInterface.motor.setInverted(inverted != masterInverted);
 
-        this.motor.follow(motor.motor);
+        this.motorInterface.motor.follow(motor.motor);
     }
 
     @Override
@@ -128,6 +126,8 @@ public class BasicVictorSPX extends BasicMotor {
             DriverStation.reportError("motor: " + this.name + " does not support direct PID control.", true);
         }
 
+        var motor = this.motorInterface.motor;
+
         switch (mode) {
             case PERCENT_OUTPUT -> motor.set(VictorSPXControlMode.PercentOutput, setpoint);
 
@@ -139,12 +139,13 @@ public class BasicVictorSPX extends BasicMotor {
 
     @Override
     protected void stopMotorOutput() {
-        this.motor.set(ControlMode.PercentOutput, 0);
+        motorInterface.motor.set(ControlMode.PercentOutput, 0);
     }
 
     @Override
     protected LogFrame.SensorData getLatestSensorData() {
         //VictorSPX does not support current sensing.
+        var motor = this.motorInterface.motor;
 
         double busVoltage = motor.getBusVoltage();
         double outputVoltage = motor.getMotorOutputVoltage();

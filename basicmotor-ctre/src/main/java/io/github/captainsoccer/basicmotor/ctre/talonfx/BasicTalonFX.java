@@ -3,16 +3,15 @@ package io.github.captainsoccer.basicmotor.ctre.talonfx;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.ctre.CANcoderMeasurements;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -23,21 +22,11 @@ import edu.wpi.first.wpilibj.DriverStation;
  */
 public class BasicTalonFX extends BasicMotor {
 
+    /**
+     * The interface that houses the motor itself.
+     * It is used to give to the BasicMotor Constructor to create the motor before the child constructor runs.
+     */
     private final TalonFXInterface motorInterface;
-
-    /**
-     * The TalonFX motor controller instance.
-     */
-    private final TalonFX motor;
-    /**
-     * The configuration for the TalonFX motor controller.
-     */
-    private final TalonFXConfiguration config;
-
-    /**
-     * The object that handles the sensors for the TalonFX motor controller.
-     */
-    private final TalonFXSensors sensors;
 
     /**
      * The velocity request for the motor controller.
@@ -86,10 +75,6 @@ public class BasicTalonFX extends BasicMotor {
         super(new TalonFXInterface(name, id, gearRatio, unitConversion), controllerGains);
 
         motorInterface = (TalonFXInterface) super.motorInterface;
-
-        motor = motorInterface.motor;
-        config = motorInterface.config;
-        sensors = motorInterface.sensors;
     }
 
     /**
@@ -118,10 +103,6 @@ public class BasicTalonFX extends BasicMotor {
 
         this.motorInterface = (TalonFXInterface) super.motorInterface;
 
-        this.motor = motorInterface.motor;
-        this.config = motorInterface.config;
-        this.sensors = motorInterface.sensors;
-
         if(motorConfig instanceof BasicTalonFXConfig talonConfig) {
 
             setCurrentLimits(talonConfig.currentLimitConfig.getCurrentLimits());
@@ -134,7 +115,7 @@ public class BasicTalonFX extends BasicMotor {
 
     @Override
     protected void updateMainLoopTiming(MotorManager.ControllerLocation location) {
-        sensors.updateControllerLocation(location);
+        motorInterface.sensors.updateControllerLocation(location);
 
         if (getMeasurements() instanceof TalonFXMeasurements measurements) {
             measurements.setUpdateFrequency(location.getHZ());
@@ -147,7 +128,7 @@ public class BasicTalonFX extends BasicMotor {
 
     @Override
     public void setCurrentLimits(CurrentLimits currentLimits) {
-        var currentConfig = config.CurrentLimits;
+        var currentConfig = motorInterface.config.CurrentLimits;
 
         currentConfig.StatorCurrentLimitEnable = currentLimits.getCurrentLimit() != 0;
         currentConfig.StatorCurrentLimit = currentLimits.getCurrentLimit();
@@ -170,6 +151,8 @@ public class BasicTalonFX extends BasicMotor {
 
     @Override
     protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
+        var motor = motorInterface.motor;
+
         StatusCode error =
                 switch (mode) {
                     case POSITION, PROFILED_POSITION -> motor.setControl(
@@ -198,17 +181,17 @@ public class BasicTalonFX extends BasicMotor {
 
     @Override
     protected void stopMotorOutput() {
-        motor.stopMotor();
+        motorInterface.motor.stopMotor();
     }
 
     @Override
     protected LogFrame.SensorData getLatestSensorData() {
-        return sensors.getSensorData();
+        return motorInterface.sensors.getSensorData();
     }
 
     @Override
     protected LogFrame.PIDOutput getPIDLatestOutput() {
-        return sensors.getPIDLatestOutput();
+        return motorInterface.sensors.getPIDLatestOutput();
     }
 
     @Override
@@ -234,24 +217,24 @@ public class BasicTalonFX extends BasicMotor {
     }
 
     @Override
-    protected void setMotorFollow(BasicMotor master, boolean inverted) {
-        BasicTalonFX motor = (BasicTalonFX) master;
+    protected void setMotorFollow(MotorInterface master, boolean inverted) {
+        TalonFXInterface motor = (TalonFXInterface) master;
 
         motor.sensors.setDutyCycleToDefaultRate(true);
 
         Follower follower = new Follower(motor.motor.getDeviceID(), inverted);
 
-        this.motor.setControl(follower);
+        this.motorInterface.motor.setControl(follower);
     }
 
     @Override
     protected void stopMotorFollow() {
-        motor.stopMotor();
+       stopMotorOutput();
     }
 
     @Override
     public void setDefaultMeasurements(){
-        config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+        motorInterface.config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
         motorInterface.applyConfig();
 
         super.setDefaultMeasurements();
@@ -277,7 +260,7 @@ public class BasicTalonFX extends BasicMotor {
      * @param enable Whether to enable time synchronization.
      */
     public void enableTimeSync(boolean enable) {
-        sensors.setWaitForAll(enable);
+        motorInterface.sensors.setWaitForAll(enable);
 
         motorInterface.getDefaultMeasurements().setTimeSync(enable);
     }
@@ -296,6 +279,8 @@ public class BasicTalonFX extends BasicMotor {
             DriverStation.reportError("CAN coder is null, cannot use remote encoder", false);
             return;
         }
+
+        var config = motorInterface.config;
 
         config.Feedback.FeedbackRemoteSensorID = canCoder.getDeviceID();
         config.Feedback.RotorToSensorRatio = sensorToMotorRatio;

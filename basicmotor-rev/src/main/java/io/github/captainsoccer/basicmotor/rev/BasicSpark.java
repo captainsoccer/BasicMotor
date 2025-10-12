@@ -6,6 +6,7 @@ import com.revrobotics.spark.SparkLowLevel;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
@@ -26,17 +27,11 @@ import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig.AbsoluteEncoderCo
  */
 public abstract class BasicSpark extends BasicMotor {
 
+    /**
+     * The motor interface for the Spark Base motor controller.
+     * This is used to access the motor controller and its configuration.
+     */
     private final SparkBaseInterface motorInterface;
-    /**
-     * The spark base motor instance (SparkFlex, SparkMax, etc.)
-     * This is provided by the derived class.
-     */
-    private final SparkBase motor;
-    /**
-     * The configuration of the Spark Base motor controller.
-     * Stores all the configuration parameters for the motor controller.
-     */
-    private final SparkBaseConfig config;
 
     /**
      * The idle power draw of the motor controller.
@@ -69,8 +64,6 @@ public abstract class BasicSpark extends BasicMotor {
         super(new SparkBaseInterface(motor, config, name, gearRatio, unitConversion), gains);
 
         this.motorInterface = (SparkBaseInterface) super.motorInterface;
-        this.motor = motor;
-        this.config = config; // set the voltage compensation to the idle voltage
     }
 
     /**
@@ -86,8 +79,6 @@ public abstract class BasicSpark extends BasicMotor {
         super(new SparkBaseInterface(motor, config, motorConfig), motorConfig);
 
         this.motorInterface = (SparkBaseInterface) super.motorInterface;
-        this.motor = motor;
-        this.config = config; // set the voltage compensation to the idle voltage
 
         if(motorConfig instanceof BasicSparkConfig sparkBaseConfig){
             setCurrentLimits(sparkBaseConfig.currentLimitConfig.getCurrentLimits());
@@ -153,7 +144,7 @@ public abstract class BasicSpark extends BasicMotor {
      * @return The SparkBase motor controller instance (SparkFlex, SparkMax, etc.).
      */
     public SparkBase getMotor() {
-        return motor;
+        return motorInterface.motor;
     }
 
     /**
@@ -162,11 +153,13 @@ public abstract class BasicSpark extends BasicMotor {
      * @return The SparkBaseConfig of the motor controller.
      */
     public SparkBaseConfig getSparkConfig() {
-        return config;
+        return motorInterface.config;
     }
 
     @Override
     protected LogFrame.SensorData getLatestSensorData() {
+        var motor = motorInterface.motor;
+
         double voltage = motor.getBusVoltage();
         double current = motor.getOutputCurrent();
         double temperature = motor.getMotorTemperature();
@@ -191,6 +184,8 @@ public abstract class BasicSpark extends BasicMotor {
 
     @Override
     protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
+        var motor = motorInterface.motor;
+
         switch (mode) {
             // stop the motor output
             case STOP -> stopMotorOutput();
@@ -223,7 +218,7 @@ public abstract class BasicSpark extends BasicMotor {
         ClosedLoopSlot closedLoopSlot = ClosedLoopSlot.values()[slot];
         
         //sets the closed loop output for the Spark MAX motor controller
-        var errorSignal = motor.getClosedLoopController().setReference(setpoint, mode, closedLoopSlot, feedForward);
+        var errorSignal = motorInterface.motor.getClosedLoopController().setReference(setpoint, mode, closedLoopSlot, feedForward);
 
         //if there was an error setting the closed loop output, report it
         if (errorSignal != REVLibError.kOk) {
@@ -238,13 +233,13 @@ public abstract class BasicSpark extends BasicMotor {
 
     @Override
     protected void stopMotorOutput() {
-        motor.stopMotor();
+        motorInterface.motor.stopMotor();
     }
 
     @Override
     protected LogFrame.PIDOutput getPIDLatestOutput() {
         // spark max supports only integral accumulation, so we will return the I accumulator value
-        double iAccum = motor.getClosedLoopController().getIAccum();
+        double iAccum = motorInterface.motor.getClosedLoopController().getIAccum();
 
         //the ideal voltage is used to convert the duty cycle to voltage
         //it is on the same thread as the sensor data so it works fine
@@ -256,6 +251,8 @@ public abstract class BasicSpark extends BasicMotor {
 
     @Override
     public void setCurrentLimits(CurrentLimits currentLimits) {
+        var config = motorInterface.config;
+
         if (currentLimits instanceof SparkCurrentLimits limits) {
             //if both the normal and secondary current limits are 0, do not set any current limits
             if (limits.getCurrentLimit() == 0 && limits.secondaryCurrentLimit() == 0) return;
@@ -296,7 +293,7 @@ public abstract class BasicSpark extends BasicMotor {
 
     @Override
     protected void stopRecordingMeasurements() {
-        var signals = config.signals;
+        var signals = motorInterface.config.signals;
 
         int maxPeriodMs =
                 32767; // maximum period in milliseconds for the Spark MAX according to the documentation
@@ -311,7 +308,7 @@ public abstract class BasicSpark extends BasicMotor {
 
     @Override
     protected void startRecordingMeasurements(double HZ) {
-        var signals = config.signals;
+        var signals = motorInterface.config.signals;
 
         int periodMs = (int) ((1 / HZ) * 1000); // convert to milliseconds
 
@@ -322,23 +319,22 @@ public abstract class BasicSpark extends BasicMotor {
     }
 
     @Override
-    protected void setMotorFollow(BasicMotor master, boolean inverted) {
-        var motor = (BasicSpark) master;
+    protected void setMotorFollow(MotorInterface master, boolean inverted) {
+        var motor = (SparkBaseInterface) master;
 
-        config.follow(motor.motor, inverted);
+        motorInterface.config.follow(motor.motor, inverted);
         motorInterface.applyConfig();
     }
 
     @Override
     protected void stopMotorFollow() {
-        motor.pauseFollowerMode();
+        motorInterface.motor.pauseFollowerMode();
     }
-
-
-
 
     @Override
     public void setDefaultMeasurements() {
+        var config = motorInterface.config;
+
         config.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder);
 
         int maxPeriodMs =
@@ -376,10 +372,10 @@ public abstract class BasicSpark extends BasicMotor {
      */
     public void usePrimaryEncoder(int countsPerRevolution, double gearRatio, double unitConversion) {
         // sets the configuration for the primary encoder
-        config.encoder.countsPerRevolution(countsPerRevolution);
+        motorInterface.config.encoder.countsPerRevolution(countsPerRevolution);
 
         var measurements = new RevRelativeEncoder(
-                motor.getEncoder(), gearRatio, unitConversion);
+                motorInterface.motor.getEncoder(), gearRatio, unitConversion);
 
         setMeasurements(measurements, false);
 
@@ -409,6 +405,8 @@ public abstract class BasicSpark extends BasicMotor {
             double zeroOffset,
             double sensorToMotorRatio,
             AbsoluteEncoderRange absoluteEncoderRange) {
+        var config = motorInterface.config;
+
         // sets the absolute encoder configuration
         setAbsoluteEncoderConfig(inverted, zeroOffset, sensorToMotorRatio, absoluteEncoderRange);
         // sets the feedback sensor for the closed loop controller
@@ -424,7 +422,7 @@ public abstract class BasicSpark extends BasicMotor {
         motorInterface.applyConfig();
 
         // set the measurements to the absolute encoder measurements
-        setMeasurements(new RevAbsoluteEncoder(motor.getAbsoluteEncoder()), false);
+        setMeasurements(new RevAbsoluteEncoder(motorInterface.motor.getAbsoluteEncoder()), false);
     }
 
     /**
@@ -465,6 +463,8 @@ public abstract class BasicSpark extends BasicMotor {
             double zeroOffset,
             double sensorToMotorRatio,
             AbsoluteEncoderRange absoluteEncoderRange) {
+        var config = motorInterface.config;
+
         // sets whether the absolute encoder is inverted or not
         config.absoluteEncoder.inverted(inverted);
         // sets the conversion factor for the absolute encoder position and velocity
@@ -501,6 +501,8 @@ public abstract class BasicSpark extends BasicMotor {
             double sensorToMotorRatio,
             double unitConversion,
             double mechanismToSensorRatio) {
+        var config = motorInterface.config;
+
         // sets the feedback sensor for the closed loop controller
         config.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAlternateOrExternalEncoder);
 

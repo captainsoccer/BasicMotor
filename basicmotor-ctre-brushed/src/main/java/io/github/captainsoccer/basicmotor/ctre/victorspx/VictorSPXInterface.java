@@ -2,11 +2,13 @@ package io.github.captainsoccer.basicmotor.ctre.victorspx;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
+import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 
@@ -15,12 +17,22 @@ public class VictorSPXInterface extends MotorInterface {
 
     private final Measurements defaultMeasurements;
 
-    protected VictorSPXInterface(String name) {
+    public VictorSPXInterface(int id, String name, Measurements defaultMeasurements) {
         super(name);
+
+        motor = new VictorSPX(id);
+        motor.configFactoryDefault();
+        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
+
+        this.defaultMeasurements = defaultMeasurements == null ? new EmptyMeasurements() : defaultMeasurements;
     }
 
-    protected VictorSPXInterface(BasicMotorConfig config) {
-        super(config);
+    public VictorSPXInterface(int id, String name) {
+        this(id, name, new EmptyMeasurements());
+    }
+
+    public VictorSPXInterface(BasicMotorConfig config, Measurements defaultMeasurements) {
+        this(config.motorConfig.id, config.motorConfig.name, defaultMeasurements);
     }
 
     @Override
@@ -30,12 +42,15 @@ public class VictorSPXInterface extends MotorInterface {
 
     @Override
     public double getInternalPIDLoopTime() {
-        return 0;
+        return 0.001; // TalonSRX has a fixed internal loop time of 1ms
+        // Also doesn't matter as the victorSPX does not support PID gains directly.
+        //According to a chief delphi post:
+        // https://www.chiefdelphi.com/t/control-loop-timing-of-various-motor-controllers/370356/4
     }
 
     @Override
     public void setInverted(boolean inverted) {
-
+        motor.setInverted(inverted);
     }
 
     @Override
@@ -51,6 +66,9 @@ public class VictorSPXInterface extends MotorInterface {
     @Override
     public void updatePIDGainsToMotor(PIDGains pidGains, int slot, MotorManager.ControllerLocation location) {
         // Nothing
+        if(location == MotorManager.ControllerLocation.MOTOR) {
+            DriverStation.reportWarning("VictorSPX does not support PID gains directly. Ignoring PID gains for motor " + name, false);
+        }
     }
 
     @Override

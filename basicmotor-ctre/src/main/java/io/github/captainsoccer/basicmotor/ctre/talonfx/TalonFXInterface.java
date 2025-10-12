@@ -43,11 +43,11 @@ public class TalonFXInterface extends MotorInterface {
         motor.optimizeBusUtilization();
     }
 
-    public TalonFXInterface(BasicMotorConfig config){
+    public TalonFXInterface(BasicMotorConfig config) {
         super(config);
 
         final String canBusName;
-        if(config instanceof BasicTalonFXConfig talonConfig)
+        if (config instanceof BasicTalonFXConfig talonConfig)
             canBusName = talonConfig.canBusName;
         else
             canBusName = defaultCanBusName;
@@ -95,7 +95,7 @@ public class TalonFXInterface extends MotorInterface {
     }
 
     @Override
-    public void updatePIDGainsToMotor(PIDGains pidGains, int slot, MotorManager.ControllerLocation location) {
+    public void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
 // Thanks ctre for making them different types of configs for each slot
         switch (slot) {
             case 0 -> {
@@ -117,28 +117,28 @@ public class TalonFXInterface extends MotorInterface {
             }
         }
 
-        if (location == MotorManager.ControllerLocation.MOTOR) {
-            // changes made in phoenix 6 api
-            // https://v6.docs.ctr-electronics.com/en/latest/docs/migration/migration-guide/feature-replacements-guide.html#integral-zone-and-max-integral-accumulator
 
-            if (pidGains.getI_MaxAccum() != Double.POSITIVE_INFINITY)
-                DriverStation.reportWarning(
-                        name
-                                + " does not need i max accum when running on motor therefor not used (TalonFX check phoenix 6 docs)",
-                        false);
+        // changes made in phoenix 6 api
+        // https://v6.docs.ctr-electronics.com/en/latest/docs/migration/migration-guide/feature-replacements-guide.html#integral-zone-and-max-integral-accumulator
 
-            if (pidGains.getTolerance() != 0)
-                DriverStation.reportWarning(
-                        name
-                                + " does not need tolerance when running on motor therefor not used (TalonFX check phoenix 6 docs)",
-                        false);
+        if (pidGains.getI_MaxAccum() != Double.POSITIVE_INFINITY)
+            DriverStation.reportWarning(
+                    name
+                            + " does not need i max accum when running on motor therefor not used (TalonFX check phoenix 6 docs)",
+                    false);
 
-            if (pidGains.getI_Zone() != Double.POSITIVE_INFINITY)
-                DriverStation.reportWarning(
-                        name
-                                + " does not need i zone when running on motor therefor not used (TalonFX check phoenix 6 docs)",
-                        false);
-        }
+        if (pidGains.getTolerance() != 0)
+            DriverStation.reportWarning(
+                    name
+                            + " does not need tolerance when running on motor therefor not used (TalonFX check phoenix 6 docs)",
+                    false);
+
+        if (pidGains.getI_Zone() != Double.POSITIVE_INFINITY)
+            DriverStation.reportWarning(
+                    name
+                            + " does not need i zone when running on motor therefor not used (TalonFX check phoenix 6 docs)",
+                    false);
+
 
         applyConfig();
     }

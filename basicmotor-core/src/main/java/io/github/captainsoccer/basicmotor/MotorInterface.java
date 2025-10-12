@@ -57,7 +57,7 @@ public abstract class MotorInterface {
      * @param pidGains The PID gains to set on the motor controller.
      * @param slot     The slot to set the PID gains to (0, 1, or 2).
      */
-    public abstract void updatePIDGainsToMotor(PIDGains pidGains, int slot, MotorManager.ControllerLocation location);
+    public abstract void updatePIDGainsToMotor(PIDGains pidGains, int slot);
 
     /**
      * Sets the constraints of the motor controller.

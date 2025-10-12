@@ -64,11 +64,9 @@ public class VictorSPXInterface extends MotorInterface {
     }
 
     @Override
-    public void updatePIDGainsToMotor(PIDGains pidGains, int slot, MotorManager.ControllerLocation location) {
+    public void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
         // Nothing
-        if(location == MotorManager.ControllerLocation.MOTOR) {
-            DriverStation.reportWarning("VictorSPX does not support PID gains directly. Ignoring PID gains for motor " + name, false);
-        }
+        DriverStation.reportWarning("VictorSPX does not support PID gains directly. Ignoring PID gains for motor " + name, false);
     }
 
     @Override

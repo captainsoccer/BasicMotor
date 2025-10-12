@@ -33,7 +33,7 @@ public abstract class SimSystemInterface extends MotorInterface {
     }
 
     @Override
-    public void updatePIDGainsToMotor(PIDGains pidGains, int slot, MotorManager.ControllerLocation location) {
+    public void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
 
     }
 

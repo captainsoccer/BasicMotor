@@ -177,7 +177,7 @@ public abstract class BasicMotor {
             var motorPIDGains =
                     controllerGains.getPidGains(i).convertToMotorGains(gearRatio, unitConversion, motorInterface.getInternalPIDLoopTime());
 
-            motorInterface.updatePIDGainsToMotor(motorPIDGains, i, ControllerLocation.MOTOR);
+            motorInterface.updatePIDGainsToMotor(motorPIDGains, i);
         }
 
         var motorConstraintsGains =
@@ -935,7 +935,7 @@ public abstract class BasicMotor {
                                 .getPidGains(i)
                                 .convertToMotorGains(gearRatio, unitConversion, motorInterface.getInternalPIDLoopTime());
 
-                motorInterface.updatePIDGainsToMotor(convertedGains, i, controllerLocation);
+                motorInterface.updatePIDGainsToMotor(convertedGains, i);
             }
         }
 

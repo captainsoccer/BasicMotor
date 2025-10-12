@@ -114,7 +114,7 @@ public class TalonSRXInterface extends MotorInterface {
     }
 
     @Override
-    public void updatePIDGainsToMotor(PIDGains pidGains, int slot, MotorManager.ControllerLocation location) {
+    public void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
         motorGains = pidGains.convertToDutyCycle();
 
         var pidConfig = switch (slot){

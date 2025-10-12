@@ -42,7 +42,7 @@ public class BasicFlywheelSim extends BasicSimSystem {
         super(name, gains);
         this.flywheelSim = flywheelSim;
 
-        defaultMeasurements = new flywheelEncoder(flywheelSim);
+        defaultMeasurements = new FlywheelEncoder(flywheelSim);
     }
 
     /**
@@ -57,7 +57,7 @@ public class BasicFlywheelSim extends BasicSimSystem {
 
         this.flywheelSim = createFlywheelSim(config);
 
-        defaultMeasurements = new flywheelEncoder(flywheelSim);
+        defaultMeasurements = new FlywheelEncoder(flywheelSim);
     }
 
     /**

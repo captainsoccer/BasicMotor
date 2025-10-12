@@ -9,7 +9,7 @@ import io.github.captainsoccer.basicmotor.measurements.Measurements;
  * It is used to get the position, velocity, and acceleration of the flywheel in a simulation environment.
  * As the flywheels main component is its velocity, it will sum the velocity over time to get the position.
  */
-public class flywheelEncoder extends Measurements {
+public class FlywheelEncoder extends Measurements {
     /**
      * The FlywheelSim instance used by this FlyWheelSimEncoder.
      */
@@ -31,7 +31,7 @@ public class flywheelEncoder extends Measurements {
      *
      * @param flywheelSim The FlywheelSim to use.
      */
-    public flywheelEncoder(FlywheelSim flywheelSim) {
+    public FlywheelEncoder(FlywheelSim flywheelSim) {
         this.flywheelSim = flywheelSim;
     }
 

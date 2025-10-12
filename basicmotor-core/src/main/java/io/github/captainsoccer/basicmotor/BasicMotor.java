@@ -42,7 +42,7 @@ public abstract class BasicMotor {
          * The motor is disabled.
          * Means that the motor is stopped due to the robot being disabled.
          */
-        DISABLED;
+        DISABLED
     }
 
     /**
@@ -324,8 +324,6 @@ public abstract class BasicMotor {
         }
         measurements.setPosition(position);
     }
-
-    ;
 
     /**
      * Used when there is no need to record the motors built in measurements.

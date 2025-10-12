@@ -7,12 +7,18 @@ import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 
+/**
+ * This is an abstract class that represents a motor interface for simulation systems.
+ * It ignores some of the functionality of a motor interface, as it is meant to be used in a simulation.
+ */
 public abstract class SimSystemInterface extends MotorInterface {
 
+    /** Creates a SimSystemInterface with the provided name. */
     protected SimSystemInterface(String name) {
         super(name);
     }
 
+    /** Creates a SimSystemInterface with the name provided in the configuration */
     protected SimSystemInterface(BasicMotorConfig config) {
         super(config);
     }

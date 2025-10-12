@@ -14,17 +14,31 @@ import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.sim.SimSystemInterface;
 
+/**
+ * This is the interface for a simulated DC motor system using the DCMotorSim class.
+ * It extends the SimSystemInterface and provides the DCMotorSim instance and default measurements.
+ */
 public class MotorSimInterface extends SimSystemInterface {
+    /** The DCMotorSim instance used by this MotorSimInterface. */
     public final DCMotorSim motor;
 
+    /** The default measurements for this MotorSimInterface. */
     private final Measurements defaultMeasurements;
 
+    /**
+     * Creates a MotorSimInterface instance with the provided DCMotorSim and name.
+     *
+     * @param motor          The DCMotorSim instance to use for the motor simulation
+     * @param name           The name of the motor simulation
+     * @param unitConversion The conversion factor for the motor's position units.
+     *                       This will be multiplied by the motors rotation to get the position with the desired units.
+     *                       The unit for this value is desired position unit per rotation.
+     */
     public MotorSimInterface(DCMotorSim motor, String name, double unitConversion) {
         super(name);
         this.motor = motor;
         this.defaultMeasurements = new MotorSimEncoder(motor, unitConversion);
     }
-
 
     /**
      * Creates a BasicSimMotor instance with the provided configuration.

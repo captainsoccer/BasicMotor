@@ -6,9 +6,15 @@ import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.sim.SimSystemInterface;
 
+/**
+ * The interface for a simulated elevator system using the ElevatorSim class.
+ * It extends the SimSystemInterface and provides the ElevatorSim instance and default measurements.
+ */
 public class ElevatorSimInterface extends SimSystemInterface {
+    /** The ElevatorSim instance used by this ElevatorSimInterface. */
     public final ElevatorSim elevatorSim;
 
+    /** The default measurements for this ElevatorSimInterface. */
     private final Measurements defaultMeasurements;
 
     /**

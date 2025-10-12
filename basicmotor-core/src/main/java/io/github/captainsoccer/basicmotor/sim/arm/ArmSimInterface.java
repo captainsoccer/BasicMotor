@@ -8,10 +8,16 @@ import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.sim.SimSystemInterface;
 
+/**
+ * The interface for a simulated arm system using the SingleJointedArmSim class.
+ * It extends the SimSystemInterface and provides the SingleJointedArmSim instance and default measurements.
+ */
 public class ArmSimInterface extends SimSystemInterface {
 
+    /** The SingleJointedArmSim instance used by this ArmSimInterface. */
     public final SingleJointedArmSim armSim;
 
+    /** The default measurements for this ArmSimInterface. */
     private final Measurements defaultMeasurements;
 
     /**

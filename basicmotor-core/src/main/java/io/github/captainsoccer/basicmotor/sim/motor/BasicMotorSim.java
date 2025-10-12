@@ -54,8 +54,6 @@ public class BasicMotorSim extends BasicSimSystem {
         motor.setInputVoltage(voltage);
     }
 
-
-
     @Override
     protected double getCurrentDraw() {
         return motor.getCurrentDrawAmps();

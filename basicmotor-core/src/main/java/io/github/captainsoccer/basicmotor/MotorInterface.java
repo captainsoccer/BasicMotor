@@ -3,16 +3,23 @@ package io.github.captainsoccer.basicmotor;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
-import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 
+/**
+ * This class is an interface for the different motor controllers.
+ * It is used in order to initialize and configure the motor controllers.
+ * all other functions of the motor controller are handled in the BasicMotor implementation.
+ */
 public abstract class MotorInterface {
 
+    /** The name of the motor controller */
     public final String name;
 
+    /** Creates a MotorInterface with the provided name. */
     protected MotorInterface(String name) {
         this.name = name;
     }
 
+    /** Creates a MotorInterface with the name provided in the configuration */
     protected MotorInterface(BasicMotorConfig config) {
         this.name = config.motorConfig.name;
     }

@@ -13,10 +13,18 @@ import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.sim.SimSystemInterface;
 
+/**
+ * This is the interface for a simulated flywheel system using the FlywheelSim class.
+ * It extends the SimSystemInterface and provides the FlywheelSim instance and default measurements.
+ */
 public class FlyWheelSimInterface extends SimSystemInterface {
 
+    /** The default measurements for this FlyWheelSimInterface. */
     private final Measurements defaultMeasurements;
 
+    /**
+     * The FlywheelSim instance used by this FlyWheelSimInterface.
+     */
     public final FlywheelSim flywheelSim;
 
     /**
@@ -72,8 +80,6 @@ public class FlyWheelSimInterface extends SimSystemInterface {
                     plant,
                     config.motorConfig.motorType,
                     simConfig.velocityStandardDeviation);
-
-
         }
 
         this.defaultMeasurements = new FlywheelSimEncoder(flywheelSim);

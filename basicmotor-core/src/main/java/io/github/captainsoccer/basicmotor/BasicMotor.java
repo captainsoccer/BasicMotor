@@ -3,10 +3,8 @@ package io.github.captainsoccer.basicmotor;
 import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
-import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
-import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager.ControllerLocation;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -64,6 +62,8 @@ public abstract class BasicMotor {
         COAST
     }
 
+    protected final MotorInterface motorInterface;
+
     /**
      * The controller of the motor.
      * This handles constraints, PID control, feedforward, and motion profiles.
@@ -101,29 +101,10 @@ public abstract class BasicMotor {
     private final Boolean[] hasPIDGainsChanged;
 
     /**
-     * Sends the PID gains to the motor controller.
-     * This is used to update the PID gains of the motor controller.
-     * These PID gains sent should be in motor units (in volts).
-     *
-     * @param pidGains The PID gains to set on the motor controller.
-     * @param slot     The slot to set the PID gains to (0, 1, or 2).
-     */
-    protected abstract void updatePIDGainsToMotor(PIDGains pidGains, int slot);
-
-    /**
      * If the constraints have changed (then it updates the motor controller on the slower thread).
      * The controller updates this value when the constraints change.
      */
     private volatile boolean hasConstraintsChanged = false;
-
-    /**
-     * Sets the constraints of the motor controller.
-     * This is used to update the constraints of the motor controller.
-     * The constraints sent should be in motor units.
-     *
-     * @param constraints The constraints to set on the motor controller.
-     */
-    protected abstract void updateConstraintsGainsToMotor(ConstraintsGains constraints);
 
     /**
      * The name of the motor.
@@ -139,22 +120,13 @@ public abstract class BasicMotor {
     private final BasicMotorConfig config;
 
     /**
-     * If the motor has been initialized.
-     * This is used due to the motor needing to be initialized after the constructor is called.
-     * This will be set true after the motor is initialized.
-     * Set by {@link #initializeMotor()}
-     */
-    private volatile boolean initialized = false;
-
-    /**
      * Creates the motor.
      *
      * @param controllerGains The gains of the controller.
-     * @param name            The name of the motor (used for logging).
      */
-    public BasicMotor(ControllerGains controllerGains, String name) {
+    public BasicMotor(MotorInterface motorInterface, ControllerGains controllerGains) {
         // config is null due to the constructor being used for the bare minimum configuration
-        this(controllerGains, name, null);
+        this(motorInterface, controllerGains, null);
     }
 
     /**
@@ -162,21 +134,23 @@ public abstract class BasicMotor {
      *
      * @param config The configuration for the motor controller.
      */
-    public BasicMotor(BasicMotorConfig config) {
-        this(config.getControllerGains(), config.motorConfig.name, config);
+    public BasicMotor(MotorInterface motorInterface, BasicMotorConfig config) {
+        this(motorInterface, config.getControllerGains(), config);
     }
 
     /**
      * Creates the motor with the given controller gains, name, and configuration.
      *
      * @param controllerGains The gains of the controller (used for PID control, feedforward, and constraints).
-     * @param name            The name of the motor (used for logging and debugging).
      * @param config          The configuration for the motor controller. (used for idle mode, inverted, and current limits)
      */
-    private BasicMotor(ControllerGains controllerGains, String name, BasicMotorConfig config) {
+    private BasicMotor(MotorInterface motorInterface, ControllerGains controllerGains, BasicMotorConfig config) {
         // checking for null values
         Objects.requireNonNull(controllerGains);
-        Objects.requireNonNull(name);
+        Objects.requireNonNull(motorInterface);
+
+        this.motorInterface = motorInterface;
+        this.name = motorInterface.name;
 
         // only 3 slots are supported
         hasPIDGainsChanged = new Boolean[]{false, false, false};
@@ -185,60 +159,36 @@ public abstract class BasicMotor {
         Runnable setHasConstraintsChanged = () -> hasConstraintsChanged = true;
         controller = new Controller(controllerGains, setHasPIDGainsChanged, setHasConstraintsChanged, name);
 
-        this.name = name;
 
-        this.config = config != null ? config.copy() : null;
 
-        //register the motor with the motor manager
-        MotorManager.getInstance()
-                .registerMotor(name, this::run, this::updateSensorData, this::getLatestFrame);
-    }
+        // if the user uses a bare minimum configuration,
+        // then we will not set the idle mode, inverted, or current limits
+        if (config != null) {
+            this.config = config.copy();
+            motorInterface.setIdleMode(config.motorConfig.idleMode);
+            motorInterface.setInverted(config.motorConfig.inverted);
+        }
+        else this.config = null;
 
-    /**
-     * Initializes the motor.
-     * Does extra set up like setting the idle mode, inverted, and current limits.
-     *
-     * @return The default measurements of the motor. (built-in encoder)
-     */
-    private Measurements initializeMotor() {
-        if (initialized) return getDefaultMeasurements();
-
-        // because the motor is on a different thread, it might not be ready yet
-        // so it will return null and try again later
-        if (getDefaultMeasurements() == null) return null;
-
-        double gearRatio = getDefaultMeasurements().getGearRatio();
-        double unitConversion = getDefaultMeasurements().getUnitConversion();
-
-        var controllerGains = controller.getControllerGains();
+        double gearRatio = motorInterface.getDefaultMeasurements().getGearRatio();
+        double unitConversion = motorInterface.getDefaultMeasurements().getUnitConversion();
 
         for (int i = 0; i < 3; i++) {
             var motorPIDGains =
-                    controllerGains.getPidGains(i).convertToMotorGains(gearRatio, unitConversion, getInternalPIDLoopTime());
+                    controllerGains.getPidGains(i).convertToMotorGains(gearRatio, unitConversion, motorInterface.getInternalPIDLoopTime());
 
-            updatePIDGainsToMotor(motorPIDGains, i);
+            motorInterface.updatePIDGainsToMotor(motorPIDGains, i, ControllerLocation.MOTOR);
         }
 
         var motorConstraintsGains =
                 controllerGains.getControllerConstrains().convertToMotorConstraints(gearRatio, unitConversion);
 
-        updateConstraintsGainsToMotor(motorConstraintsGains);
+        motorInterface.updateConstraintsGainsToMotor(motorConstraintsGains);
 
-        // if the user uses a bare minimum configuration, then we will not set the idle mode, inverted, or current limits
-        if (config == null) {
-            initialized = true;
-            return getDefaultMeasurements();
-        }
-
-        setIdleMode(config.motorConfig.idleMode);
-        setMotorInverted(config.motorConfig.inverted);
-
-        initialized = true;
-
-        // if the user is using an external encoder, sets the measurements to the external encoder
-        return config.usingExternalEncoder() ? getMeasurements() : getDefaultMeasurements();
+        //register the motor with the motor manager
+        MotorManager.getInstance()
+                .registerMotor(name, this::run, this::updateSensorData, this::getLatestFrame);
     }
-
     // getters and setters
 
     /**
@@ -279,20 +229,11 @@ public abstract class BasicMotor {
      * This is used to reset the measurements to the default measurements of the motor.
      */
     public void setDefaultMeasurements() {
-        this.measurements = getDefaultMeasurements();
+        this.measurements = motorInterface.getDefaultMeasurements();
         startRecordingMeasurements(controllerLocation.getHZ());
 
         setControllerLocation(ControllerLocation.MOTOR);
     }
-
-    /**
-     * Gets the default measurements of the motor.
-     * This will be the motor's built-in encoder or a simulated encoder.
-     * The motor should store this source in its class.
-     *
-     * @return The default measurements of the motor.
-     */
-    protected abstract Measurements getDefaultMeasurements();
 
     /**
      * Gets the current measurements source of the motor.
@@ -322,14 +263,6 @@ public abstract class BasicMotor {
     public Controller getController() {
         return controller;
     }
-
-    /**
-     * Gets the loop time of the internal PID loop.
-     * This is used to convert the pid gains to the motor controller's loop time.
-     *
-     * @return The loop time of the internal PID loop in seconds.
-     */
-    protected abstract double getInternalPIDLoopTime();
 
     /**
      * Gets the latest log frame of the motor.
@@ -363,7 +296,10 @@ public abstract class BasicMotor {
      *
      * @param mode The idle mode to set the motor to.
      */
-    public abstract void setIdleMode(IdleMode mode);
+    public void setIdleMode(IdleMode mode){
+        motorInterface.setIdleMode(mode);
+    }
+
 
     /**
      * Sets if the motor should be inverted.
@@ -372,7 +308,9 @@ public abstract class BasicMotor {
      *
      * @param inverted If the motor should be inverted (true for inverted, false for normal).
      */
-    public abstract void setMotorInverted(boolean inverted);
+    public void setMotorInverted(boolean inverted){
+        motorInterface.setInverted(inverted);
+    }
 
     /**
      * Sets the new position of the motor.
@@ -671,14 +609,6 @@ public abstract class BasicMotor {
      * calculating a motion profile, and calculating the PID output (if needed).
      */
     private void run() {
-        // if the motor is not initialized, then we need to initialize it
-        if (!initialized) {
-            var measurements = initializeMotor();
-            // if the measurements are still null, it means the motor has not been initialized yet
-            if (measurements == null) return;
-            else this.measurements = measurements;
-        }
-
         // doesn't need to do anything if the motor is following another motor
         if (motorState == MotorState.FOLLOWING) {
             return;
@@ -741,13 +671,9 @@ public abstract class BasicMotor {
      * @return The updated measurements of the motor.
      */
     private Measurements.Measurement updateMeasurements() {
-        // checks if the measurements are null, if so, then it will try to get the default measurements
-        if (measurements == null) {
-            measurements = getDefaultMeasurements();
-        }
-
         if (measurements == null) {
             // if the measurements are still null, then we cannot update the measurements
+            DriverStation.reportError("Measurements for motor " + name + " are null, cannot update measurements.", false);
             return Measurements.Measurement.EMPTY;
         }
 
@@ -941,7 +867,7 @@ public abstract class BasicMotor {
             DriverStation.reportError("motor: " + name + " Trying to convert torque and current without config set.", false);
             return 0;
         }
-        return config.motorConfig.motorType.getCurrent(torque / getDefaultMeasurements().getGearRatio());
+        return config.motorConfig.motorType.getCurrent(torque / motorInterface.getDefaultMeasurements().getGearRatio());
     }
 
     /**
@@ -957,7 +883,7 @@ public abstract class BasicMotor {
             DriverStation.reportError("motor: " + name + " Trying to convert torque and current without config set.", false);
             return 0;
         }
-        return config.motorConfig.motorType.getTorque(current) * getDefaultMeasurements().getGearRatio();
+        return config.motorConfig.motorType.getTorque(current) * motorInterface.getDefaultMeasurements().getGearRatio();
     }
 
     /**
@@ -985,7 +911,6 @@ public abstract class BasicMotor {
      * If the pid controller is on the motor controller, it will also update the pid output in the log frame.
      */
     private void updateSensorData() {
-        if (!initialized) return;
         logFrame.sensorData = getLatestSensorData();
 
         if (controllerLocation == ControllerLocation.MOTOR) logFrame.pidOutput = getPIDLatestOutput();
@@ -996,8 +921,8 @@ public abstract class BasicMotor {
 
         if (!hasConstraintsChanged && Arrays.stream(hasPIDGainsChanged).noneMatch(value -> value)) return;
 
-        double gearRatio = getDefaultMeasurements().getGearRatio();
-        double unitConversion = getDefaultMeasurements().getUnitConversion();
+        double gearRatio = motorInterface.getDefaultMeasurements().getGearRatio();
+        double unitConversion = motorInterface.getDefaultMeasurements().getUnitConversion();
 
         // if the pid has changed, then update the built-in motor pid
         for (int i = 0; i < 3; i++) {
@@ -1008,9 +933,9 @@ public abstract class BasicMotor {
                         controller
                                 .getControllerGains()
                                 .getPidGains(i)
-                                .convertToMotorGains(gearRatio, unitConversion, getInternalPIDLoopTime());
+                                .convertToMotorGains(gearRatio, unitConversion, motorInterface.getInternalPIDLoopTime());
 
-                updatePIDGainsToMotor(convertedGains, i);
+                motorInterface.updatePIDGainsToMotor(convertedGains, i, controllerLocation);
             }
         }
 
@@ -1024,7 +949,7 @@ public abstract class BasicMotor {
                             .getControllerConstrains()
                             .convertToMotorConstraints(gearRatio, unitConversion);
 
-            updateConstraintsGainsToMotor(convertedConstraints);
+            motorInterface.updateConstraintsGainsToMotor(convertedConstraints);
         }
     }
 

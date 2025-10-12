@@ -5,11 +5,8 @@ import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.ctre.CANcoderMeasurements;
-import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
-import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
-import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -17,8 +14,6 @@ import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.DriverStation;
 
 /**
@@ -27,11 +22,8 @@ import edu.wpi.first.wpilibj.DriverStation;
  * functionality specific to the TalonFX motor controller.
  */
 public class BasicTalonFX extends BasicMotor {
-    /**
-     * The name of the default can bus chain.
-     * This is the can bus chain built into the robo rio.
-     */
-    public static final String defaultCanBusName = "rio";
+
+    private final TalonFXInterface motorInterface;
 
     /**
      * The TalonFX motor controller instance.
@@ -46,11 +38,6 @@ public class BasicTalonFX extends BasicMotor {
      * The object that handles the sensors for the TalonFX motor controller.
      */
     private final TalonFXSensors sensors;
-
-    /**
-     * The default measurements for the TalonFX motor controller. (built in encoder)
-     */
-    private final Measurements defaultMeasurements;
 
     /**
      * The velocity request for the motor controller.
@@ -96,19 +83,13 @@ public class BasicTalonFX extends BasicMotor {
      *                           This will be multiplied after the gear ratio is applied.
      */
     public BasicTalonFX(ControllerGains controllerGains, String name, int id, double gearRatio, double unitConversion) {
+        super(new TalonFXInterface(name, id, gearRatio, unitConversion), controllerGains);
 
-        super(controllerGains, name);
+        motorInterface = (TalonFXInterface) super.motorInterface;
 
-        motor = new TalonFX(id);
-        config = new TalonFXConfiguration();
-
-        applyConfig();
-
-        defaultMeasurements = new TalonFXMeasurements(motor, gearRatio, unitConversion);
-
-        sensors = new TalonFXSensors(motor, super::getControllerLocation);
-
-        motor.optimizeBusUtilization();
+        motor = motorInterface.motor;
+        config = motorInterface.config;
+        sensors = motorInterface.sensors;
     }
 
     /**
@@ -133,92 +114,27 @@ public class BasicTalonFX extends BasicMotor {
      * @param motorConfig The configuration for the motor controller.
      */
     public BasicTalonFX(BasicMotorConfig motorConfig) {
-        super(motorConfig);
+        super(new TalonFXInterface(motorConfig), motorConfig);
 
-        boolean isSpecificConfig = motorConfig instanceof BasicTalonFXConfig;
+        this.motorInterface = (TalonFXInterface) super.motorInterface;
 
-        String canbusName = isSpecificConfig ? ((BasicTalonFXConfig) motorConfig).canBusName : defaultCanBusName;
+        this.motor = motorInterface.motor;
+        this.config = motorInterface.config;
+        this.sensors = motorInterface.sensors;
 
-        motor = new TalonFX(motorConfig.motorConfig.id, canbusName);
-        config = new TalonFXConfiguration();
+        if(motorConfig instanceof BasicTalonFXConfig talonConfig) {
 
-        applyConfig();
+            setCurrentLimits(talonConfig.currentLimitConfig.getCurrentLimits());
 
-        defaultMeasurements = new TalonFXMeasurements(motor, motorConfig.motorConfig.gearRatio, motorConfig.motorConfig.unitConversion);
+            enableFOC(talonConfig.enableFOC);
 
-        sensors = new TalonFXSensors(motor, super::getControllerLocation);
-
-        motor.optimizeBusUtilization();
-
-        if (!isSpecificConfig) return;
-
-        BasicTalonFXConfig specificConfig = (BasicTalonFXConfig) motorConfig;
-
-        setCurrentLimits(specificConfig.currentLimitConfig.getCurrentLimits());
-
-        enableFOC(specificConfig.enableFOC);
-
-        enableTimeSync(specificConfig.waitForAllSignals);
-    }
-
-    @Override
-    protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
-        // Thanks ctre for making them different types of configs for each slot
-        switch (slot) {
-            case 0 -> {
-                config.Slot0.kP = pidGains.getK_P();
-                config.Slot0.kI = pidGains.getK_I();
-                config.Slot0.kD = pidGains.getK_D();
-            }
-
-            case 1 -> {
-                config.Slot1.kP = pidGains.getK_P();
-                config.Slot1.kI = pidGains.getK_I();
-                config.Slot1.kD = pidGains.getK_D();
-            }
-
-            case 2 -> {
-                config.Slot2.kP = pidGains.getK_P();
-                config.Slot2.kI = pidGains.getK_I();
-                config.Slot2.kD = pidGains.getK_D();
-            }
+            enableTimeSync(talonConfig.waitForAllSignals);
         }
-
-        if (getControllerLocation() == MotorManager.ControllerLocation.MOTOR) {
-            // changes made in phoenix 6 api
-            // https://v6.docs.ctr-electronics.com/en/latest/docs/migration/migration-guide/feature-replacements-guide.html#integral-zone-and-max-integral-accumulator
-
-            if (pidGains.getI_MaxAccum() != Double.POSITIVE_INFINITY)
-                DriverStation.reportWarning(
-                        name
-                                + " does not need i max accum when running on motor therefor not used (TalonFX check phoenix 6 docs)",
-                        false);
-
-            if (pidGains.getTolerance() != 0)
-                DriverStation.reportWarning(
-                        name
-                                + " does not need tolerance when running on motor therefor not used (TalonFX check phoenix 6 docs)",
-                        false);
-
-            if (pidGains.getI_Zone() != Double.POSITIVE_INFINITY)
-                DriverStation.reportWarning(
-                        name
-                                + " does not need i zone when running on motor therefor not used (TalonFX check phoenix 6 docs)",
-                        false);
-        }
-
-        applyConfig();
-    }
-
-    @Override
-    protected double getInternalPIDLoopTime() {
-        return 0.001; // TalonFX has a fixed internal PID loop time of 1ms
-        // This is according to https://www.chiefdelphi.com/t/control-loop-timing-of-various-motor-controllers/370356/4
     }
 
     @Override
     protected void updateMainLoopTiming(MotorManager.ControllerLocation location) {
-        sensors.updateControllerLocation();
+        sensors.updateControllerLocation(location);
 
         if (getMeasurements() instanceof TalonFXMeasurements measurements) {
             measurements.setUpdateFrequency(location.getHZ());
@@ -249,52 +165,7 @@ public class BasicTalonFX extends BasicMotor {
             currentConfig.SupplyCurrentLimitEnable = false;
         }
         // applies the current limits to the motor controller
-        applyConfig();
-    }
-
-    @Override
-    protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
-        // sets the max voltage to the max motor output
-        config.Voltage.PeakForwardVoltage = constraints.getMaxMotorOutput();
-        config.Voltage.PeakReverseVoltage = constraints.getMinMotorOutput();
-
-        // sets the max duty cycle to the max motor output (same as voltage)
-        config.MotorOutput.PeakForwardDutyCycle =
-                constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
-        config.MotorOutput.PeakReverseDutyCycle =
-                constraints.getMinMotorOutput() / MotorManager.config.motorIdealVoltage;
-
-        // sets the voltage deadband to the voltage deadband
-        config.MotorOutput.DutyCycleNeutralDeadband =
-                constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
-
-        config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = constraints.getRampRate();
-        config.OpenLoopRamps.VoltageOpenLoopRampPeriod = constraints.getRampRate();
-        config.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = constraints.getRampRate();
-        config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = constraints.getRampRate();
-
-        // sets continuous wrap to false (it is calculated on the rio if needed)
-        config.ClosedLoopGeneral.ContinuousWrap = false;
-
-        // checks if it needs to apply soft limits
-        if (constraints.getConstraintType() == ConstraintsGains.ConstraintType.LIMITED) {
-            config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-            config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-
-            config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = constraints.getMaxValue();
-            config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = constraints.getMinValue();
-        } else {
-            config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
-            config.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
-        }
-
-        // applies the config to the motor
-        applyConfig();
-    }
-
-    @Override
-    protected Measurements getDefaultMeasurements() {
-        return defaultMeasurements;
+        motorInterface.applyConfig();
     }
 
     @Override
@@ -341,25 +212,6 @@ public class BasicTalonFX extends BasicMotor {
     }
 
     @Override
-    public void setIdleMode(IdleMode mode) {
-        config.MotorOutput.NeutralMode =
-                switch (mode) {
-                    case COAST -> NeutralModeValue.Coast;
-                    case BRAKE -> NeutralModeValue.Brake;
-                };
-
-        applyConfig();
-    }
-
-    @Override
-    public void setMotorInverted(boolean inverted) {
-        config.MotorOutput.Inverted =
-                inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
-
-        applyConfig();
-    }
-
-    @Override
     protected void stopRecordingMeasurements() {
         if (getMeasurements() instanceof TalonFXMeasurements measurements) {
             measurements.setUpdateFrequency(0);
@@ -400,7 +252,7 @@ public class BasicTalonFX extends BasicMotor {
     @Override
     public void setDefaultMeasurements(){
         config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
-        applyConfig();
+        motorInterface.applyConfig();
 
         super.setDefaultMeasurements();
     }
@@ -427,24 +279,7 @@ public class BasicTalonFX extends BasicMotor {
     public void enableTimeSync(boolean enable) {
         sensors.setWaitForAll(enable);
 
-        if(!(defaultMeasurements instanceof TalonFXMeasurements measurements)) {
-            throw new RuntimeException("Default measurements are not instance of MeasurementsTalonFX");
-        }
-
-        measurements.setTimeSync(enable);
-    }
-
-    /**
-     * Applies the configuration to the motor controller.
-     * If the configuration fails to apply, it will report an error to the driver station.
-     */
-    private void applyConfig() {
-        var error = motor.getConfigurator().apply(config);
-
-        if (error != StatusCode.OK) {
-            DriverStation.reportError(
-                    "Failed to apply config to motor: " + super.name + " Error: " + error.name(), false);
-        }
+        motorInterface.getDefaultMeasurements().setTimeSync(enable);
     }
 
     /**
@@ -465,7 +300,7 @@ public class BasicTalonFX extends BasicMotor {
         config.Feedback.FeedbackRemoteSensorID = canCoder.getDeviceID();
         config.Feedback.RotorToSensorRatio = sensorToMotorRatio;
         config.Feedback.FeedbackSensorSource = feedbackSensorSource;
-        applyConfig();
+        motorInterface.applyConfig();
 
         setMeasurements(new CANcoderMeasurements(canCoder, mechanismToSensorRatio, unitConversion), false);
     }

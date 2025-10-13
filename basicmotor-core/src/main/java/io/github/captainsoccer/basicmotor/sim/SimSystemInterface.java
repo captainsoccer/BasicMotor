@@ -30,11 +30,6 @@ public abstract class SimSystemInterface extends MotorInterface {
     }
 
     @Override
-    public double getInternalPIDLoopTime() {
-        return MotorManager.ControllerLocation.RIO.getSeconds();
-    }
-
-    @Override
     public void setInverted(boolean inverted) {
         //Does nothing as this is a simulation
     }

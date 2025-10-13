@@ -39,14 +39,6 @@ public abstract class MotorInterface {
     public abstract Measurements getDefaultMeasurements();
 
     /**
-     * Gets the loop time of the internal PID loop.
-     * This is used to convert the pid gains to the motor controller's loop time.
-     *
-     * @return The loop time of the internal PID loop in seconds.
-     */
-    public abstract double getInternalPIDLoopTime();
-
-    /**
      * Sets if the motor should be inverted.
      * The motor's default positive direction is counter-clockwise.
      * This can be changed by setting this function to true.

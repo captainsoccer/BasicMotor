@@ -98,13 +98,6 @@ public class SparkBaseInterface extends MotorInterface {
     }
 
     @Override
-    public double getInternalPIDLoopTime() {
-        return 0.001; // Spark max and spark flex have a fixed internal PID loop time of 1ms
-        // This is according to the documentation:
-        // https://docs.revrobotics.com/revlib/spark/closed-loop
-    }
-
-    @Override
     public void setInverted(boolean inverted) {
         config.inverted(inverted);
 

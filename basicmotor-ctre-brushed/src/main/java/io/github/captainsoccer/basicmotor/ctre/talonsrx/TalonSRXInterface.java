@@ -106,13 +106,6 @@ public class TalonSRXInterface extends MotorInterface {
     }
 
     @Override
-    public double getInternalPIDLoopTime() {
-        return 0.001; // TalonSRX has a fixed internal loop time of 1ms
-        //According to a chief delphi post:
-        // https://www.chiefdelphi.com/t/control-loop-timing-of-various-motor-controllers/370356/4
-    }
-
-    @Override
     public void setInverted(boolean inverted) {
         motor.setInverted(inverted);
     }

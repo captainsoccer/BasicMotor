@@ -90,12 +90,6 @@ public class TalonFXInterface extends MotorInterface {
     }
 
     @Override
-    public double getInternalPIDLoopTime() {
-        return 0.001; // TalonFX has a fixed internal PID loop time of 1ms
-        // This is according to https://www.chiefdelphi.com/t/control-loop-timing-of-various-motor-controllers/370356/4
-    }
-
-    @Override
     public void setInverted(boolean inverted) {
         config.MotorOutput.Inverted =
                 inverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;

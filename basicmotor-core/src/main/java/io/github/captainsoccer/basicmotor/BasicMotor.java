@@ -189,6 +189,8 @@ public abstract class BasicMotor {
 
         motorInterface.updateConstraintsGainsToMotor(motorConstraintsGains);
 
+        measurements = motorInterface.getDefaultMeasurements();
+
         //register the motor with the motor manager
         MotorManager.getInstance()
                 .registerMotor(name, this::run, this::updateSensorData, this::getLatestFrame);

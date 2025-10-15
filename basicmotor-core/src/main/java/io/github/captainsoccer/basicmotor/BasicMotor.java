@@ -157,6 +157,7 @@ public abstract class BasicMotor {
 
         this.motorInterface = motorInterface;
         this.name = motorInterface.name;
+        measurements = motorInterface.getDefaultMeasurements();
 
         // only 3 slots are supported
         hasPIDGainsChanged = new Boolean[]{false, false, false};
@@ -188,8 +189,6 @@ public abstract class BasicMotor {
                 controllerGains.getControllerConstrains().convertToMotorConstraints(gearRatio, unitConversion);
 
         motorInterface.updateConstraintsGainsToMotor(motorConstraintsGains);
-
-        measurements = motorInterface.getDefaultMeasurements();
 
         //register the motor with the motor manager
         MotorManager.getInstance()

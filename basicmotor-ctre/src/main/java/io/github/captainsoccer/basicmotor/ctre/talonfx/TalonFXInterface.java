@@ -135,7 +135,7 @@ public class TalonFXInterface extends MotorInterface {
         // changes made in phoenix 6 api
         // https://v6.docs.ctr-electronics.com/en/latest/docs/migration/migration-guide/feature-replacements-guide.html#integral-zone-and-max-integral-accumulator
 
-        if (pidGains.getI_MaxAccum() != Double.POSITIVE_INFINITY)
+        if (pidGains.getI_MaxAccum() != MotorManager.config.defaultMaxMotorOutput)
             DriverStation.reportWarning(
                     name
                             + " does not need i max accum when running on motor therefor not used (TalonFX check phoenix 6 docs)",
@@ -147,7 +147,7 @@ public class TalonFXInterface extends MotorInterface {
                             + " does not need tolerance when running on motor therefor not used (TalonFX check phoenix 6 docs)",
                     false);
 
-        if (pidGains.getI_Zone() != Double.POSITIVE_INFINITY)
+        if (Double.isFinite(pidGains.getI_Zone()))
             DriverStation.reportWarning(
                     name
                             + " does not need i zone when running on motor therefor not used (TalonFX check phoenix 6 docs)",

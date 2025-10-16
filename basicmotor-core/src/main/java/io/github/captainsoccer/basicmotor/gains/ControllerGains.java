@@ -252,7 +252,7 @@ public class ControllerGains {
     public boolean isProfiled(int slot) {
         checkArrayAccess(slot);
         var gains = slotGains[slot].getMotionProfileGains();
-        return gains.maxVelocity != Double.POSITIVE_INFINITY && gains.maxAcceleration != Double.POSITIVE_INFINITY;
+        return Double.isFinite(gains.maxVelocity) && Double.isFinite(gains.maxAcceleration);
     }
 
     /**

@@ -198,7 +198,7 @@ public class PIDGains {
      */
     public PIDGains convertToMotorGains(double gearRatio, double unitConversion) {
         //motors don't support infinite i_Zone, so we set it to 0
-        double i_Zone = this.i_Zone == Double.POSITIVE_INFINITY ? 0 : this.i_Zone;
+        double i_Zone = Double.isInfinite(this.i_Zone) ? 0 : this.i_Zone;
 
         return new PIDGains(
                 (k_P / gearRatio) * unitConversion,

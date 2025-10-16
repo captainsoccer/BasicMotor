@@ -147,7 +147,7 @@ public class TalonFXInterface extends MotorInterface {
                             + " does not need tolerance when running on motor therefor not used (TalonFX check phoenix 6 docs)",
                     false);
 
-        if (Double.isFinite(pidGains.getI_Zone()))
+        if (pidGains.getI_Zone() == 0)
             DriverStation.reportWarning(
                     name
                             + " does not need i zone when running on motor therefor not used (TalonFX check phoenix 6 docs)",

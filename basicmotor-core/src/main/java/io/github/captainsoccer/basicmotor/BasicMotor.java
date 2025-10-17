@@ -161,6 +161,7 @@ public abstract class BasicMotor {
         Objects.requireNonNull(controllerGains);
         Objects.requireNonNull(motorInterface);
 
+        motorInterface.setErrorHandler(errorHandler);
         this.motorInterface = motorInterface;
         this.name = motorInterface.name;
         measurements = motorInterface.getDefaultMeasurements();
@@ -226,9 +227,7 @@ public abstract class BasicMotor {
      * @param throughRIO   If the measurements should be set through the RIO or directly on the motor controller.
      */
     protected void setMeasurements(Measurements measurements, boolean throughRIO) {
-        if(measurements == null) {
-            throw new IllegalArgumentException("measurements cannot be null");
-        }
+        Objects.requireNonNull(measurements);
 
         stopRecordingMeasurements();
         this.measurements = measurements;

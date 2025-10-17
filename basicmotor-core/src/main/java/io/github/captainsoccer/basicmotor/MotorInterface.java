@@ -1,5 +1,6 @@
 package io.github.captainsoccer.basicmotor;
 
+import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
@@ -13,6 +14,28 @@ public abstract class MotorInterface {
 
     /** The name of the motor controller */
     public final String name;
+
+    /** The error handler for the motor interface */
+    private ErrorHandler errorHandler = null;
+
+    /**
+     * Sets the error handler for the motor interface.
+     * This is used to log errors and warnings for the motor controller.
+     * @param errorHandler the error handler to set
+     */
+    public void setErrorHandler(ErrorHandler errorHandler) {
+        if(this.errorHandler == null) {
+            this.errorHandler = errorHandler;
+        }
+    }
+
+    /**
+     * Gets the error handler for the motor interface.
+     * @return the error handler
+     */
+    protected ErrorHandler getErrorHandler() {
+        return errorHandler;
+    }
 
     /**
      * Creates a MotorInterface with the provided name.

@@ -2,7 +2,6 @@ package io.github.captainsoccer.basicmotor.ctre.victorspx;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
-import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.MotorInterface;
@@ -11,6 +10,8 @@ import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
+
+import java.util.Objects;
 
 /**
  * A motor interface for the VictorSPX motor controller.
@@ -33,11 +34,13 @@ public class VictorSPXInterface extends MotorInterface {
     public VictorSPXInterface(int id, String name, Measurements defaultMeasurements) {
         super(name);
 
+        Objects.requireNonNull(defaultMeasurements);
+
         motor = new VictorSPX(id);
         motor.configFactoryDefault();
         motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
 
-        this.defaultMeasurements = defaultMeasurements == null ? new EmptyMeasurements() : defaultMeasurements;
+        this.defaultMeasurements = defaultMeasurements;
     }
 
     /**
@@ -83,7 +86,7 @@ public class VictorSPXInterface extends MotorInterface {
     @Override
     public void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
         // Nothing
-        DriverStation.reportWarning("VictorSPX does not support PID gains directly. Ignoring PID gains for motor " + name, false);
+        getErrorHandler().logWarning("VictorSPX does not support PID gains directly. Ignoring PID gains");
     }
 
     @Override

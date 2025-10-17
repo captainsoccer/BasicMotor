@@ -7,6 +7,7 @@ import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
+import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -51,11 +52,11 @@ public class BasicVictorSPX extends BasicMotor {
 
         this.motorInterface = (VictorSPXInterface) super.motorInterface;
 
-        if(measurements != null) {
-            setControllerLocation(MotorManager.ControllerLocation.RIO);
+        if(measurements instanceof EmptyMeasurements) {
+            errorHandler.logError("Provided empty measurements", true);
         }
         else{
-            throw  new NullPointerException("provided measurements for motor: " + name + " is null");
+            setControllerLocation(MotorManager.ControllerLocation.RIO);
         }
     }
 
@@ -70,11 +71,11 @@ public class BasicVictorSPX extends BasicMotor {
 
         this.motorInterface = (VictorSPXInterface) super.motorInterface;
 
-        if(measurements != null) {
-            setControllerLocation(MotorManager.ControllerLocation.RIO);
+        if(measurements instanceof EmptyMeasurements) {
+            errorHandler.logError("Provided empty measurements", true);
         }
         else{
-            DriverStation.reportWarning("provided measurements for motor: " + name + " is null", false);
+            setControllerLocation(MotorManager.ControllerLocation.RIO);
         }
     }
 

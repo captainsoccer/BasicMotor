@@ -141,7 +141,6 @@ public class BasicTalonSRX extends BasicMotor {
     @Override
     protected void stopRecordingMeasurements() {
         // Does nothing, as the TalonSRX does not support changing timings of can bus signals
-        DriverStation.reportWarning("motor: " + this.name + " does not stop recording the measurements", false);
     }
 
     @Override

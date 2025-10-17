@@ -39,7 +39,7 @@ public class MessageHandler {
      * The number of cycles the message will display.
      * there are 50 cycles in one second, so it will display for 5 seconds
      */
-    private static final int MESSAGE_DISPLAY_CYCLES = 50 * 5; // Number of cycles to display each message
+    private static final int MESSAGE_DISPLAY_CYCLES = 50 * 2; // Number of cycles to display each message
 
     /**
      * The string builder that holds the messages
@@ -86,11 +86,16 @@ public class MessageHandler {
      */
     public void updateMessages() {
         MessageNode current = firstMessage;
+        MessageNode first = firstMessage;
 
         int removedLength = 0;
 
-        while (current != null && current.loopTimer++ <= MESSAGE_DISPLAY_CYCLES) {
-            removedLength += current.messageLength;
+        while (current != null) {
+            current.loopTimer++;
+            if(current.loopTimer >= MESSAGE_DISPLAY_CYCLES) {
+                removedLength += current.messageLength;
+                first = current.next;
+            }
             current = current.next;
         }
 
@@ -98,7 +103,7 @@ public class MessageHandler {
             messages.delete(0, removedLength);
         }
 
-        firstMessage = current;
+        firstMessage = first;
         if(firstMessage == null || firstMessage.next == null) {
             lastMessage = null;
         }

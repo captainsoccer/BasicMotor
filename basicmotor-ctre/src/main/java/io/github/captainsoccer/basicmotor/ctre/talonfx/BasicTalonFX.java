@@ -141,7 +141,7 @@ public class BasicTalonFX extends BasicMotor {
             currentConfig.SupplyCurrentLowerTime = limits.supplyLowerTime();
         } else {
             //reports a warning if the current limits are not for a TalonFX motor controller
-            DriverStation.reportWarning("Using non-TalonFX current limits on TalonFX motor controller: " + super.name, false);
+            errorHandler.logWarning("Using non-TalonFX current limits on TalonFX motor controller");
 
             currentConfig.SupplyCurrentLimitEnable = false;
         }
@@ -174,8 +174,7 @@ public class BasicTalonFX extends BasicMotor {
                 };
 
         if (error != StatusCode.OK) {
-            DriverStation.reportError(
-                    "Failed to set motor output for motor: " + super.name + " Error: " + error.name(), false);
+            errorHandler.logError("Failed to set motor output, StatusCode: " + error.name());
         }
     }
 

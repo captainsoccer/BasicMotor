@@ -18,6 +18,19 @@ public class ErrorHandler {
     private final ErrorLogFrame frame = new ErrorLogFrame();
 
     /**
+     * The name of the motor or system this error handler is for
+     */
+    private final String name;
+
+    /**
+     * Creates an ErrorHandler for the given motor or system name
+     * @param name the name of the motor or system this error handler is for
+     */
+    public ErrorHandler(String name) {
+        this.name = name;
+    }
+
+    /**
      * Logs an error message
      * @param msg the error message to log (automatically adds timestamp and brackets)
      */
@@ -26,15 +39,23 @@ public class ErrorHandler {
     }
 
     /**
-     * Logs an error message and optionally prints the stack trace
+     * Logs an error message and reports it to the driver station
+     * message will look like: "motor [name] had error: [msg]"
      * @param msg the error message to log (automatically adds timestamp and brackets)
      * @param printStackTrace whether to print the stack trace to the driver station
      */
-    public void logError(String msg, boolean printStackTrace){
+    public void logAndReportError(String msg, boolean printStackTrace) {
         logError(msg);
+        DriverStation.reportError("motor " + name + "had error: " + msg, printStackTrace);
+    }
 
-        if(printStackTrace)
-            DriverStation.reportError(msg, true);
+    /**
+     * Logs an error message and reports it to the driver station
+     * message will look like: "motor [name] had error: [msg]"
+     * @param msg the error message to log (automatically adds timestamp and brackets)
+     */
+    public void logAndReportError(String msg) {
+        logAndReportError(msg, false);
     }
 
     /**
@@ -46,15 +67,23 @@ public class ErrorHandler {
     }
 
     /**
-     * Logs a warning message and optionally prints the stack trace
+     * Logs a warning message and reports it to the driver station
+     * message will look like: "motor [name] had warning: [msg]"
      * @param msg the warning message to log (automatically adds timestamp and brackets)
      * @param printStackTrace whether to print the stack trace to the driver station
      */
-    public void logWarning(String msg, boolean printStackTrace){
+    public void logAndReportWarning(String msg, boolean printStackTrace) {
         logWarning(msg);
+        DriverStation.reportWarning("motor " + name + " had warning: " + msg, printStackTrace);
+    }
 
-        if(printStackTrace)
-            DriverStation.reportWarning(msg, true);
+    /**
+     * Logs a warning message and reports it to the driver station
+     * message will look like: "motor [name] had warning: [msg]"
+     * @param msg the warning message to log (automatically adds timestamp and brackets)
+     */
+    public void logAndReportWarning(String msg) {
+        logAndReportWarning(msg, false);
     }
 
     /** Updates the error and warning messages */

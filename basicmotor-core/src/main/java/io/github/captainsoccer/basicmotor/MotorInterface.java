@@ -16,26 +16,7 @@ public abstract class MotorInterface {
     public final String name;
 
     /** The error handler for the motor interface */
-    private ErrorHandler errorHandler = null;
-
-    /**
-     * Sets the error handler for the motor interface.
-     * This is used to log errors and warnings for the motor controller.
-     * @param errorHandler the error handler to set
-     */
-    public void setErrorHandler(ErrorHandler errorHandler) {
-        if(this.errorHandler == null) {
-            this.errorHandler = errorHandler;
-        }
-    }
-
-    /**
-     * Gets the error handler for the motor interface.
-     * @return the error handler
-     */
-    protected ErrorHandler getErrorHandler() {
-        return errorHandler;
-    }
+    protected final ErrorHandler errorHandler;
 
     /**
      * Creates a MotorInterface with the provided name.
@@ -43,6 +24,7 @@ public abstract class MotorInterface {
      */
     protected MotorInterface(String name) {
         this.name = name;
+        this.errorHandler = new ErrorHandler(name);
     }
 
     /**
@@ -51,6 +33,7 @@ public abstract class MotorInterface {
      */
     protected MotorInterface(BasicMotorConfig config) {
         this.name = config.motorConfig.name;
+        this.errorHandler = new ErrorHandler(name);
     }
 
     /**

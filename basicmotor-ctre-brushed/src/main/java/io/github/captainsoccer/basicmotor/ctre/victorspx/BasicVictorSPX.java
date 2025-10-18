@@ -53,7 +53,7 @@ public class BasicVictorSPX extends BasicMotor {
         this.motorInterface = (VictorSPXInterface) super.motorInterface;
 
         if(measurements instanceof EmptyMeasurements) {
-            errorHandler.logError("Provided empty measurements", true);
+            errorHandler.logAndReportError("Provided empty measurements", true);
         }
         else{
             setControllerLocation(MotorManager.ControllerLocation.RIO);
@@ -72,7 +72,7 @@ public class BasicVictorSPX extends BasicMotor {
         this.motorInterface = (VictorSPXInterface) super.motorInterface;
 
         if(measurements instanceof EmptyMeasurements) {
-            errorHandler.logError("Provided empty measurements", true);
+            errorHandler.logAndReportError("Provided empty measurements", true);
         }
         else{
             setControllerLocation(MotorManager.ControllerLocation.RIO);
@@ -81,7 +81,7 @@ public class BasicVictorSPX extends BasicMotor {
 
     @Override
     public void setCurrentLimits(CurrentLimits currentLimits) {
-        DriverStation.reportWarning("motor: " + this.name + " does not support current limits.", false);
+        errorHandler.logAndReportError("Current limits not supported for victorSPX", true);
     }
 
     @Override

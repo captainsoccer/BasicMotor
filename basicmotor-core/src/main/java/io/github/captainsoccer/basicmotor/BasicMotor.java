@@ -91,7 +91,7 @@ public abstract class BasicMotor {
      * The error handler for the motor.
      * Used to log errors and warnings from the motor.
      */
-    protected final ErrorHandler errorHandler = new ErrorHandler();
+    protected final ErrorHandler errorHandler;
 
     /**
      * The location of the pid controller.
@@ -161,7 +161,8 @@ public abstract class BasicMotor {
         Objects.requireNonNull(controllerGains);
         Objects.requireNonNull(motorInterface);
 
-        motorInterface.setErrorHandler(errorHandler);
+        this.errorHandler = motorInterface.errorHandler;
+
         this.motorInterface = motorInterface;
         this.name = motorInterface.name;
         measurements = motorInterface.getDefaultMeasurements();
@@ -594,11 +595,6 @@ public abstract class BasicMotor {
      * @param newVelocity The new velocity of the motor
      */
     public final void resetEncoder(double newPosition, double newVelocity) {
-        if(measurements == null){
-            errorHandler.logError("Cannot reset encoder when measurements is null", true);
-            return;
-        }
-
         if (!controller.getControlMode().isVelocityControl()) controller.reset(newPosition, newVelocity);
         else controller.reset(newVelocity, 0);
 
@@ -861,7 +857,7 @@ public abstract class BasicMotor {
      */
     private double getCurrentFromTorque(double torque) {
         if (config == null) {
-            errorHandler.logError("Trying to convert torque and current without config set.", false);
+            errorHandler.logAndReportError("Trying to convert torque and current without config set.");
             return 0;
         }
         return config.motorConfig.motorType.getCurrent(torque / motorInterface.getDefaultMeasurements().getGearRatio());
@@ -877,7 +873,7 @@ public abstract class BasicMotor {
      */
     private double getTorqueFromCurrent(double current) {
         if (config == null) {
-            errorHandler.logError("Trying to convert torque and current without config set.", false);
+            errorHandler.logAndReportError("Trying to convert torque and current without config set.");
             return 0;
         }
         return config.motorConfig.motorType.getTorque(current) * motorInterface.getDefaultMeasurements().getGearRatio();

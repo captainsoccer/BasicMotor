@@ -112,6 +112,8 @@ public abstract class BasicSpark extends BasicMotor {
                         externalEncoderConfig.mechanismToSensorRatio);
             }
         }
+        else
+            errorHandler.logAndReportWarning("Not using specific spark base config for configuration, defaulting to brushless motor type.", true);
     }
 
     /**
@@ -122,7 +124,6 @@ public abstract class BasicSpark extends BasicMotor {
      */
     protected static SparkLowLevel.MotorType getMotorType(BasicMotorConfig motorConfig) {
         if (!(motorConfig instanceof BasicSparkConfig sparkBaseConfig)) {
-            DriverStation.reportError("motor: " + motorConfig.motorConfig.name + " not using a sparkBaseConfig, defaulting to a brushless motor", false);
             return SparkLowLevel.MotorType.kBrushless;
         }
 

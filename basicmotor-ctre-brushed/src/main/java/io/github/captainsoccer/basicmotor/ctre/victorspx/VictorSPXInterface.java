@@ -85,8 +85,7 @@ public class VictorSPXInterface extends MotorInterface {
 
     @Override
     public void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
-        // Nothing
-        getErrorHandler().logWarning("VictorSPX does not support PID gains directly. Ignoring PID gains");
+        // Nothing to do, as the VictorSPX does not support PID gains directly.
     }
 
     @Override

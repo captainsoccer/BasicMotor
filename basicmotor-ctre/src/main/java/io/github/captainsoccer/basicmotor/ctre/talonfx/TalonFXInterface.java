@@ -5,7 +5,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.MotorInterface;
@@ -136,22 +135,19 @@ public class TalonFXInterface extends MotorInterface {
         // https://v6.docs.ctr-electronics.com/en/latest/docs/migration/migration-guide/feature-replacements-guide.html#integral-zone-and-max-integral-accumulator
 
         if (pidGains.getI_MaxAccum() != MotorManager.config.defaultMaxMotorOutput)
-            DriverStation.reportWarning(
+            errorHandler.logWarning(
                     name
-                            + " does not need i max accum when running on motor therefor not used (TalonFX check phoenix 6 docs)",
-                    false);
+                            + " does not need i max accum when running on motor therefor not used (TalonFX check phoenix 6 docs)");
 
         if (pidGains.getTolerance() != 0)
-            DriverStation.reportWarning(
+            errorHandler.logWarning(
                     name
-                            + " does not need tolerance when running on motor therefor not used (TalonFX check phoenix 6 docs)",
-                    false);
+                            + " does not need tolerance when running on motor therefor not used (TalonFX check phoenix 6 docs)");
 
         if (pidGains.getI_Zone() != 0)
-            DriverStation.reportWarning(
+            errorHandler.logWarning(
                     name
-                            + " does not need i zone when running on motor therefor not used (TalonFX check phoenix 6 docs)",
-                    false);
+                            + " does not need i zone when running on motor therefor not used (TalonFX check phoenix 6 docs)");
 
 
         applyConfig();
@@ -205,8 +201,7 @@ public class TalonFXInterface extends MotorInterface {
         var error = motor.getConfigurator().apply(config);
 
         if (error != StatusCode.OK) {
-            DriverStation.reportError(
-                    "Failed to apply config to motor: " + super.name + " Error: " + error.name(), false);
+            errorHandler.logAndReportError("Failed to apply config to motor: " + super.name + " Error: " + error.name());
         }
     }
 }

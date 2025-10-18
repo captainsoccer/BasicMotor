@@ -4,7 +4,6 @@ package io.github.captainsoccer.basicmotor.ctre.talonsrx;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
-import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import io.github.captainsoccer.basicmotor.LogFrame;
@@ -193,7 +192,7 @@ public class BasicTalonSRX extends BasicMotor {
             case PERCENT_OUTPUT ->  motor.set(TalonSRXControlMode.PercentOutput, setpoint);
 
             case CURRENT, TORQUE -> {
-                DriverStation.reportError("motor: " + super.name + " does not support current or torque control", false);
+                errorHandler.logAndReportError("talonSRX does not support current or torque control");
                 stopMotorOutput();
             }
         }

@@ -13,7 +13,6 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import edu.wpi.first.wpilibj.DriverStation;
 
 /**
  * This class represents a basic TalonFX motor controller.
@@ -174,7 +173,7 @@ public class BasicTalonFX extends BasicMotor {
                 };
 
         if (error != StatusCode.OK) {
-            errorHandler.logError("Failed to set motor output, StatusCode: " + error.name());
+            errorHandler.logAndReportError("Failed to set motor output, StatusCode: " + error.name());
         }
     }
 
@@ -275,7 +274,7 @@ public class BasicTalonFX extends BasicMotor {
      */
     private void configureCanCoder(CANcoder canCoder, double sensorToMotorRatio, double unitConversion, double mechanismToSensorRatio, FeedbackSensorSourceValue feedbackSensorSource) {
         if (canCoder == null) {
-            DriverStation.reportError("CAN coder is null, cannot use remote encoder", false);
+            errorHandler.logAndReportError("CAN coder is null, cannot use remote encoder", true);
             return;
         }
 

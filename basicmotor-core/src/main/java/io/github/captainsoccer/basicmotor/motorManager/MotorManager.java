@@ -115,7 +115,8 @@ public class MotorManager {
             functions.mainLoop.stop();
             functions.mainLoop.startPeriodic(location.getSeconds());
         } else {
-            DriverStation.reportError("Motor with name " + name + " not found in MotorManager.", false);
+            DriverStation.reportError("Motor with name " + name + " not found in MotorManager." +
+                    "\n did you call outside the basicMotor class?", false);
         }
     }
 

@@ -15,7 +15,6 @@ import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
-import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.rev.encoders.RevAbsoluteEncoder;
 import io.github.captainsoccer.basicmotor.rev.encoders.RevRelativeEncoder;
 import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
@@ -218,17 +217,12 @@ public abstract class BasicSpark extends BasicMotor {
     private void setClosedLoopOutput(double setpoint, double feedForward, SparkBase.ControlType mode, int slot) {
         ClosedLoopSlot closedLoopSlot = ClosedLoopSlot.values()[slot];
         
-        //sets the closed loop output for the Spark MAX motor controller
+        //sets the closed loop output for the Spark motor controller
         var errorSignal = motorInterface.motor.getClosedLoopController().setReference(setpoint, mode, closedLoopSlot, feedForward);
 
         //if there was an error setting the closed loop output, report it
         if (errorSignal != REVLibError.kOk) {
-            DriverStation.reportError(
-                    "Failed to set closed loop output for Spark MAX motor: "
-                            + name
-                            + ". Error: "
-                            + errorSignal.name(),
-                    false);
+            errorHandler.logAndReportError("Failed to set closed loop output, error: " + errorSignal.name());
         }
     }
 
@@ -278,8 +272,7 @@ public abstract class BasicSpark extends BasicMotor {
 
             config.smartCurrentLimit(currentLimits.getCurrentLimit());
 
-            DriverStation.reportWarning(
-                    "using non Spark Base current limits for motor: " + name, false);
+            errorHandler.logAndReportWarning("using non Spark Base current limits for motor: ");
         }
 
         motorInterface.applyConfig();

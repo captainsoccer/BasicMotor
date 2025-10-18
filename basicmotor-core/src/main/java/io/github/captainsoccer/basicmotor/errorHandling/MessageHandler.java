@@ -1,5 +1,7 @@
 package io.github.captainsoccer.basicmotor.errorHandling;
 
+import edu.wpi.first.wpilibj.Timer;
+
 /**
  * Handles messages used for logging
  * Automatically removes old messages.
@@ -20,7 +22,7 @@ public class MessageHandler {
         /**
          * The timer that keeps track of how long the message has been playing
          */
-        int loopTimer = 0;
+        final double startTime;
         /**
          * The next message in the list
          */
@@ -32,14 +34,14 @@ public class MessageHandler {
          */
         private MessageNode(int messageLength) {
             this.messageLength = messageLength;
+            this.startTime = Timer.getTimestamp();
         }
     }
 
     /**
-     * The number of cycles the message will display.
-     * there are 50 cycles in one second, so it will display for 5 seconds
+     * The number of seconds a message is displayed for.
      */
-    private static final int MESSAGE_DISPLAY_CYCLES = 50 * 2; // Number of cycles to display each message
+    private static final int MESSAGE_DISPLAY_SECONDS = 2;
 
     /**
      * The string builder that holds the messages
@@ -85,25 +87,19 @@ public class MessageHandler {
      * Use {@link #isEmpty()} to check
      */
     public void updateMessages() {
-        MessageNode current = firstMessage;
-        MessageNode first = firstMessage;
-
         int removedLength = 0;
 
-        while (current != null) {
-            current.loopTimer++;
-            if(current.loopTimer >= MESSAGE_DISPLAY_CYCLES) {
-                removedLength += current.messageLength;
-                first = current.next;
-            }
-            current = current.next;
+        double currentTime = Timer.getTimestamp();
+
+        while (firstMessage != null && currentTime - firstMessage.startTime <= MESSAGE_DISPLAY_SECONDS) {
+            removedLength += firstMessage.messageLength;
+            firstMessage = firstMessage.next;
         }
 
         if(removedLength > 0) {
             messages.delete(0, removedLength);
         }
 
-        firstMessage = first;
         if(firstMessage == null || firstMessage.next == null) {
             lastMessage = null;
         }

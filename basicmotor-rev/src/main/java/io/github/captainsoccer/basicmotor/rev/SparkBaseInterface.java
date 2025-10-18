@@ -74,7 +74,6 @@ public class SparkBaseInterface extends MotorInterface {
         double unitConversion = motorConfig.motorConfig.unitConversion;
 
         if (!(motorConfig instanceof BasicSparkConfig sparkBaseConfig)) {
-            errorHandler.logAndReportWarning("not using specific spark base config for configuration");
             defaultMeasurements = new RevRelativeEncoder(motor.getEncoder(), gearRatio, unitConversion);
             return;
         }

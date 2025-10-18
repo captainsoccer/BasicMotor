@@ -14,6 +14,8 @@ import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 
+import java.util.Objects;
+
 /**
  * This class represents a basic TalonFX motor controller.
  * It extends the BasicMotor class and provides
@@ -273,10 +275,7 @@ public class BasicTalonFX extends BasicMotor {
      * @param feedbackSensorSource   The feedback sensor source value (RemoteCANcoder or FusedCANcoder).
      */
     private void configureCanCoder(CANcoder canCoder, double sensorToMotorRatio, double unitConversion, double mechanismToSensorRatio, FeedbackSensorSourceValue feedbackSensorSource) {
-        if (canCoder == null) {
-            errorHandler.logAndReportError("CAN coder is null, cannot use remote encoder", true);
-            return;
-        }
+        Objects.requireNonNull(canCoder);
 
         var config = motorInterface.config;
 

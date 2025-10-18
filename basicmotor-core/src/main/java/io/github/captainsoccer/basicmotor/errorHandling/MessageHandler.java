@@ -2,6 +2,8 @@ package io.github.captainsoccer.basicmotor.errorHandling;
 
 import edu.wpi.first.wpilibj.Timer;
 
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * Handles messages used for logging
  * Automatically removes old messages.
@@ -59,6 +61,11 @@ public class MessageHandler {
     private MessageNode lastMessage = null;
 
     /**
+     * The lock used to synchronize access to the messages
+     */
+    private final ReentrantLock lock = new ReentrantLock();
+
+    /**
      * Adds a message to the string and node
      * @param msg the message to add (automatically gets enclosed in brackets for readability)
      */
@@ -71,13 +78,20 @@ public class MessageHandler {
         messages.append(messageStr);
 
         MessageNode newMessage = new MessageNode(messageStr.length());
+        
+        try {
+            lock.lock();
 
-        if (firstMessage == null) {
-            firstMessage = newMessage;
-            lastMessage = firstMessage;
-        } else {
-            lastMessage.next = newMessage;
-            lastMessage = lastMessage.next;
+            if (firstMessage == null) {
+                firstMessage = newMessage;
+                lastMessage = firstMessage;
+            } else {
+                lastMessage.next = newMessage;
+                lastMessage = lastMessage.next;
+            }
+        }
+        finally {
+            lock.unlock();
         }
     }
 
@@ -87,21 +101,28 @@ public class MessageHandler {
      * Use {@link #isEmpty()} to check
      */
     public void updateMessages() {
-        int removedLength = 0;
+        try {
+            int removedLength = 0;
 
-        double currentTime = Timer.getTimestamp();
+            double currentTime = Timer.getTimestamp();
 
-        while (firstMessage != null && currentTime - firstMessage.startTime > MESSAGE_DISPLAY_SECONDS) {
-            removedLength += firstMessage.messageLength;
-            firstMessage = firstMessage.next;
+            lock.lock();
+
+            while (firstMessage != null && currentTime - firstMessage.startTime > MESSAGE_DISPLAY_SECONDS) {
+                removedLength += firstMessage.messageLength;
+                firstMessage = firstMessage.next;
+            }
+
+            if(removedLength > 0) {
+                messages.delete(0, removedLength);
+            }
+
+            if(firstMessage == null || firstMessage.next == null) {
+                lastMessage = null;
+            }
         }
-
-        if(removedLength > 0) {
-            messages.delete(0, removedLength);
-        }
-
-        if(firstMessage == null || firstMessage.next == null) {
-            lastMessage = null;
+        finally {
+            lock.unlock();
         }
     }
 

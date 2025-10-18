@@ -78,8 +78,10 @@ public class MessageHandler {
         messages.append(messageStr);
 
         MessageNode newMessage = new MessageNode(messageStr.length());
-        
+
+
         try {
+
             lock.lock();
 
             if (firstMessage == null) {
@@ -117,8 +119,11 @@ public class MessageHandler {
                 messages.delete(0, removedLength);
             }
 
-            if(firstMessage == null || firstMessage.next == null) {
+            if(firstMessage == null) {
                 lastMessage = null;
+            } else if (firstMessage.next == null) {
+                // Single node remains: ensure lastMessage points to it
+                lastMessage = firstMessage;
             }
         }
         finally {

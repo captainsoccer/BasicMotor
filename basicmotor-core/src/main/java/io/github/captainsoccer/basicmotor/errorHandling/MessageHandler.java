@@ -91,7 +91,7 @@ public class MessageHandler {
 
         double currentTime = Timer.getTimestamp();
 
-        while (firstMessage != null && currentTime - firstMessage.startTime <= MESSAGE_DISPLAY_SECONDS) {
+        while (firstMessage != null && currentTime - firstMessage.startTime > MESSAGE_DISPLAY_SECONDS) {
             removedLength += firstMessage.messageLength;
             firstMessage = firstMessage.next;
         }

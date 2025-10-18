@@ -59,15 +59,13 @@ public class Controller implements Sendable {
      * @param hasConstraintsChangeRunnable The function to run when the constraints are changed.
      *                                     This function is to flag when the constraints are changed
      *                                     so the motor can send the updates to the motor controller on a slower thread.
-     * @param name                         The name of the controller (used for the sendable registry).
-     *                                     This will be the name of the controller that will appear on the dashboard.
+     * @param errorHandler                 The error handler of the controller, used to log errors and warnings.
      */
     public Controller(
             ControllerGains controllerGains,
             Consumer<Integer> hasPIDGainsChangeRunnable,
             Runnable hasConstraintsChangeRunnable,
-            ErrorHandler errorHandler,
-            String name) {
+            ErrorHandler errorHandler) {
         this.controllerGains = controllerGains;
         //sets the callbacks for when the PID gains or constraints are changed
         this.controllerGains.setHasPIDGainsChanged(hasPIDGainsChangeRunnable);
@@ -81,7 +79,7 @@ public class Controller implements Sendable {
         }
 
         // registers the controller with the sendable registry (used when sending to the dashboard)
-        SendableRegistry.add(this, name + " Controller");
+        SendableRegistry.add(this, errorHandler.name + " Controller");
     }
 
     /**

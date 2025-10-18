@@ -16,7 +16,7 @@ public abstract class MotorInterface {
     public final String name;
 
     /** The error handler for the motor interface */
-    protected final ErrorHandler errorHandler;
+    public final ErrorHandler errorHandler;
 
     /**
      * Creates a MotorInterface with the provided name.

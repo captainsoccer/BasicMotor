@@ -20,7 +20,7 @@ public class ErrorHandler {
     /**
      * The name of the motor or system this error handler is for
      */
-    private final String name;
+    public final String name;
 
     /**
      * Creates an ErrorHandler for the given motor or system name
@@ -104,7 +104,10 @@ public class ErrorHandler {
         return warningHandler.getMessages();
     }
 
-    /** Gets the error log frame for logging */
+    /**
+     * Gets the error log frame for logging
+     * @return the error log frame
+     */
     public ErrorLogFrame getErrorFrame() {
         frame.errors = getErrors();
         frame.warnings = getWarnings();
@@ -116,7 +119,13 @@ public class ErrorHandler {
      * Used for logging.
      */
     public static class ErrorLogFrame implements LoggableInputs, Cloneable {
+        /**
+         * The error messages
+         */
         public String errors = "";
+        /**
+         * The warning messages
+         */
         public String warnings = "";
 
         @Override

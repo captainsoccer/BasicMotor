@@ -128,6 +128,7 @@ public class MotorManager {
      * @param run                The function to run for the main loop.
      * @param sensorLoopFunction The function to run for the sensor loop.
      * @param frameSupplier      The function to get the latest frame for the motor.
+     * @param errorFrameSupplier The function to get the latest error frame for the motor.
      */
     public void registerMotor(
             String name,
@@ -181,6 +182,7 @@ public class MotorManager {
          * @param run The function to run for the main loop.
          * @param sensorLoopFunction The function to run for the sensor loop.
          * @param frameSupplier The function to get the latest frame for the motor.
+         * @param errorFrameSupplier The function to get the latest error frame for the motor.
          */
         public MotorFunctions(Runnable run, Runnable sensorLoopFunction, Supplier<LogFrame.LogFrameAutoLogged> frameSupplier,
                               Supplier<ErrorHandler.ErrorLogFrame> errorFrameSupplier) {

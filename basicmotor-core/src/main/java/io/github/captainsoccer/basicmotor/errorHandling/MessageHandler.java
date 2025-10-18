@@ -51,6 +51,11 @@ public class MessageHandler {
     private final StringBuilder messages = new StringBuilder();
 
     /**
+     * The latest message added
+     */
+    private String latestMessage = "";
+
+    /**
      * The first message node (the oldest)
      */
     private MessageNode firstMessage = null;
@@ -103,6 +108,9 @@ public class MessageHandler {
      * Use {@link #isEmpty()} to check
      */
     public void updateMessages() {
+
+        latestMessage = messages.toString();
+
         try {
             int removedLength = 0;
 
@@ -144,6 +152,6 @@ public class MessageHandler {
      * @return a string of all the active messages
      */
     public String getMessages() {
-        return messages.toString();
+        return latestMessage;
     }
 }

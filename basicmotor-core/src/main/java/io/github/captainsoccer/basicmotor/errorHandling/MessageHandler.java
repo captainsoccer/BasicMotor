@@ -2,6 +2,7 @@ package io.github.captainsoccer.basicmotor.errorHandling;
 
 import edu.wpi.first.wpilibj.Timer;
 
+import java.util.LinkedList;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -25,16 +26,17 @@ public class MessageHandler {
          * The timer that keeps track of how long the message has been playing
          */
         final double startTime;
-        /**
-         * The next message in the list
-         */
-        MessageNode next = null;
 
+        /**
+         * The hash code of the message, used to prevent duplicate messages
+         */
+        final int hashCode;
         /**
          * Creates the node of the message with the length of the message
          * @param messageLength the length of the message string
          */
-        private MessageNode(int messageLength) {
+        private MessageNode(int messageLength, int hashCode) {
+            this.hashCode = hashCode;
             this.messageLength = messageLength;
             this.startTime = Timer.getTimestamp();
         }
@@ -56,14 +58,9 @@ public class MessageHandler {
     private String latestMessage = "";
 
     /**
-     * The first message node (the oldest)
+     * The list of messages
      */
-    private MessageNode firstMessage = null;
-
-    /**
-     * THe newest message node (the youngest)
-     */
-    private MessageNode lastMessage = null;
+    private final LinkedList<MessageNode> messageList = new LinkedList<>();
 
     /**
      * The lock used to synchronize access to the messages
@@ -75,31 +72,39 @@ public class MessageHandler {
      * @param msg the message to add (automatically gets enclosed in brackets for readability)
      */
     public void addMessage(String msg) {
-        String messageStr = "[" + msg + "]";
-
-        if(messages.toString().contains(messageStr))
-            return;
-
-        messages.append(messageStr);
-
-        MessageNode newMessage = new MessageNode(messageStr.length());
-
-
         try {
-
             lock.lock();
 
-            if (firstMessage == null) {
-                firstMessage = newMessage;
-                lastMessage = firstMessage;
-            } else {
-                lastMessage.next = newMessage;
-                lastMessage = lastMessage.next;
-            }
+            int messageHash = msg.hashCode();
+
+            // prevent duplicate messages
+            if(containsMessage(messageHash))
+                return;
+
+            String messageStr = "[" + msg + "]";
+
+            messages.append(messageStr);
+
+            messageList.add(new MessageNode(messageStr.length(), messageHash));
         }
         finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * Checks if the message is already in the list
+     * @param messageHash the hash of the message to check
+     * @return whether the message is already in the list
+     */
+    private boolean containsMessage(int messageHash) {
+        for(var node : messageList) {
+            if(node.hashCode == messageHash) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -118,20 +123,13 @@ public class MessageHandler {
 
             lock.lock();
 
-            while (firstMessage != null && currentTime - firstMessage.startTime > MESSAGE_DISPLAY_SECONDS) {
-                removedLength += firstMessage.messageLength;
-                firstMessage = firstMessage.next;
+            while (!messageList.isEmpty() && currentTime - messageList.peek().startTime > MESSAGE_DISPLAY_SECONDS) {
+                var message = messageList.poll();
+                removedLength += message.messageLength;
             }
 
             if(removedLength > 0) {
                 messages.delete(0, removedLength);
-            }
-
-            if(firstMessage == null) {
-                lastMessage = null;
-            } else if (firstMessage.next == null) {
-                // Single node remains: ensure lastMessage points to it
-                lastMessage = firstMessage;
             }
         }
         finally {
@@ -144,7 +142,7 @@ public class MessageHandler {
      * @return whether there are any messages
      */
     public boolean isEmpty() {
-        return firstMessage == null;
+        return messageList.isEmpty();
     }
 
     /**

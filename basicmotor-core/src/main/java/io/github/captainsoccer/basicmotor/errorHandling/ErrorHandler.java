@@ -46,7 +46,7 @@ public class ErrorHandler {
      */
     public void logAndReportError(String msg, boolean printStackTrace) {
         logError(msg);
-        DriverStation.reportError("motor " + name + "had error: " + msg, printStackTrace);
+        DriverStation.reportError("motor " + name + " had error: " + msg, printStackTrace);
     }
 
     /**

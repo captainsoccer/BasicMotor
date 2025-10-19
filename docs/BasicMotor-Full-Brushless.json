@@ -1,7 +1,7 @@
 {
     "fileName": "BasicMotor-Full-Brushless.json",
     "name": "BasicMotor Full Brushless",
-    "version": "5.4.7-beta",
+    "version": "5.5.0-beta",
     "uuid": "09f0a944-983e-4f0e-9ba3-589adaa23033",
     "frcYear": "2025",
     "mavenUrls": [
@@ -12,17 +12,17 @@
         {
             "groupId": "com.github.captainsoccer.BasicMotor",
             "artifactId": "basicmotor-core",
-            "version": "v5.4.7-beta"
+            "version": "v5.5.0-beta"
         },
         {
             "groupId": "com.github.captainsoccer.BasicMotor",
             "artifactId": "basicmotor-ctre",
-            "version": "v5.4.7-beta"
+            "version": "v5.5.0-beta"
         },
         {
             "groupId": "com.github.captainsoccer.BasicMotor",
             "artifactId": "basicmotor-rev",
-            "version": "v5.4.7-beta"
+            "version": "v5.5.0-beta"
         }
     ],
     "jniDependencies": [

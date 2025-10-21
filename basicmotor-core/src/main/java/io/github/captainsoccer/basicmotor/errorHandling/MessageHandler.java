@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Automatically removes old messages.
  * supports advantage kit logging for easy logging.
  * Used by {@link ErrorHandler}
- *
+ * <p>
  * Messages are stored in a linked list that the first messages is always the oldest one.
  */
 public class MessageHandler {
@@ -22,18 +22,22 @@ public class MessageHandler {
          * The length of this message, used to remove from the message builder
          */
         final int messageLength;
+
         /**
          * The timer that keeps track of how long the message has been playing
          */
-        final double startTime;
+        double startTime;
 
         /**
          * The hash code of the message, used to prevent duplicate messages
          */
         final int hashCode;
+
         /**
-         * Creates the node of the message with the length of the message
+         * Creates the node of the message with the length of the message and the hash code
+         *
          * @param messageLength the length of the message string
+         * @param hashCode      the hash code of the message
          */
         private MessageNode(int messageLength, int hashCode) {
             this.hashCode = hashCode;
@@ -45,7 +49,7 @@ public class MessageHandler {
     /**
      * The number of seconds a message is displayed for.
      */
-    private static final int MESSAGE_DISPLAY_SECONDS = 2;
+    private static final int MESSAGE_DISPLAY_SECONDS = 3;
 
     /**
      * The string builder that holds the messages
@@ -53,22 +57,22 @@ public class MessageHandler {
     private final StringBuilder messages = new StringBuilder();
 
     /**
-     * The latest message added
-     */
-    private String latestMessage = "";
-
-    /**
      * The list of messages
+     * Used to keep track of the messages and their timers
+     * And check for duplicates
+     * The first message is always the oldest one
      */
     private final LinkedList<MessageNode> messageList = new LinkedList<>();
 
     /**
      * The lock used to synchronize access to the messages
+     * Prevents concurrent modification exceptions
      */
     private final ReentrantLock lock = new ReentrantLock();
 
     /**
-     * Adds a message to the string and node
+     * Adds a message to the list and the string builder
+     *
      * @param msg the message to add (automatically gets enclosed in brackets for readability)
      */
     public void addMessage(String msg) {
@@ -77,34 +81,43 @@ public class MessageHandler {
 
             int messageHash = msg.hashCode();
 
-            // prevent duplicate messages
-            if(containsMessage(messageHash))
+            // check for existing message
+            var existingMessage = hasCopy(messageHash);
+
+            if (existingMessage != null){
+                // reset the timer
+                existingMessage.startTime = Timer.getTimestamp();
                 return;
+            }
 
             String messageStr = "[" + msg + "]";
 
             messages.append(messageStr);
 
             messageList.add(new MessageNode(messageStr.length(), messageHash));
-        }
-        finally {
+        } finally {
             lock.unlock();
         }
     }
 
     /**
-     * Checks if the message is already in the list
-     * @param messageHash the hash of the message to check
-     * @return whether the message is already in the list
+     * Gets the message node if it exists
+     *
+     * @param messageHash the hash of the message to check (without brackets)
+     * @return the message node if it exists, null otherwise
      */
-    private boolean containsMessage(int messageHash) {
-        for(var node : messageList) {
-            if(node.hashCode == messageHash) {
-                return true;
+    private MessageNode hasCopy(int messageHash) {
+
+        if(messageList.isEmpty())
+            return null;
+
+        for (var node : messageList) {
+            if (node.hashCode == messageHash) {
+                return node;
             }
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -113,32 +126,31 @@ public class MessageHandler {
      * Use {@link #isEmpty()} to check
      */
     public void updateMessages() {
-
-        latestMessage = messages.toString();
-
         try {
-            int removedLength = 0;
+            int removeLength = 0;
 
             double currentTime = Timer.getTimestamp();
 
             lock.lock();
 
             while (!messageList.isEmpty() && currentTime - messageList.peek().startTime > MESSAGE_DISPLAY_SECONDS) {
+                // removes the rotten message
                 var message = messageList.poll();
-                removedLength += message.messageLength;
+                removeLength += message.messageLength;
             }
 
-            if(removedLength > 0) {
-                messages.delete(0, removedLength);
+            if (removeLength > 0) {
+                messages.delete(0, removeLength);
             }
-        }
-        finally {
+
+        } finally {
             lock.unlock();
         }
     }
 
     /**
      * Cheks if there are any messages to update
+     *
      * @return whether there are any messages
      */
     public boolean isEmpty() {
@@ -147,9 +159,10 @@ public class MessageHandler {
 
     /**
      * Gets the messages
+     *
      * @return a string of all the active messages
      */
     public String getMessages() {
-        return latestMessage;
+        return messages.toString();
     }
 }

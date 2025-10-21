@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
+import java.util.Arrays;
+
 /**
  * Handles error and warning for each motor.
  * Uses {@link MessageHandler} to store and update messages.
@@ -18,7 +20,8 @@ public class ErrorHandler {
     private final ErrorLogFrame frame = new ErrorLogFrame();
 
     /**
-     * The name of the motor or system this error handler is for
+     * The name of the motor or system this error handler is for.
+     * Used for driverStation reporting.
      */
     public final String name;
 
@@ -46,7 +49,13 @@ public class ErrorHandler {
      */
     public void logAndReportError(String msg, boolean printStackTrace) {
         logError(msg);
-        DriverStation.reportError("motor " + name + " had error: " + msg, printStackTrace);
+        if(printStackTrace) {
+            DriverStation.reportError("motor " + name + " had error: " + msg, getStackTrace());
+        }
+        else{
+            DriverStation.reportError("motor " + name + " had error: " + msg, false);
+        }
+
     }
 
     /**
@@ -74,7 +83,22 @@ public class ErrorHandler {
      */
     public void logAndReportWarning(String msg, boolean printStackTrace) {
         logWarning(msg);
-        DriverStation.reportWarning("motor " + name + " had warning: " + msg, printStackTrace);
+
+        if(printStackTrace) {
+            DriverStation.reportWarning("motor " + name + " had warning: " + msg, getStackTrace());
+        }
+        else{
+            DriverStation.reportWarning("motor " + name + " had warning: " + msg, false);
+        }
+    }
+
+    /**
+     * Gets the current stack trace, excluding the first two elements (getStackTrace and this method)
+     * @return the current stack trace
+     */
+    private StackTraceElement[] getStackTrace() {
+        var stackTrace = Thread.currentThread().getStackTrace();
+        return Arrays.copyOfRange(stackTrace, 2, stackTrace.length);
     }
 
     /**

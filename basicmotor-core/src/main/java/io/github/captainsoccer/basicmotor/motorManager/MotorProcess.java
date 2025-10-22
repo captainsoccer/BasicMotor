@@ -1,0 +1,156 @@
+package io.github.captainsoccer.basicmotor.motorManager;
+
+import edu.wpi.first.hal.NotifierJNI;
+import edu.wpi.first.wpilibj.RobotController;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * This class manages the motor control and sensor loops using a notifier.
+ * It runs the main loop and sensor loop at specified intervals.
+ */
+public class MotorProcess {
+
+    /**
+     * The main loop to be executed periodically.
+     */
+    private final Runnable mainLoop;
+
+    /**
+     * The sensor loop to be executed periodically.
+     */
+    private final Runnable sensorLoop;
+
+    /**
+     * The period of the sensor loop in microseconds.
+     * Taken from {@link MotorManagerConfig#SENSOR_LOOP_HZ}.
+     */
+    private final long sensorLoopMicroSeconds;
+
+    /**
+     * The period of the main loop in microseconds.
+     */
+    private long mainLoopMicroSeconds;
+
+    /**
+     * Lock to protect access to the notifier and timing variables.
+     */
+    private final ReentrantLock lock = new ReentrantLock();
+
+    /**
+     * The notifier handle for scheduling alarms.
+     */
+    private final AtomicInteger notifier = new AtomicInteger(NotifierJNI.initializeNotifier());
+
+    /**
+     * Constructs a MotorProcess with specified main and sensor loops and main loop period.
+     * @param mainLoop The main loop to run periodically.
+     * @param sensorLoop The sensor loop to run periodically.
+     */
+    public MotorProcess(Runnable mainLoop, Runnable sensorLoop) {
+        this.mainLoop = mainLoop;
+        this.sensorLoop = sensorLoop;
+
+        sensorLoopMicroSeconds = secondsToMicroseconds(1.0 / MotorManager.config.SENSOR_LOOP_HZ);
+
+        this.mainLoopMicroSeconds = secondsToMicroseconds(MotorManager.ControllerLocation.MOTOR.getSeconds());
+
+        Thread motorThread = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                loop();
+            }
+        });
+
+        NotifierJNI.updateNotifierAlarm(notifier.get(),
+                RobotController.getFPGATime() + Math.min(mainLoopMicroSeconds, sensorLoopMicroSeconds));
+
+        motorThread.start();
+    }
+
+    /**
+     * Converts seconds to microseconds.
+     * @param seconds The time in seconds.
+     * @return The time in microseconds.
+     */
+    private static long secondsToMicroseconds(double seconds) {
+        return (long) (seconds * 1e6);
+    }
+
+    /**
+     * Sets the timing for the main loop.
+     * @param periodSeconds The period of the main loop in seconds.
+     */
+    public void setMainLoopTiming(double periodSeconds) {
+        try {
+            lock.lock();
+            this.mainLoopMicroSeconds = secondsToMicroseconds(periodSeconds);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Stops the motor process by canceling the notifier alarm.
+     */
+    public void stop() {
+        try {
+            lock.lock();
+            NotifierJNI.cancelNotifierAlarm(notifier.get());
+        }
+        finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * The next alarm time for the main loop.
+     * This is in microseconds, relative to the fpga time.
+     */
+    private long mainLoopAlarmTime;
+
+    /**
+     * The next alarm time for the sensor loop.
+     * This is in microseconds, relative to the fpga time.
+     */
+    private long sensorLoopAlarmTime;
+
+    /**
+     * The function the thread runs in a loop.
+     */
+    private void loop() {
+        try {
+            lock.lock();
+
+            // gets the notifier handle
+            int notifier = this.notifier.get();
+            if(notifier == 0) {
+                return;
+            }
+
+            // waits for the next alarm
+            long currentTime = NotifierJNI.waitForNotifierAlarm(notifier);
+            if (currentTime == 0) {
+                return;
+            }
+
+            // check if the alarm was for the main loop
+            if(currentTime >= mainLoopAlarmTime) {
+                mainLoop.run();
+                mainLoopAlarmTime = currentTime + mainLoopMicroSeconds;
+            }
+
+            // check if the alarm was for the sensor loop
+            if(currentTime >= sensorLoopAlarmTime) {
+                sensorLoop.run();
+                sensorLoopAlarmTime = currentTime + sensorLoopMicroSeconds;
+            }
+
+            // sets the next alarm time to the earliest of the two loops
+            NotifierJNI.updateNotifierAlarm(notifier, Math.min(mainLoopAlarmTime, sensorLoopAlarmTime));
+        }
+        finally {
+            lock.unlock();
+        }
+    }
+}

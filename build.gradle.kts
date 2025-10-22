@@ -43,6 +43,7 @@ subprojects {
         add("compileOnly", "edu.wpi.first.wpimath:wpimath-java:${wpilibVersion}")
         add("compileOnly", "edu.wpi.first.wpiutil:wpiutil-java:${wpilibVersion}")
         add("compileOnly", "edu.wpi.first.wpiunits:wpiunits-java:${wpilibVersion}")
+        add("compileOnly", "edu.wpi.first.hal:hal-java:${wpilibVersion}")
         add("compileOnly", "org.littletonrobotics.akit:akit-java:${advantageKitVersion}")
         add("compileOnly", "us.hebi.quickbuf:quickbuf-runtime:1.3.3")
     }

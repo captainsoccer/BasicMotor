@@ -117,7 +117,9 @@ public class MotorManager {
             Runnable sensorLoopFunction,
             Supplier<LogFrame.LogFrameAutoLogged> frameSupplier) {
 
-        var functions = new MotorFunctions(run, sensorLoopFunction, frameSupplier);
+        var motorProcess = new MotorProcess(run, sensorLoopFunction, name);
+
+        var functions = new MotorFunctions(motorProcess, frameSupplier);
 
         // since this function only happens in the start of the robot code and is on the main thread, throws the exception if the motor name already exists.
         if (motorMap.containsKey(name)){
@@ -147,13 +149,12 @@ public class MotorManager {
          * Constructor for the MotorFunctions class.
          * This creates the threads for the main loop and the sensor loop.
          * But does not start them.
-         * @param run The function to run for the main loop.
-         * @param sensorLoopFunction The function to run for the sensor loop.
+         * @param motorProcess The motor process that handles the loops.
          * @param frameSupplier The function to get the latest frame for the motor.
          */
-        public MotorFunctions(Runnable run, Runnable sensorLoopFunction, Supplier<LogFrame.LogFrameAutoLogged> frameSupplier) {
+        public MotorFunctions(MotorProcess motorProcess, Supplier<LogFrame.LogFrameAutoLogged> frameSupplier) {
 
-            thread = new MotorProcess(run, sensorLoopFunction);
+            this.thread = motorProcess;
 
             this.frameSupplier = frameSupplier;
         }

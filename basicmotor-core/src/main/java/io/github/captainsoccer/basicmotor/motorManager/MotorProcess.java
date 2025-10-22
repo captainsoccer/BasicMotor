@@ -47,8 +47,9 @@ public class MotorProcess {
      * Constructs a MotorProcess with specified main and sensor loops and main loop period.
      * @param mainLoop The main loop to run periodically.
      * @param sensorLoop The sensor loop to run periodically.
+     * @param name The name of the motor used for the notifier.
      */
-    public MotorProcess(Runnable mainLoop, Runnable sensorLoop) {
+    public MotorProcess(Runnable mainLoop, Runnable sensorLoop, String name) {
         this.mainLoop = mainLoop;
         this.sensorLoop = sensorLoop;
 
@@ -61,6 +62,8 @@ public class MotorProcess {
                 loop();
             }
         });
+
+        NotifierJNI.setNotifierName(notifier.get(), name + " MotorProcess");
 
         NotifierJNI.updateNotifierAlarm(notifier.get(),
                 RobotController.getFPGATime() + Math.min(mainLoopMicroSeconds, sensorLoopMicroSeconds));

@@ -74,6 +74,28 @@ public class MotorProcess {
         this.mainLoopMicroSeconds = secondsToMicroseconds(MotorManager.ControllerLocation.MOTOR.getSeconds());
 
         motorProcessThread = new Thread(() -> {
+            // delays execution for the set amount of time
+            try {
+                Thread.sleep((long)(MotorManager.config.STARTUP_DELAY_SECONDS * 1000));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            //sets the next alarm time
+            try{
+                lock.lock();
+
+                long currentTime = RobotController.getFPGATime();
+
+                mainLoopAlarmTime = currentTime + mainLoopMicroSeconds;
+                sensorLoopAlarmTime = currentTime + sensorLoopMicroSeconds;
+
+                NotifierJNI.updateNotifierAlarm(notifier, Math.min(mainLoopAlarmTime, sensorLoopAlarmTime));
+            }
+            finally {
+                lock.unlock();
+            }
+
             while (!Thread.currentThread().isInterrupted()) {
                 loop();
             }
@@ -81,14 +103,6 @@ public class MotorProcess {
 
         NotifierJNI.setNotifierName(notifier, name + " MotorProcess");
         motorProcessThread.setName(name + " MotorProcess Thread");
-
-        // makes both of the loops run together in the set startup delay
-        long delay = secondsToMicroseconds(MotorManager.config.STARTUP_DELAY_SECONDS) + RobotController.getFPGATime();
-
-        mainLoopAlarmTime = delay;
-        sensorLoopAlarmTime = delay;
-
-        NotifierJNI.updateNotifierAlarm(notifier, delay);
 
         motorProcessThread.start();
     }

@@ -3,7 +3,6 @@ package io.github.captainsoccer.basicmotor.motorManager;
 import edu.wpi.first.hal.NotifierJNI;
 import edu.wpi.first.wpilibj.RobotController;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -11,6 +10,11 @@ import java.util.concurrent.locks.ReentrantLock;
  * It runs the main loop and sensor loop at specified intervals.
  */
 public class MotorProcess {
+
+    /**
+     * The thread that runs the motor process loop.
+     */
+    private final Thread motorProcessThread;
 
     /**
      * The main loop to be executed periodically.
@@ -41,7 +45,19 @@ public class MotorProcess {
     /**
      * The notifier handle for scheduling alarms.
      */
-    private final AtomicInteger notifier = new AtomicInteger(NotifierJNI.initializeNotifier());
+    private final int notifier = NotifierJNI.initializeNotifier();
+
+    /**
+     * The next alarm time for the main loop.
+     * This is in microseconds, relative to the fpga time.
+     */
+    private long mainLoopAlarmTime;
+
+    /**
+     * The next alarm time for the sensor loop.
+     * This is in microseconds, relative to the fpga time.
+     */
+    private long sensorLoopAlarmTime;
 
     /**
      * Constructs a MotorProcess with specified main and sensor loops and main loop period.
@@ -57,18 +73,22 @@ public class MotorProcess {
 
         this.mainLoopMicroSeconds = secondsToMicroseconds(MotorManager.ControllerLocation.MOTOR.getSeconds());
 
-        Thread motorThread = new Thread(() -> {
+        motorProcessThread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 loop();
             }
         });
 
-        NotifierJNI.setNotifierName(notifier.get(), name + " MotorProcess");
+        NotifierJNI.setNotifierName(notifier, name + " MotorProcess");
 
-        NotifierJNI.updateNotifierAlarm(notifier.get(),
-                RobotController.getFPGATime() + Math.min(mainLoopMicroSeconds, sensorLoopMicroSeconds));
+        long currentTime = RobotController.getFPGATime();
 
-        motorThread.start();
+        mainLoopAlarmTime = currentTime + mainLoopMicroSeconds;
+        sensorLoopAlarmTime = currentTime + sensorLoopMicroSeconds;
+
+        NotifierJNI.updateNotifierAlarm(notifier, Math.min(mainLoopAlarmTime, sensorLoopAlarmTime));
+
+        motorProcessThread.start();
     }
 
     /**
@@ -99,24 +119,15 @@ public class MotorProcess {
     public void stop() {
         try {
             lock.lock();
-            NotifierJNI.cancelNotifierAlarm(notifier.get());
+            NotifierJNI.cancelNotifierAlarm(notifier);
+            NotifierJNI.cleanNotifier(notifier);
+
+            motorProcessThread.interrupt();
         }
         finally {
             lock.unlock();
         }
     }
-
-    /**
-     * The next alarm time for the main loop.
-     * This is in microseconds, relative to the fpga time.
-     */
-    private long mainLoopAlarmTime;
-
-    /**
-     * The next alarm time for the sensor loop.
-     * This is in microseconds, relative to the fpga time.
-     */
-    private long sensorLoopAlarmTime;
 
     /**
      * The function the thread runs in a loop.
@@ -126,7 +137,6 @@ public class MotorProcess {
             lock.lock();
 
             // gets the notifier handle
-            int notifier = this.notifier.get();
             if(notifier == 0) {
                 return;
             }

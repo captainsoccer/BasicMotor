@@ -80,6 +80,7 @@ public class MotorProcess {
         });
 
         NotifierJNI.setNotifierName(notifier, name + " MotorProcess");
+        motorProcessThread.setName(name + " MotorProcess Thread");
 
         long currentTime = RobotController.getFPGATime();
 

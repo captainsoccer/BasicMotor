@@ -126,7 +126,7 @@ public class MotorManager {
 
         var motorProcess = new MotorProcess(run, sensorLoopFunction, name);
 
-        var functions = new MotorFunctions(motorProcess, frameSupplier);
+        var functions = new MotorFunctions(motorProcess, frameSupplier, errorFrameSupplier);
 
         // since this function only happens in the start of the robot code and is on the main thread, throws the exception if the motor name already exists.
         if (motorMap.containsKey(name)){
@@ -165,7 +165,9 @@ public class MotorManager {
          * @param frameSupplier The function to get the latest frame for the motor.
          * @param errorFrameSupplier The function to get the latest error frame for the motor.
          */
-        public MotorFunctions(MotorProcess motorProcess, Supplier<LogFrame.LogFrameAutoLogged> frameSupplier) {
+        public MotorFunctions(MotorProcess motorProcess,
+                              Supplier<LogFrame.LogFrameAutoLogged> frameSupplier,
+                              Supplier<ErrorHandler.ErrorLogFrame> errorFrameSupplier) {
 
             this.thread = motorProcess;
 

@@ -5,7 +5,6 @@ import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.config.SparkBaseConfig;
-import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.MotorInterface;
@@ -75,7 +74,6 @@ public class SparkBaseInterface extends MotorInterface {
         double unitConversion = motorConfig.motorConfig.unitConversion;
 
         if (!(motorConfig instanceof BasicSparkConfig sparkBaseConfig)) {
-            DriverStation.reportWarning("not using specific Spark Base config for motor: " + name, false);
             defaultMeasurements = new RevRelativeEncoder(motor.getEncoder(), gearRatio, unitConversion);
             return;
         }
@@ -128,10 +126,8 @@ public class SparkBaseInterface extends MotorInterface {
         config.closedLoop.iMaxAccum(gains.getI_MaxAccum(), closedLoopSlot);
 
         if (gains.getTolerance() != 0) {
-            DriverStation.reportWarning(
-                    "Spark MAX does not use tolerance in the PID controller (works on rio PID Controller), so it is ignored: "
-                            + name,
-                    false);
+            errorHandler.logAndReportWarning(
+                    "Spark motor controllers do not support setting tolerance when running closed loop control on the motor controller");
         }
 
         applyConfig();
@@ -165,10 +161,8 @@ public class SparkBaseInterface extends MotorInterface {
         }
 
         if (constraints.getVoltageDeadband() != 0) {
-            DriverStation.reportWarning(
-                    "Spark motor controllers do not use voltage deadband (works on RIO PID controller), so it is ignored: "
-                            + name,
-                    false);
+            errorHandler.logAndReportWarning(
+                    "Spark motor controllers do not use voltage deadband (works on RIO PID controller), so it is ignored: ");
         }
 
         applyConfig();
@@ -216,12 +210,7 @@ public class SparkBaseInterface extends MotorInterface {
                         SparkBase.PersistMode.kNoPersistParameters);
 
         if (okSignal != REVLibError.kOk) {
-            DriverStation.reportError(
-                    "Failed to apply configuration to Spark MAX motor: "
-                            + name
-                            + ". Error: "
-                            + okSignal.name(),
-                    false);
+            errorHandler.logAndReportError("Failed to apply configuration to Spark motor, Error: " + okSignal.name());
         }
     }
 }

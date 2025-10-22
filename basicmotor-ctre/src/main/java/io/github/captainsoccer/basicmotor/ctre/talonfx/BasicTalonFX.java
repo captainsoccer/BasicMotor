@@ -13,7 +13,8 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import edu.wpi.first.wpilibj.DriverStation;
+
+import java.util.Objects;
 
 /**
  * This class represents a basic TalonFX motor controller.
@@ -141,7 +142,7 @@ public class BasicTalonFX extends BasicMotor {
             currentConfig.SupplyCurrentLowerTime = limits.supplyLowerTime();
         } else {
             //reports a warning if the current limits are not for a TalonFX motor controller
-            DriverStation.reportWarning("Using non-TalonFX current limits on TalonFX motor controller: " + super.name, false);
+            errorHandler.logWarning("Using non-TalonFX current limits on TalonFX motor controller");
 
             currentConfig.SupplyCurrentLimitEnable = false;
         }
@@ -174,8 +175,7 @@ public class BasicTalonFX extends BasicMotor {
                 };
 
         if (error != StatusCode.OK) {
-            DriverStation.reportError(
-                    "Failed to set motor output for motor: " + super.name + " Error: " + error.name(), false);
+            errorHandler.logAndReportError("Failed to set motor output, StatusCode: " + error.name());
         }
     }
 
@@ -275,10 +275,7 @@ public class BasicTalonFX extends BasicMotor {
      * @param feedbackSensorSource   The feedback sensor source value (RemoteCANcoder or FusedCANcoder).
      */
     private void configureCanCoder(CANcoder canCoder, double sensorToMotorRatio, double unitConversion, double mechanismToSensorRatio, FeedbackSensorSourceValue feedbackSensorSource) {
-        if (canCoder == null) {
-            DriverStation.reportError("CAN coder is null, cannot use remote encoder", false);
-            return;
-        }
+        Objects.requireNonNull(canCoder);
 
         var config = motorInterface.config;
 

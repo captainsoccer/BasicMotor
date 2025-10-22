@@ -2,13 +2,13 @@ package io.github.captainsoccer.basicmotor.controllers;
 
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
+import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.gains.FeedForwardsGains;
 
 import java.util.Objects;
@@ -19,6 +19,13 @@ import java.util.function.Consumer;
  * It handles the PID loop, feedforward, constraints, and profiling of the motor.
  */
 public class Controller implements Sendable {
+
+    /**
+     * The error handler of the controller.
+     * This is used to log errors and warnings of the controller.
+     */
+    private final ErrorHandler errorHandler;
+
     /**
      * The gains of the controller.
      * This stores the PID gains, feedforward, constraints, and profile of the controller.
@@ -52,18 +59,19 @@ public class Controller implements Sendable {
      * @param hasConstraintsChangeRunnable The function to run when the constraints are changed.
      *                                     This function is to flag when the constraints are changed
      *                                     so the motor can send the updates to the motor controller on a slower thread.
-     * @param name                         The name of the controller (used for the sendable registry).
-     *                                     This will be the name of the controller that will appear on the dashboard.
+     * @param errorHandler                 The error handler of the controller, used to log errors and warnings.
      */
     public Controller(
             ControllerGains controllerGains,
             Consumer<Integer> hasPIDGainsChangeRunnable,
             Runnable hasConstraintsChangeRunnable,
-            String name) {
+            ErrorHandler errorHandler) {
         this.controllerGains = controllerGains;
         //sets the callbacks for when the PID gains or constraints are changed
         this.controllerGains.setHasPIDGainsChanged(hasPIDGainsChangeRunnable);
         this.controllerGains.setHasConstraintsChanged(hasConstraintsChangeRunnable);
+
+        this.errorHandler = errorHandler;
 
         //creates the PID controller with the given gains
         for (int i = 0; i < pidController.length; i++) {
@@ -71,7 +79,7 @@ public class Controller implements Sendable {
         }
 
         // registers the controller with the sendable registry (used when sending to the dashboard)
-        SendableRegistry.add(this, name + " Controller");
+        SendableRegistry.add(this, errorHandler.name + " Controller");
     }
 
     /**
@@ -99,7 +107,7 @@ public class Controller implements Sendable {
         }
 
         if (request.controlMode.isProfiled() && !controllerGains.isProfiled(request.slot)) {
-            DriverStation.reportWarning("Using a profiled control mode without a profile set in the controller gains. using normal request", false);
+            errorHandler.logWarning("Using a profiled control mode without a profile set in the controller gains. using normal request");
         }
 
         this.request = request;
@@ -139,7 +147,7 @@ public class Controller implements Sendable {
      */
     public void setControl(double goal, double goalVelocity, ControlMode controlMode, int slot) {
         if (!controlMode.isProfiled()) {
-            DriverStation.reportWarning("Using a function made for profiled control for a non profiled control mode", true);
+            errorHandler.logWarning("Using a function made for profiled control for a non profiled control mode");
         }
 
         setControl(new ControllerRequest(goal, goalVelocity, controlMode, slot));
@@ -169,7 +177,7 @@ public class Controller implements Sendable {
      */
     public void setControl(TrapezoidProfile.State goal, ControlMode controlMode, int slot) {
         if (!controlMode.isProfiled()) {
-            DriverStation.reportWarning("Using a function made for profiled control for a non profiled control mode", true);
+            errorHandler.logWarning("Using a function made for profiled control for a non profiled control mode");
         }
 
         setControl(new ControllerRequest(goal, controlMode, slot));

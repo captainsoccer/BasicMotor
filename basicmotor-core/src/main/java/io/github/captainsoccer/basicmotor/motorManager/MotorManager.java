@@ -1,9 +1,9 @@
 package io.github.captainsoccer.basicmotor.motorManager;
 
+import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Notifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -71,29 +71,21 @@ public class MotorManager {
         for (Map.Entry<String, MotorFunctions> entry : motorMap.entrySet()) {
             var name = entry.getKey();
 
-            var frame = entry.getValue().frameSupplier.get();
+            LogFrame.LogFrameAutoLogged frame = entry.getValue().frameSupplier.get();
 
             Logger.processInputs("Motors/" + name, frame);
+
+            ErrorHandler.ErrorLogFrame errorFrame = entry.getValue().errorFrameSupplier.get();
+            Logger.processInputs("Motors/" + name + "/Messages", errorFrame);
         }
     }
 
     /**
-     * Stops the sensor loop for all motors.
-     * Should only be used if using replay simulation.
+     * Stops all the motor loops.
      */
-    public void stopSensorLoop() {
+    public void stopAllMotorLoops() {
         for (MotorFunctions motor : motorMap.values()) {
-            motor.sensorLoop.stop();
-        }
-    }
-
-    /**
-     * Stops the PID loop for all motors.
-     * Should only be used if using replay simulation.
-     */
-    public void stopMainLoop() {
-        for (MotorFunctions motor : motorMap.values()) {
-            motor.mainLoop.stop();
+            motor.thread.stop();
         }
     }
 
@@ -108,10 +100,10 @@ public class MotorManager {
     public void setControllerLocation(String name, ControllerLocation location) {
         var functions = motorMap.get(name);
         if (functions != null) {
-            functions.mainLoop.stop();
-            functions.mainLoop.startPeriodic(location.getSeconds());
+            functions.thread.setMainLoopTiming(location.getSeconds());
         } else {
-            DriverStation.reportError("Motor with name " + name + " not found in MotorManager.", false);
+            DriverStation.reportError("Motor with name " + name + " not found in MotorManager." +
+                    "\n did you call outside the basicMotor class?", false);
         }
     }
 
@@ -123,14 +115,18 @@ public class MotorManager {
      * @param run                The function to run for the main loop.
      * @param sensorLoopFunction The function to run for the sensor loop.
      * @param frameSupplier      The function to get the latest frame for the motor.
+     * @param errorFrameSupplier The function to get the latest error frame for the motor.
      */
     public void registerMotor(
             String name,
             Runnable run,
             Runnable sensorLoopFunction,
-            Supplier<LogFrame.LogFrameAutoLogged> frameSupplier) {
+            Supplier<LogFrame.LogFrameAutoLogged> frameSupplier,
+            Supplier<ErrorHandler.ErrorLogFrame> errorFrameSupplier) {
 
-        var functions = new MotorFunctions(run, sensorLoopFunction, frameSupplier);
+        var motorProcess = new MotorProcess(run, sensorLoopFunction, name);
+
+        var functions = new MotorFunctions(motorProcess, frameSupplier);
 
         // since this function only happens in the start of the robot code and is on the main thread, throws the exception if the motor name already exists.
         if (motorMap.containsKey(name)){
@@ -138,9 +134,6 @@ public class MotorManager {
         }
 
         motorMap.put(name, functions);
-
-        functions.sensorLoop.startPeriodic(1 / config.SENSOR_LOOP_HZ);
-        functions.mainLoop.startPeriodic(ControllerLocation.MOTOR.getSeconds());
     }
 
     /**
@@ -148,15 +141,11 @@ public class MotorManager {
      * It also stores the frame supplier and the name of the motor.
      */
     public static class MotorFunctions{
-        /**
-         * The thread to run for the main (PID) loop.
-         */
-        private final Notifier mainLoop;
 
         /**
-         * The thread to run for the sensor loop.
+         * The object that handles the main loop and the sensor loop for the motor.
          */
-        private final Notifier sensorLoop;
+        private final MotorProcess thread;
 
         /**
          * The supplier for the frame of the motor.
@@ -164,19 +153,24 @@ public class MotorManager {
         private final Supplier<LogFrame.LogFrameAutoLogged> frameSupplier;
 
         /**
+         * The supplier for the error frame of the motor.
+         */
+        private final Supplier<ErrorHandler.ErrorLogFrame> errorFrameSupplier;
+
+        /**
          * Constructor for the MotorFunctions class.
          * This creates the threads for the main loop and the sensor loop.
          * But does not start them.
-         * @param run The function to run for the main loop.
-         * @param sensorLoopFunction The function to run for the sensor loop.
+         * @param motorProcess The motor process that handles the loops.
          * @param frameSupplier The function to get the latest frame for the motor.
+         * @param errorFrameSupplier The function to get the latest error frame for the motor.
          */
-        public MotorFunctions(Runnable run, Runnable sensorLoopFunction, Supplier<LogFrame.LogFrameAutoLogged> frameSupplier) {
+        public MotorFunctions(MotorProcess motorProcess, Supplier<LogFrame.LogFrameAutoLogged> frameSupplier) {
 
-            mainLoop = new Notifier(run);
-            sensorLoop = new Notifier(sensorLoopFunction);
+            this.thread = motorProcess;
 
             this.frameSupplier = frameSupplier;
+            this.errorFrameSupplier = errorFrameSupplier;
         }
     }
 

@@ -1,5 +1,6 @@
 package io.github.captainsoccer.basicmotor;
 
+import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
 import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
@@ -7,7 +8,6 @@ import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager.ControllerLocation;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 
 import java.util.Arrays;
@@ -88,6 +88,12 @@ public abstract class BasicMotor {
     protected final LogFrame.LogFrameAutoLogged logFrame = new LogFrame.LogFrameAutoLogged();
 
     /**
+     * The error handler for the motor.
+     * Used to log errors and warnings from the motor.
+     */
+    protected final ErrorHandler errorHandler;
+
+    /**
      * The location of the pid controller.
      * This is used to determine if the pid controller is on the motor or on the RIO.
      */
@@ -155,6 +161,8 @@ public abstract class BasicMotor {
         Objects.requireNonNull(controllerGains);
         Objects.requireNonNull(motorInterface);
 
+        this.errorHandler = motorInterface.errorHandler;
+
         this.motorInterface = motorInterface;
         this.name = motorInterface.name;
         measurements = motorInterface.getDefaultMeasurements();
@@ -164,7 +172,7 @@ public abstract class BasicMotor {
 
         Consumer<Integer> setHasPIDGainsChanged = (slot) -> hasPIDGainsChanged[slot] = true;
         Runnable setHasConstraintsChanged = () -> hasConstraintsChanged = true;
-        controller = new Controller(controllerGains, setHasPIDGainsChanged, setHasConstraintsChanged, name);
+        controller = new Controller(controllerGains, setHasPIDGainsChanged, setHasConstraintsChanged, errorHandler);
 
 
         // if the user uses a bare minimum configuration,
@@ -192,7 +200,7 @@ public abstract class BasicMotor {
 
         //register the motor with the motor manager
         MotorManager.getInstance()
-                .registerMotor(name, this::run, this::updateSensorData, this::getLatestFrame);
+                .registerMotor(name, this::run, this::updateSensorData, this::getLatestFrame, errorHandler::getErrorFrame);
     }
     // getters and setters
 
@@ -220,6 +228,8 @@ public abstract class BasicMotor {
      * @param throughRIO   If the measurements should be set through the RIO or directly on the motor controller.
      */
     protected void setMeasurements(Measurements measurements, boolean throughRIO) {
+        Objects.requireNonNull(measurements);
+
         stopRecordingMeasurements();
         this.measurements = measurements;
 
@@ -315,19 +325,6 @@ public abstract class BasicMotor {
      */
     public final void setMotorInverted(boolean inverted) {
         motorInterface.setInverted(inverted);
-    }
-
-    /**
-     * Sets the new position of the motor.
-     * This should be in the motor rotations (before gear ratio and unit conversion).
-     *
-     * @param position The new position of the motor (in motor rotations).
-     */
-    private void setMotorPosition(double position) {
-        if (measurements == null) {
-            DriverStation.reportError("Motor " + name + " has not been initialized yet, cannot set position.", false);
-        }
-        measurements.setPosition(position);
     }
 
     /**
@@ -601,7 +598,7 @@ public abstract class BasicMotor {
         if (!controller.getControlMode().isVelocityControl()) controller.reset(newPosition, newVelocity);
         else controller.reset(newVelocity, 0);
 
-        setMotorPosition((newPosition / measurements.getUnitConversion()) * measurements.getGearRatio());
+        measurements.setPosition((newPosition / measurements.getUnitConversion()) * measurements.getGearRatio());
     }
 
     // periodic functions
@@ -674,12 +671,6 @@ public abstract class BasicMotor {
      * @return The updated measurements of the motor.
      */
     private Measurements.Measurement updateMeasurements() {
-        if (measurements == null) {
-            // if the measurements are still null, then we cannot update the measurements
-            DriverStation.reportError("Measurements for motor " + name + " are null, cannot update measurements.", false);
-            return Measurements.Measurement.EMPTY;
-        }
-
         return measurements.update(controllerLocation.getSeconds());
     }
 
@@ -705,8 +696,7 @@ public abstract class BasicMotor {
         // If the measurements are empty and the control mode requires PID control,
         // then we cannot run the controller.
         if ((controlMode.requiresPID() && !controlMode.isCurrentControl()) && measurements instanceof EmptyMeasurements) {
-            DriverStation.reportError("Using empty measurements with a controller that requires PID control. " +
-                    "Please set the measurements to a valid source.", false);
+            errorHandler.logError("Cannot use on motor controller PID when controller doesnt support it");
 
             return false;
         }
@@ -867,7 +857,7 @@ public abstract class BasicMotor {
      */
     private double getCurrentFromTorque(double torque) {
         if (config == null) {
-            DriverStation.reportError("motor: " + name + " Trying to convert torque and current without config set.", false);
+            errorHandler.logAndReportError("Trying to convert torque and current without config set.");
             return 0;
         }
         return config.motorConfig.motorType.getCurrent(torque / motorInterface.getDefaultMeasurements().getGearRatio());
@@ -883,7 +873,7 @@ public abstract class BasicMotor {
      */
     private double getTorqueFromCurrent(double current) {
         if (config == null) {
-            DriverStation.reportError("motor: " + name + " Trying to convert torque and current without config set.", false);
+            errorHandler.logAndReportError("Trying to convert torque and current without config set.");
             return 0;
         }
         return config.motorConfig.motorType.getTorque(current) * motorInterface.getDefaultMeasurements().getGearRatio();

@@ -9,7 +9,6 @@ import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager.ControllerLocation;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import io.github.captainsoccer.basicmotor.sim.arm.BasicArmSim;
 import io.github.captainsoccer.basicmotor.sim.elevator.BasicElevatorSim;
@@ -90,7 +89,6 @@ public abstract class BasicSimSystem extends BasicMotor {
   @Override
   protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
     if (mode.requiresPID()){
-      DriverStation.reportError("Simulation systems do not support direct PID control.", true);
       return;
     }
 

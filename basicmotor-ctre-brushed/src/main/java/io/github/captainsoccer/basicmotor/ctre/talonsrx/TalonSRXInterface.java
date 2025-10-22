@@ -2,7 +2,6 @@ package io.github.captainsoccer.basicmotor.ctre.talonsrx;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
-import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
@@ -96,7 +95,7 @@ public class TalonSRXInterface extends MotorInterface {
     public void applyConfig(){
         var error = motor.configAllSettings(config);
         if (error.value != 0) {
-            DriverStation.reportWarning("issues applying config for motor: " + super.name + ". Error: " + error.name(), false);
+            errorHandler.logAndReportError("could not apply config, error: " + error.name());
         }
     }
 

@@ -7,11 +7,11 @@ import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
+import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
-import edu.wpi.first.wpilibj.DriverStation;
 
 /**
  * A basic motor implementation for the brushed Victor SPX motor controller.
@@ -51,11 +51,11 @@ public class BasicVictorSPX extends BasicMotor {
 
         this.motorInterface = (VictorSPXInterface) super.motorInterface;
 
-        if(measurements != null) {
-            setControllerLocation(MotorManager.ControllerLocation.RIO);
+        if(measurements instanceof EmptyMeasurements) {
+            errorHandler.logAndReportError("Provided empty measurements", true);
         }
         else{
-            throw  new NullPointerException("provided measurements for motor: " + name + " is null");
+            setControllerLocation(MotorManager.ControllerLocation.RIO);
         }
     }
 
@@ -70,17 +70,17 @@ public class BasicVictorSPX extends BasicMotor {
 
         this.motorInterface = (VictorSPXInterface) super.motorInterface;
 
-        if(measurements != null) {
-            setControllerLocation(MotorManager.ControllerLocation.RIO);
+        if(measurements instanceof EmptyMeasurements) {
+            errorHandler.logAndReportError("Provided empty measurements", true);
         }
         else{
-            DriverStation.reportWarning("provided measurements for motor: " + name + " is null", false);
+            setControllerLocation(MotorManager.ControllerLocation.RIO);
         }
     }
 
     @Override
     public void setCurrentLimits(CurrentLimits currentLimits) {
-        DriverStation.reportWarning("motor: " + this.name + " does not support current limits.", false);
+        errorHandler.logAndReportError("Current limits not supported for victorSPX", true);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class BasicVictorSPX extends BasicMotor {
     protected void updateMainLoopTiming(MotorManager.ControllerLocation location) {
         //Does nothing, as the victorSPX does not support main loop timing.
         if(location == MotorManager.ControllerLocation.MOTOR){
-            DriverStation.reportError("motor: " + this.name + " does not support closed loop control on motor", true);
+            errorHandler.logWarning("VictorSPX does not support closed loop control on motor");
         }
     }
 
@@ -123,7 +123,7 @@ public class BasicVictorSPX extends BasicMotor {
         // it cannot support direct PID control.
         // but it can support percent output, voltage, current, and torque control modes.
         if(mode.requiresPID()){
-            DriverStation.reportError("motor: " + this.name + " does not support direct PID control.", true);
+            errorHandler.logAndReportError("VictorSPX does not support direct PID control", true);
         }
 
         var motor = this.motorInterface.motor;

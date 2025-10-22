@@ -82,12 +82,13 @@ public class MotorProcess {
         NotifierJNI.setNotifierName(notifier, name + " MotorProcess");
         motorProcessThread.setName(name + " MotorProcess Thread");
 
-        long currentTime = RobotController.getFPGATime();
+        // makes both of the loops run together in the set startup delay
+        long delay = secondsToMicroseconds(MotorManager.config.STARTUP_DELAY_SECONDS) + RobotController.getFPGATime();
 
-        mainLoopAlarmTime = currentTime + mainLoopMicroSeconds;
-        sensorLoopAlarmTime = currentTime + sensorLoopMicroSeconds;
+        mainLoopAlarmTime = delay;
+        sensorLoopAlarmTime = delay;
 
-        NotifierJNI.updateNotifierAlarm(notifier, Math.min(mainLoopAlarmTime, sensorLoopAlarmTime));
+        NotifierJNI.updateNotifierAlarm(notifier, delay);
 
         motorProcessThread.start();
     }

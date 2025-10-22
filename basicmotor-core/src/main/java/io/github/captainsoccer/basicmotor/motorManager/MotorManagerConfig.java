@@ -38,6 +38,11 @@ public class MotorManagerConfig {
     public final double defaultMaxMotorOutput;
 
     /**
+     * The time in seconds that the motor loops starts
+     */
+    public final double STARTUP_DELAY_SECONDS;
+
+    /**
      * The default configuration for the motor manager.
      * This is used if no configuration is provided when constructing the MotorManager.
      * It is recommended to replace this with a custom configuration before constructing any motors.
@@ -52,8 +57,9 @@ public class MotorManagerConfig {
      * @param SENSOR_LOOP_HZ        The frequency of the sensor loop (in Hz) used to update the sensors.
      * @param defaultMaxMotorOutput The maximum output of the motor (in volts).
      * @param motorIdealVoltage     The ideal voltage fed into the motor when it is not moving (in volts).
+     * @param startupDelaySeconds   The delay in seconds the motor loop will wait before starting (after motor initialization)
      */
-    public MotorManagerConfig(double PID_LOOP_HZ, double PROFILE_LOOP_HZ, double SENSOR_LOOP_HZ, double defaultMaxMotorOutput, double motorIdealVoltage) {
+    public MotorManagerConfig(double PID_LOOP_HZ, double PROFILE_LOOP_HZ, double SENSOR_LOOP_HZ, double defaultMaxMotorOutput, double motorIdealVoltage, double startupDelaySeconds) {
         if (PID_LOOP_HZ <= 0 || PROFILE_LOOP_HZ <= 0 || SENSOR_LOOP_HZ <= 0) {
             throw new IllegalArgumentException("Loop frequencies must be greater than zero.");
         }
@@ -66,6 +72,12 @@ public class MotorManagerConfig {
         }
         this.defaultMaxMotorOutput = defaultMaxMotorOutput;
         this.motorIdealVoltage = motorIdealVoltage;
+
+        if (startupDelaySeconds <= 0) {
+            throw new IllegalArgumentException("Startup delay must be greater than zero.");
+        }
+
+        this.STARTUP_DELAY_SECONDS = startupDelaySeconds;
     }
 
     /**
@@ -76,7 +88,7 @@ public class MotorManagerConfig {
      * @param SENSOR_LOOP_HZ  The frequency of the sensor loop (in Hz) used to update the sensors.
      */
     public MotorManagerConfig(double PID_LOOP_HZ, double PROFILE_LOOP_HZ, double SENSOR_LOOP_HZ) {
-        this(PID_LOOP_HZ, PROFILE_LOOP_HZ, SENSOR_LOOP_HZ, DEFAULT_CONFIG.defaultMaxMotorOutput, DEFAULT_CONFIG.motorIdealVoltage);
+        this(PID_LOOP_HZ, PROFILE_LOOP_HZ, SENSOR_LOOP_HZ, DEFAULT_CONFIG.defaultMaxMotorOutput, DEFAULT_CONFIG.motorIdealVoltage, DEFAULT_CONFIG.STARTUP_DELAY_SECONDS);
     }
 
     /**
@@ -88,6 +100,7 @@ public class MotorManagerConfig {
         this.SENSOR_LOOP_HZ = 4;
         this.defaultMaxMotorOutput = 12;
         this.motorIdealVoltage = 13;
+        this.STARTUP_DELAY_SECONDS = 5;
     }
 
 }

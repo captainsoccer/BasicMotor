@@ -38,7 +38,7 @@ public class MotorManagerConfig {
     public final double defaultMaxMotorOutput;
 
     /**
-     * The time in seconds that the motor loops starts
+     * The time in seconds that the motor loops starts (after motor initialization)
      */
     public final double STARTUP_DELAY_SECONDS;
 

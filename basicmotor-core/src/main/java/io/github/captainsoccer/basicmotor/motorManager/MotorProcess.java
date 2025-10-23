@@ -51,13 +51,13 @@ public class MotorProcess {
      * The next alarm time for the main loop.
      * This is in microseconds, relative to the fpga time.
      */
-    private long mainLoopAlarmTime;
+    private volatile long mainLoopAlarmTime;
 
     /**
      * The next alarm time for the sensor loop.
      * This is in microseconds, relative to the fpga time.
      */
-    private long sensorLoopAlarmTime;
+    private volatile long sensorLoopAlarmTime;
 
     /**
      * Constructs a MotorProcess with specified main and sensor loops and main loop period.
@@ -152,7 +152,7 @@ public class MotorProcess {
         try {
             lock.lock();
 
-            // gets the notifier handle
+            // checks if the notifier id is valid
             if(notifier == 0) {
                 return;
             }

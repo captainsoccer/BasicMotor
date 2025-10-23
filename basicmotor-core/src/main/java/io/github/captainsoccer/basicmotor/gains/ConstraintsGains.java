@@ -149,7 +149,7 @@ public class ConstraintsGains {
      *                 - If limited, this is the maximum value of the limits.
      */
     public ConstraintsGains(ConstraintType type, double minValue, double maxValue) {
-        this(type, minValue, maxValue, MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, 0, 0);
+        this(type, minValue, maxValue, MotorManager.config.DEFAULT_MAX_OUTPUT, -MotorManager.config.DEFAULT_MAX_OUTPUT, 0, 0);
     }
 
     /**
@@ -169,7 +169,7 @@ public class ConstraintsGains {
      *                        any value (absolute value) below this will be ignored.
      */
     public ConstraintsGains(ConstraintType type, double minValue, double maxValue, double voltageDeadband) {
-        this(type, minValue, maxValue, MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, voltageDeadband, 0);
+        this(type, minValue, maxValue, MotorManager.config.DEFAULT_MAX_OUTPUT, -MotorManager.config.DEFAULT_MAX_OUTPUT, voltageDeadband, 0);
     }
 
     /**
@@ -227,14 +227,14 @@ public class ConstraintsGains {
      *                        any value (absolute value) below this will be ignored.
      */
     public ConstraintsGains(double voltageDeadband) {
-        this(MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput, voltageDeadband);
+        this(MotorManager.config.DEFAULT_MAX_OUTPUT, -MotorManager.config.DEFAULT_MAX_OUTPUT, voltageDeadband);
     }
 
     /**
      * Creates a constraints object with no constraints, no output limits, and no deadband.
      */
     public ConstraintsGains() {
-        this(MotorManager.config.defaultMaxMotorOutput, -MotorManager.config.defaultMaxMotorOutput);
+        this(MotorManager.config.DEFAULT_MAX_OUTPUT, -MotorManager.config.DEFAULT_MAX_OUTPUT);
     }
 
     /**

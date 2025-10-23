@@ -131,7 +131,7 @@ public class BasicVictorSPX extends BasicMotor {
         switch (mode) {
             case PERCENT_OUTPUT -> motor.set(VictorSPXControlMode.PercentOutput, setpoint);
 
-            case VOLTAGE ->  motor.set(VictorSPXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage);
+            case VOLTAGE ->  motor.set(VictorSPXControlMode.PercentOutput, setpoint / MotorManager.config.DEFAULT_IDEAL_VOLTAGE);
 
             case STOP -> stopMotorOutput();
         }

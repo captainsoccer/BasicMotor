@@ -38,7 +38,7 @@ public class VictorSPXInterface extends MotorInterface {
 
         motor = new VictorSPX(id);
         motor.configFactoryDefault();
-        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
+        motor.configVoltageCompSaturation(MotorManager.config.DEFAULT_IDEAL_VOLTAGE);
 
         this.defaultMeasurements = defaultMeasurements;
     }
@@ -91,11 +91,11 @@ public class VictorSPXInterface extends MotorInterface {
     @Override
     public void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
         // Does nothing with soft limits.
-        motor.configPeakOutputForward(constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage);
-        motor.configPeakOutputReverse(-constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage);
+        motor.configPeakOutputForward(constraints.getMaxMotorOutput() / MotorManager.config.DEFAULT_IDEAL_VOLTAGE);
+        motor.configPeakOutputReverse(-constraints.getMaxMotorOutput() / MotorManager.config.DEFAULT_IDEAL_VOLTAGE);
 
-        motor.configNominalOutputForward(constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage);
-        motor.configNominalOutputReverse(-constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage);
+        motor.configNominalOutputForward(constraints.getVoltageDeadband() / MotorManager.config.DEFAULT_IDEAL_VOLTAGE);
+        motor.configNominalOutputReverse(-constraints.getVoltageDeadband() / MotorManager.config.DEFAULT_IDEAL_VOLTAGE);
 
         motor.configClosedloopRamp(constraints.getRampRate());
         motor.configOpenloopRamp(constraints.getRampRate());

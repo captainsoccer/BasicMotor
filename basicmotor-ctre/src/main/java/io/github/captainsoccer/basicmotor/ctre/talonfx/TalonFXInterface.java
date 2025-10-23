@@ -134,7 +134,7 @@ public class TalonFXInterface extends MotorInterface {
         // changes made in phoenix 6 api
         // https://v6.docs.ctr-electronics.com/en/latest/docs/migration/migration-guide/feature-replacements-guide.html#integral-zone-and-max-integral-accumulator
 
-        if (pidGains.getI_MaxAccum() != MotorManager.config.defaultMaxMotorOutput)
+        if (pidGains.getI_MaxAccum() != MotorManager.config.DEFAULT_MAX_OUTPUT)
             errorHandler.logAndReportWarning("TalonFX does not use i max accum therefore not used (check phoenix 6 docs)");
 
         if (pidGains.getTolerance() != 0)
@@ -155,13 +155,13 @@ public class TalonFXInterface extends MotorInterface {
 
         // sets the max duty cycle to the max motor output (same as voltage)
         config.MotorOutput.PeakForwardDutyCycle =
-                constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
+                constraints.getMaxMotorOutput() / MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
         config.MotorOutput.PeakReverseDutyCycle =
-                constraints.getMinMotorOutput() / MotorManager.config.motorIdealVoltage;
+                constraints.getMinMotorOutput() / MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
 
         // sets the voltage deadband to the voltage deadband
         config.MotorOutput.DutyCycleNeutralDeadband =
-                constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
+                constraints.getVoltageDeadband() / MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
 
         config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = constraints.getRampRate();
         config.OpenLoopRamps.VoltageOpenLoopRampPeriod = constraints.getRampRate();

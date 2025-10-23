@@ -79,10 +79,10 @@ public class PIDGains {
         this.k_P = k_P;
 
         if (k_I < 0) throw new IllegalArgumentException("k_I must be greater than zero");
-        this.k_I = k_I;// convert to volt times loop time seconds per unit of control
+        this.k_I = k_I;
 
         if (k_D < 0) throw new IllegalArgumentException("k_D must be greater than zero");
-        this.K_D = k_D; // convert to volts per unit of control times loop time seconds
+        this.K_D = k_D;
 
         if (i_Zone < 0) throw new IllegalArgumentException("i_Zone must be greater than zero");
         this.i_Zone = i_Zone;
@@ -102,7 +102,7 @@ public class PIDGains {
      * @param k_D The derivative gain (>= 0) (units are volts per unit of control per second)
      */
     public PIDGains(double k_P, double k_I, double k_D) {
-        this(k_P, k_I, k_D, Double.POSITIVE_INFINITY, MotorManager.config.defaultMaxMotorOutput, 0);
+        this(k_P, k_I, k_D, Double.POSITIVE_INFINITY, MotorManager.config.DEFAULT_MAX_OUTPUT, 0);
     }
 
     /**
@@ -114,7 +114,7 @@ public class PIDGains {
      * @param tolerance The tolerance of the PID controller (>= 0) (units are unit of control)
      */
     public PIDGains(double k_P, double k_I, double k_D, double tolerance) {
-        this(k_P, k_I, k_D, Double.POSITIVE_INFINITY, MotorManager.config.defaultMaxMotorOutput, tolerance);
+        this(k_P, k_I, k_D, Double.POSITIVE_INFINITY, MotorManager.config.DEFAULT_MAX_OUTPUT, tolerance);
     }
 
     /**
@@ -202,8 +202,8 @@ public class PIDGains {
 
         return new PIDGains(
                 (k_P / gearRatio) * unitConversion,
-                ((k_I / gearRatio) * unitConversion), //converts to volt seconds per unit of control
-                ((K_D / gearRatio) * unitConversion), //converts to volts per unit of control per second
+                (k_I / gearRatio) * unitConversion,
+                (K_D / gearRatio) * unitConversion,
                 (i_Zone / unitConversion) * gearRatio,
                 i_maxAccum, //stays at volts
                 (tolerance / unitConversion) * gearRatio);
@@ -216,7 +216,7 @@ public class PIDGains {
      * @return The PID gains with the same PID structure but adjusted for duty cycle.
      */
     public PIDGains convertToDutyCycle() {
-        double motorIdleVoltage = MotorManager.config.motorIdealVoltage;
+        double motorIdleVoltage = MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
 
         return new PIDGains(
                 k_P / motorIdleVoltage,

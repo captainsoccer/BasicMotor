@@ -37,7 +37,7 @@ public class TalonFXSensors {
      * The location of the pid controller of the motor.
      * This is used to determine which signals to update.
      */
-    private MotorManager.ControllerLocation location;
+    private MotorManager.ControllerLocation location = MotorManager.ControllerLocation.MOTOR;
 
     /**
      * The status signal containing the temperature

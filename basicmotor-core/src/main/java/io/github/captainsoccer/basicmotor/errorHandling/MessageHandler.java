@@ -1,6 +1,7 @@
 package io.github.captainsoccer.basicmotor.errorHandling;
 
 import edu.wpi.first.wpilibj.Timer;
+import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 
 import java.util.LinkedList;
 import java.util.concurrent.locks.ReentrantLock;
@@ -45,11 +46,6 @@ public class MessageHandler {
             this.startTime = Timer.getTimestamp();
         }
     }
-
-    /**
-     * The number of seconds a message is displayed for.
-     */
-    private static final int MESSAGE_DISPLAY_SECONDS = 3;
 
     /**
      * The string builder that holds the messages
@@ -130,6 +126,8 @@ public class MessageHandler {
             int removeLength = 0;
 
             double currentTime = Timer.getTimestamp();
+
+            double MESSAGE_DISPLAY_SECONDS = MotorManager.config.MESSAGE_DISPLAY_TIMEOUT_SECONDS;
 
             lock.lock();
 

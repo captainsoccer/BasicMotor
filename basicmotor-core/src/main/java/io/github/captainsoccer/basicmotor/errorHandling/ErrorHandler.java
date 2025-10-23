@@ -11,6 +11,12 @@ import java.util.Arrays;
  * Uses {@link MessageHandler} to store and update messages.
  */
 public class ErrorHandler {
+
+    /**
+     * The amount of functions to skip to arrive at the function that wants to print the stack trace
+     */
+    private static final int STACK_TRACE_SKIP_COUNT = 2;
+
     /** The message handler for errors */
     private final MessageHandler errorHandler = new MessageHandler();
     /** The message handler for warnings */
@@ -98,7 +104,7 @@ public class ErrorHandler {
      */
     private StackTraceElement[] getStackTrace() {
         var stackTrace = Thread.currentThread().getStackTrace();
-        return Arrays.copyOfRange(stackTrace, 2, stackTrace.length);
+        return Arrays.copyOfRange(stackTrace, STACK_TRACE_SKIP_COUNT, stackTrace.length);
     }
 
     /**

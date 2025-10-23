@@ -149,7 +149,7 @@ public class MessageHandler {
     }
 
     /**
-     * Cheks if there are any messages to update
+     * checks if there are any messages to update
      *
      * @return true if there is any node existing, false otherwise
      */

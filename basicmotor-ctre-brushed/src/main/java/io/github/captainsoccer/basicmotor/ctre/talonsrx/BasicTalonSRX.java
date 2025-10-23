@@ -9,7 +9,6 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
-import io.github.captainsoccer.basicmotor.ctre.victorspx.VictorSPXInterface;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
@@ -85,7 +84,7 @@ public class BasicTalonSRX extends BasicMotor {
      * @param name The name of the motor controller
      */
     public BasicTalonSRX(int id, String name){
-        super(new VictorSPXInterface(id, name), new ControllerGains());
+        super(new TalonSRXInterface(id, name), new ControllerGains());
 
         this.motorInterface = (TalonSRXInterface) super.motorInterface;
     }

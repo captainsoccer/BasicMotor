@@ -73,8 +73,8 @@ public class MotorManagerConfig {
         this.defaultMaxMotorOutput = defaultMaxMotorOutput;
         this.motorIdealVoltage = motorIdealVoltage;
 
-        if (startupDelaySeconds <= 0) {
-            throw new IllegalArgumentException("Startup delay must be greater than zero.");
+        if (startupDelaySeconds < 0) {
+            throw new IllegalArgumentException("Startup delay must be non-negative.");
         }
 
         this.STARTUP_DELAY_SECONDS = startupDelaySeconds;

@@ -151,7 +151,7 @@ public class MessageHandler {
     /**
      * Cheks if there are any messages to update
      *
-     * @return whether there are any messages
+     * @return true if there is any node existing, false otherwise
      */
     public boolean isEmpty() {
         return messageList.isEmpty();

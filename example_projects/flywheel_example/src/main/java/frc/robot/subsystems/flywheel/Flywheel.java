@@ -62,7 +62,7 @@ public class Flywheel extends SubsystemBase {
      * @param percentOutput the percent output to set (0.0 to 1.0).
      */
     public void setPercentOutput(double percentOutput) {
-        io.setPrecentOutput(percentOutput);
+        io.setPercentOutput(percentOutput);
     }
 
     /**

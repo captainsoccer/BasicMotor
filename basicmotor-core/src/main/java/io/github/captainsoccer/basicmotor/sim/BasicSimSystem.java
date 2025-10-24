@@ -3,14 +3,12 @@ package io.github.captainsoccer.basicmotor.sim;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
-import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
-import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager.ControllerLocation;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import io.github.captainsoccer.basicmotor.sim.arm.BasicArmSim;
 import io.github.captainsoccer.basicmotor.sim.elevator.BasicElevatorSim;
@@ -27,11 +25,11 @@ public abstract class BasicSimSystem extends BasicMotor {
   /**
    * Creates a BasicSimSystem instance with the provided name and controller gains.
    *
-   * @param name The name of the motor simulation
+   * @param motorInterface The motor interface to use for the motor simulation
    * @param gains The controller gains to use for the motor simulation
    */
-  public BasicSimSystem(String name, ControllerGains gains) {
-    super(gains, name);
+  public BasicSimSystem(SimSystemInterface motorInterface, ControllerGains gains) {
+    super(motorInterface, gains);
     super.setControllerLocation(ControllerLocation.RIO);
   }
 
@@ -39,35 +37,16 @@ public abstract class BasicSimSystem extends BasicMotor {
    * Creates a BasicSimSystem instance with the provided configuration.
    * forces controller location to RIO, as simulation systems are always on the RoboRIO.
    *
+   * @param motorInterface The motor interface to use for the motor simulation
    * @param config The configuration for the motor simulation
    */
-  public BasicSimSystem(BasicMotorConfig config) {
-    super(config);
+  public BasicSimSystem(SimSystemInterface motorInterface, BasicMotorConfig config) {
+    super(motorInterface, config);
     super.setControllerLocation(ControllerLocation.RIO);
   }
 
   @Override
-  protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
-    // does nothing, as this is a simulation system
-  }
-
-  @Override
-  protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
-    // does nothing, as this is a simulation system
-  }
-
-  @Override
   public void setCurrentLimits(CurrentLimits currentLimits) {
-    // does nothing, as this is a simulation system
-  }
-
-  @Override
-  public void setIdleMode(IdleMode mode) {
-    // does nothing, as this is a simulation system
-  }
-
-  @Override
-  public void setMotorInverted(boolean inverted) {
     // does nothing, as this is a simulation system
   }
 
@@ -82,7 +61,7 @@ public abstract class BasicSimSystem extends BasicMotor {
   }
 
   @Override
-  protected void setMotorFollow(BasicMotor master, boolean inverted) {
+  protected void setMotorFollow(MotorInterface master, boolean inverted) {
     // does nothing, as this is a simulation system
   }
 
@@ -108,15 +87,8 @@ public abstract class BasicSimSystem extends BasicMotor {
   }
 
   @Override
-  protected double getInternalPIDLoopTime(){
-    return ControllerLocation.RIO.getSeconds();
-    // All sim motors run their PID loop on the RoboRIO, so this is always the RIO loop time.
-  }
-
-  @Override
   protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
     if (mode.requiresPID()){
-      DriverStation.reportError("Simulation systems do not support direct PID control.", true);
       return;
     }
 

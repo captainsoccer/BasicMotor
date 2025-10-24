@@ -1,16 +1,10 @@
 package io.github.captainsoccer.basicmotor.sim.motor;
 
 
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N2;
-import edu.wpi.first.math.system.LinearSystem;
-import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.*;
-import edu.wpi.first.units.measure.Per;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
-import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
 import io.github.captainsoccer.basicmotor.sim.elevator.BasicElevatorSim;
 
@@ -25,10 +19,6 @@ public class BasicMotorSim extends BasicSimSystem {
      * The DCMotorSim instance used by this BasicSimMotor.
      */
     private final DCMotorSim motor;
-    /**
-     * The default measurements for the motor simulation.
-     */
-    private final Measurements defaultMeasurements;
 
     /**
      * Creates a BasicSimMotor instance with the provided DCMotorSim and name.
@@ -41,10 +31,9 @@ public class BasicMotorSim extends BasicSimSystem {
      *                       The unit for this value is desired position unit per rotation.
      */
     public BasicMotorSim(DCMotorSim motor, String name, ControllerGains gains, double unitConversion) {
-        super(name, gains);
-        this.motor = motor;
+        super(new MotorSimInterface(motor, name, unitConversion), gains);
 
-        defaultMeasurements = new MotorSimEncoder(motor, unitConversion);
+        this.motor = motor;
     }
 
     /**
@@ -55,11 +44,9 @@ public class BasicMotorSim extends BasicSimSystem {
      * @param config The configuration for the motor
      */
     public BasicMotorSim(BasicMotorConfig config) {
-        super(config);
+        super(new MotorSimInterface(config), config);
 
-        this.motor = createSimMotor(config);
-
-        this.defaultMeasurements = new MotorSimEncoder(motor, config.motorConfig.unitConversion);
+        this.motor = ((MotorSimInterface)super.motorInterface).motor;
     }
 
     @Override
@@ -67,53 +54,9 @@ public class BasicMotorSim extends BasicSimSystem {
         motor.setInputVoltage(voltage);
     }
 
-    /**
-     * Creates a DCMotorSim based on the provided configuration.
-     * This method initializes the motor simulation.
-     * The configuration must have either the moment of inertia or the kv and ka values set in the
-     * {@link BasicMotorConfig.SimulationConfig} for the motor simulation to work correctly.
-     *
-     * @param config The configuration for the motor
-     * @return A DCMotorSim instance configured according to the provided BasicMotorConfig
-     */
-    private static DCMotorSim createSimMotor(BasicMotorConfig config) {
-        var simConfig = config.simulationConfig;
-
-        if (simConfig.momentOfInertia == 0 && simConfig.kV == 0 && simConfig.kA == 0)
-            throw new IllegalArgumentException(
-                    "you must provide either a moment of inertia or kV and kA for the simulation motor");
-
-        LinearSystem<N2, N1, N2> plant;
-        if (simConfig.momentOfInertia == 0) {
-            double unitConversion = config.motorConfig.unitConversion;
-
-            Per<VoltageUnit, AngularVelocityUnit> kV =
-                    Units.Volts.per(Units.RotationsPerSecond).ofNative(simConfig.kV * unitConversion);
-
-            Per<VoltageUnit, AngularAccelerationUnit> kA =
-                    Units.Volts.per(Units.RotationsPerSecondPerSecond).ofNative(simConfig.kA * unitConversion);
-
-            plant = LinearSystemId.createDCMotorSystem(kV.in(Units.VoltsPerRadianPerSecond), kA.in(Units.VoltsPerRadianPerSecondSquared));
-        } else {
-            plant = LinearSystemId.createDCMotorSystem(config.motorConfig.motorType, simConfig.momentOfInertia, config.motorConfig.gearRatio);
-        }
-
-
-        return new DCMotorSim(
-                plant,
-                config.motorConfig.motorType.withReduction(config.motorConfig.gearRatio),
-                simConfig.positionStandardDeviation,
-                simConfig.velocityStandardDeviation);
-    }
-
     @Override
     protected double getCurrentDraw() {
         return motor.getCurrentDrawAmps();
-    }
-
-    @Override
-    protected Measurements getDefaultMeasurements() {
-        return defaultMeasurements;
     }
 
     /**

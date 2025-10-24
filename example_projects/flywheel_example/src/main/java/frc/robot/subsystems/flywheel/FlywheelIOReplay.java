@@ -17,7 +17,7 @@ public class FlywheelIOReplay implements FlywheelIO{
     }
 
     @Override
-    public void setPrecentOutput(double percentOutput) {
+    public void setPercentOutput(double percentOutput) {
 
     }
 }

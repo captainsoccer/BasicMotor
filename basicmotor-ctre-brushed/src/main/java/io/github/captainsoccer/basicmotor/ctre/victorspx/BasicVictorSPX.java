@@ -1,21 +1,17 @@
-package io.github.captainsoccer.basicmotor.ctre;
+package io.github.captainsoccer.basicmotor.ctre.victorspx;
 
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
-import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
-import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
 import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
-import edu.wpi.first.wpilibj.DriverStation;
 
 /**
  * A basic motor implementation for the brushed Victor SPX motor controller.
@@ -23,15 +19,8 @@ import edu.wpi.first.wpilibj.DriverStation;
  * If you want full functionality, provide a measurements object.
  */
 public class BasicVictorSPX extends BasicMotor {
-    /**
-     * The VictorSPX motor controller instance used by this BasicVictorSPX.
-     */
-    private final VictorSPX motor;
 
-    /**
-     * The default measurements for the VictorSPX motor controller.
-     */
-    private final Measurements defaultMeasurements;
+    private final VictorSPXInterface motorInterface;
 
     /**
      * Creates a BasicVictorSPX instance with the provided motor ID and name.
@@ -43,13 +32,9 @@ public class BasicVictorSPX extends BasicMotor {
      * @see #BasicVictorSPX(int, String, Measurements, ControllerGains)
      */
     public BasicVictorSPX(int id, String name) {
-        super(new ControllerGains(), name);
+        super(new VictorSPXInterface(id, name), new ControllerGains());
 
-        motor = new VictorSPX(id);
-        motor.configFactoryDefault();
-        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
-
-        defaultMeasurements = new EmptyMeasurements();
+        this.motorInterface = (VictorSPXInterface) super.motorInterface;
     }
 
     /**
@@ -62,20 +47,15 @@ public class BasicVictorSPX extends BasicMotor {
      * @param controllerGains The controller gains to use for the motor controller
      */
     public BasicVictorSPX(int id, String name, Measurements measurements, ControllerGains controllerGains) {
-        super(controllerGains, name);
+        super(new VictorSPXInterface(id, name, measurements), controllerGains);
 
-        motor = new VictorSPX(id);
-        motor.configFactoryDefault();
+        this.motorInterface = (VictorSPXInterface) super.motorInterface;
 
-        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
-
-        if(measurements != null) {
-            defaultMeasurements = measurements;
-            setControllerLocation(MotorManager.ControllerLocation.RIO);
+        if(measurements instanceof EmptyMeasurements) {
+            errorHandler.logAndReportError("Provided empty measurements", true);
         }
         else{
-            defaultMeasurements = new EmptyMeasurements();
-            DriverStation.reportWarning("provided measurements for motor: " + name + " is null", false);
+            setControllerLocation(MotorManager.ControllerLocation.RIO);
         }
     }
 
@@ -86,64 +66,21 @@ public class BasicVictorSPX extends BasicMotor {
      * @param measurements The measurements to use for the motor controller
      */
     public BasicVictorSPX(BasicMotorConfig config, Measurements measurements) {
-        super(config);
+        super(new VictorSPXInterface(config, measurements), config);
 
-        motor = new VictorSPX(config.motorConfig.id);
-        motor.configFactoryDefault();
+        this.motorInterface = (VictorSPXInterface) super.motorInterface;
 
-        motor.configVoltageCompSaturation(MotorManager.config.motorIdealVoltage);
-
-        if(measurements != null) {
-            defaultMeasurements = measurements;
-            setControllerLocation(MotorManager.ControllerLocation.RIO);
+        if(measurements instanceof EmptyMeasurements) {
+            errorHandler.logAndReportError("Provided empty measurements", true);
         }
         else{
-            defaultMeasurements = new EmptyMeasurements();
-            DriverStation.reportWarning("provided measurements for motor: " + name + " is null", false);
+            setControllerLocation(MotorManager.ControllerLocation.RIO);
         }
-    }
-
-    @Override
-    protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
-        // Does nothing, as the victorSPX does not support PID gains directly.
-    }
-
-    @Override
-    protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
-        // Does nothing with soft limits.
-        motor.configPeakOutputForward(constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage);
-        motor.configPeakOutputReverse(-constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage);
-
-        motor.configNominalOutputForward(constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage);
-        motor.configNominalOutputReverse(-constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage);
-
-        motor.configClosedloopRamp(constraints.getRampRate());
-        motor.configOpenloopRamp(constraints.getRampRate());
-    }
-
-    @Override
-    protected Measurements getDefaultMeasurements() {
-        return defaultMeasurements;
     }
 
     @Override
     public void setCurrentLimits(CurrentLimits currentLimits) {
-        DriverStation.reportWarning("motor: " + this.name + " does not support current limits.", false);
-    }
-
-    @Override
-    public void setIdleMode(IdleMode mode) {
-         NeutralMode idleMode = switch (mode) {
-            case COAST -> NeutralMode.Coast;
-            case BRAKE -> NeutralMode.Brake;
-        };
-
-        motor.setNeutralMode(idleMode);
-    }
-
-    @Override
-    public void setMotorInverted(boolean inverted) {
-        motor.setInverted(inverted);
+        errorHandler.logAndReportError("Current limits not supported for victorSPX", true);
     }
 
     @Override
@@ -160,27 +97,19 @@ public class BasicVictorSPX extends BasicMotor {
     protected void updateMainLoopTiming(MotorManager.ControllerLocation location) {
         //Does nothing, as the victorSPX does not support main loop timing.
         if(location == MotorManager.ControllerLocation.MOTOR){
-            DriverStation.reportError("motor: " + this.name + " does not support closed loop control on motor", true);
+            errorHandler.logWarning("VictorSPX does not support closed loop control on motor");
         }
     }
 
     @Override
-    protected double getInternalPIDLoopTime() {
-        return 0.001; // TalonSRX has a fixed internal loop time of 1ms
-        // Also doesn't matter as the victorSPX does not support PID gains directly.
-        //According to a chief delphi post:
-        // https://www.chiefdelphi.com/t/control-loop-timing-of-various-motor-controllers/370356/4
-    }
-
-    @Override
-    protected void setMotorFollow(BasicMotor master, boolean inverted) {
-        BasicVictorSPX motor = (BasicVictorSPX) master;
+    protected void setMotorFollow(MotorInterface master, boolean inverted) {
+        VictorSPXInterface motor = (VictorSPXInterface) master;
 
         boolean masterInverted = motor.motor.getInverted();
 
-        this.motor.setInverted(inverted != masterInverted);
+        this.motorInterface.motor.setInverted(inverted != masterInverted);
 
-        this.motor.follow(motor.motor);
+        this.motorInterface.motor.follow(motor.motor);
     }
 
     @Override
@@ -194,13 +123,15 @@ public class BasicVictorSPX extends BasicMotor {
         // it cannot support direct PID control.
         // but it can support percent output, voltage, current, and torque control modes.
         if(mode.requiresPID()){
-            DriverStation.reportError("motor: " + this.name + " does not support direct PID control.", true);
+            errorHandler.logAndReportError("VictorSPX does not support direct PID control", true);
         }
+
+        var motor = this.motorInterface.motor;
 
         switch (mode) {
             case PERCENT_OUTPUT -> motor.set(VictorSPXControlMode.PercentOutput, setpoint);
 
-            case VOLTAGE ->  motor.set(VictorSPXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage);
+            case VOLTAGE ->  motor.set(VictorSPXControlMode.PercentOutput, setpoint / MotorManager.config.DEFAULT_IDEAL_VOLTAGE);
 
             case STOP -> stopMotorOutput();
         }
@@ -208,12 +139,13 @@ public class BasicVictorSPX extends BasicMotor {
 
     @Override
     protected void stopMotorOutput() {
-        this.motor.set(ControlMode.PercentOutput, 0);
+        motorInterface.motor.set(ControlMode.PercentOutput, 0);
     }
 
     @Override
     protected LogFrame.SensorData getLatestSensorData() {
         //VictorSPX does not support current sensing.
+        var motor = this.motorInterface.motor;
 
         double busVoltage = motor.getBusVoltage();
         double outputVoltage = motor.getMotorOutputVoltage();

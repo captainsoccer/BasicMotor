@@ -1,15 +1,13 @@
 package io.github.captainsoccer.basicmotor;
 
+import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
 import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
-import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
-import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager.ControllerLocation;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 
 import java.util.Arrays;
@@ -44,7 +42,7 @@ public abstract class BasicMotor {
          * The motor is disabled.
          * Means that the motor is stopped due to the robot being disabled.
          */
-        DISABLED;
+        DISABLED
     }
 
     /**
@@ -63,6 +61,12 @@ public abstract class BasicMotor {
          */
         COAST
     }
+
+    /**
+     * The motor interface for the specific motor controller.
+     * It is given in the constructor and used for the initial setup and communication with the motor controller.
+     */
+    protected final MotorInterface motorInterface;
 
     /**
      * The controller of the motor.
@@ -84,6 +88,12 @@ public abstract class BasicMotor {
     protected final LogFrame.LogFrameAutoLogged logFrame = new LogFrame.LogFrameAutoLogged();
 
     /**
+     * The error handler for the motor.
+     * Used to log errors and warnings from the motor.
+     */
+    protected final ErrorHandler errorHandler;
+
+    /**
      * The location of the pid controller.
      * This is used to determine if the pid controller is on the motor or on the RIO.
      */
@@ -101,29 +111,10 @@ public abstract class BasicMotor {
     private final Boolean[] hasPIDGainsChanged;
 
     /**
-     * Sends the PID gains to the motor controller.
-     * This is used to update the PID gains of the motor controller.
-     * These PID gains sent should be in motor units (in volts).
-     *
-     * @param pidGains The PID gains to set on the motor controller.
-     * @param slot     The slot to set the PID gains to (0, 1, or 2).
-     */
-    protected abstract void updatePIDGainsToMotor(PIDGains pidGains, int slot);
-
-    /**
      * If the constraints have changed (then it updates the motor controller on the slower thread).
      * The controller updates this value when the constraints change.
      */
     private volatile boolean hasConstraintsChanged = false;
-
-    /**
-     * Sets the constraints of the motor controller.
-     * This is used to update the constraints of the motor controller.
-     * The constraints sent should be in motor units.
-     *
-     * @param constraints The constraints to set on the motor controller.
-     */
-    protected abstract void updateConstraintsGainsToMotor(ConstraintsGains constraints);
 
     /**
      * The name of the motor.
@@ -139,106 +130,78 @@ public abstract class BasicMotor {
     private final BasicMotorConfig config;
 
     /**
-     * If the motor has been initialized.
-     * This is used due to the motor needing to be initialized after the constructor is called.
-     * This will be set true after the motor is initialized.
-     * Set by {@link #initializeMotor()}
-     */
-    private volatile boolean initialized = false;
-
-    /**
      * Creates the motor.
      *
+     * @param motorInterface  The motor interface for the specific motor controller.
      * @param controllerGains The gains of the controller.
-     * @param name            The name of the motor (used for logging).
      */
-    public BasicMotor(ControllerGains controllerGains, String name) {
+    public BasicMotor(MotorInterface motorInterface, ControllerGains controllerGains) {
         // config is null due to the constructor being used for the bare minimum configuration
-        this(controllerGains, name, null);
+        this(motorInterface, controllerGains, null);
     }
 
     /**
      * Creates the motor with the given configuration.
      *
-     * @param config The configuration for the motor controller.
+     * @param motorInterface The motor interface for the specific motor controller.
+     * @param config         The configuration for the motor controller.
      */
-    public BasicMotor(BasicMotorConfig config) {
-        this(config.getControllerGains(), config.motorConfig.name, config);
+    public BasicMotor(MotorInterface motorInterface, BasicMotorConfig config) {
+        this(motorInterface, config.getControllerGains(), config);
     }
 
     /**
      * Creates the motor with the given controller gains, name, and configuration.
      *
      * @param controllerGains The gains of the controller (used for PID control, feedforward, and constraints).
-     * @param name            The name of the motor (used for logging and debugging).
      * @param config          The configuration for the motor controller. (used for idle mode, inverted, and current limits)
      */
-    private BasicMotor(ControllerGains controllerGains, String name, BasicMotorConfig config) {
+    private BasicMotor(MotorInterface motorInterface, ControllerGains controllerGains, BasicMotorConfig config) {
         // checking for null values
         Objects.requireNonNull(controllerGains);
-        Objects.requireNonNull(name);
+        Objects.requireNonNull(motorInterface);
+
+        this.errorHandler = motorInterface.errorHandler;
+
+        this.motorInterface = motorInterface;
+        this.name = motorInterface.name;
+        measurements = motorInterface.getDefaultMeasurements();
 
         // only 3 slots are supported
         hasPIDGainsChanged = new Boolean[]{false, false, false};
 
         Consumer<Integer> setHasPIDGainsChanged = (slot) -> hasPIDGainsChanged[slot] = true;
         Runnable setHasConstraintsChanged = () -> hasConstraintsChanged = true;
-        controller = new Controller(controllerGains, setHasPIDGainsChanged, setHasConstraintsChanged, name);
+        controller = new Controller(controllerGains, setHasPIDGainsChanged, setHasConstraintsChanged, errorHandler);
 
-        this.name = name;
 
-        this.config = config != null ? config.copy() : null;
+        // if the user uses a bare minimum configuration,
+        // then we will not set the idle mode, inverted, or current limits
+        if (config != null) {
+            this.config = config.copy();
+            motorInterface.setIdleMode(config.motorConfig.idleMode);
+            motorInterface.setInverted(config.motorConfig.inverted);
+        } else this.config = null;
 
-        //register the motor with the motor manager
-        MotorManager.getInstance()
-                .registerMotor(name, this::run, this::updateSensorData, this::getLatestFrame);
-    }
-
-    /**
-     * Initializes the motor.
-     * Does extra set up like setting the idle mode, inverted, and current limits.
-     *
-     * @return The default measurements of the motor. (built-in encoder)
-     */
-    private Measurements initializeMotor() {
-        if (initialized) return getDefaultMeasurements();
-
-        // because the motor is on a different thread, it might not be ready yet
-        // so it will return null and try again later
-        if (getDefaultMeasurements() == null) return null;
-
-        double gearRatio = getDefaultMeasurements().getGearRatio();
-        double unitConversion = getDefaultMeasurements().getUnitConversion();
-
-        var controllerGains = controller.getControllerGains();
+        double gearRatio = motorInterface.getDefaultMeasurements().getGearRatio();
+        double unitConversion = motorInterface.getDefaultMeasurements().getUnitConversion();
 
         for (int i = 0; i < 3; i++) {
             var motorPIDGains =
-                    controllerGains.getPidGains(i).convertToMotorGains(gearRatio, unitConversion, getInternalPIDLoopTime());
+                    controllerGains.getPidGains(i).convertToMotorGains(gearRatio, unitConversion);
 
-            updatePIDGainsToMotor(motorPIDGains, i);
+            motorInterface.updatePIDGainsToMotor(motorPIDGains, i);
         }
 
         var motorConstraintsGains =
                 controllerGains.getControllerConstrains().convertToMotorConstraints(gearRatio, unitConversion);
 
-        updateConstraintsGainsToMotor(motorConstraintsGains);
+        motorInterface.updateConstraintsGainsToMotor(motorConstraintsGains);
 
-        // if the user uses a bare minimum configuration, then we will not set the idle mode, inverted, or current limits
-        if (config == null) {
-            initialized = true;
-            return getDefaultMeasurements();
-        }
-
-        setIdleMode(config.motorConfig.idleMode);
-        setMotorInverted(config.motorConfig.inverted);
-
-        initialized = true;
-
-        // if the user is using an external encoder, sets the measurements to the external encoder
-        return config.usingExternalEncoder() ? getMeasurements() : getDefaultMeasurements();
+        //register the motor with the motor manager
+        MotorManager.getInstance()
+                .registerMotor(name, this::run, this::updateSensorData, this::getLatestFrame, errorHandler::getErrorFrame);
     }
-
     // getters and setters
 
     /**
@@ -265,6 +228,8 @@ public abstract class BasicMotor {
      * @param throughRIO   If the measurements should be set through the RIO or directly on the motor controller.
      */
     protected void setMeasurements(Measurements measurements, boolean throughRIO) {
+        Objects.requireNonNull(measurements);
+
         stopRecordingMeasurements();
         this.measurements = measurements;
 
@@ -279,27 +244,18 @@ public abstract class BasicMotor {
      * This is used to reset the measurements to the default measurements of the motor.
      */
     public void setDefaultMeasurements() {
-        this.measurements = getDefaultMeasurements();
+        this.measurements = motorInterface.getDefaultMeasurements();
         startRecordingMeasurements(controllerLocation.getHZ());
 
         setControllerLocation(ControllerLocation.MOTOR);
     }
 
     /**
-     * Gets the default measurements of the motor.
-     * This will be the motor's built-in encoder or a simulated encoder.
-     * The motor should store this source in its class.
-     *
-     * @return The default measurements of the motor.
-     */
-    protected abstract Measurements getDefaultMeasurements();
-
-    /**
      * Gets the current measurements source of the motor.
      *
      * @return The current measurements source of the motor.
      */
-    public Measurements getMeasurements() {
+    public final Measurements getMeasurements() {
         return measurements;
     }
 
@@ -309,7 +265,7 @@ public abstract class BasicMotor {
      *
      * @return The latest recorded measurement of the motor.
      */
-    public Measurements.Measurement getMeasurement() {
+    public final Measurements.Measurement getMeasurement() {
         return measurements.getMeasurement();
     }
 
@@ -319,17 +275,9 @@ public abstract class BasicMotor {
      *
      * @return The controller of the motor.
      */
-    public Controller getController() {
+    public final Controller getController() {
         return controller;
     }
-
-    /**
-     * Gets the loop time of the internal PID loop.
-     * This is used to convert the pid gains to the motor controller's loop time.
-     *
-     * @return The loop time of the internal PID loop in seconds.
-     */
-    protected abstract double getInternalPIDLoopTime();
 
     /**
      * Gets the latest log frame of the motor.
@@ -345,7 +293,7 @@ public abstract class BasicMotor {
      * Stops the motor.
      * Sets a new command to the controller to stop the motor.
      */
-    public void stop() {
+    public final void stop() {
         controller.setControl(new Controller.ControllerRequest());
     }
 
@@ -363,7 +311,10 @@ public abstract class BasicMotor {
      *
      * @param mode The idle mode to set the motor to.
      */
-    public abstract void setIdleMode(IdleMode mode);
+    public final void setIdleMode(IdleMode mode) {
+        motorInterface.setIdleMode(mode);
+    }
+
 
     /**
      * Sets if the motor should be inverted.
@@ -372,22 +323,9 @@ public abstract class BasicMotor {
      *
      * @param inverted If the motor should be inverted (true for inverted, false for normal).
      */
-    public abstract void setMotorInverted(boolean inverted);
-
-    /**
-     * Sets the new position of the motor.
-     * This should be in the motor rotations (before gear ratio and unit conversion).
-     *
-     * @param position The new position of the motor (in motor rotations).
-     */
-    private void setMotorPosition(double position) {
-        if (measurements == null) {
-            DriverStation.reportError("Motor " + name + " has not been initialized yet, cannot set position.", false);
-        }
-        measurements.setPosition(position);
+    public final void setMotorInverted(boolean inverted) {
+        motorInterface.setInverted(inverted);
     }
-
-    ;
 
     /**
      * Used when there is no need to record the motors built in measurements.
@@ -409,7 +347,7 @@ public abstract class BasicMotor {
      *
      * @return The location of the PID controller.
      */
-    public ControllerLocation getControllerLocation() {
+    public final ControllerLocation getControllerLocation() {
         return controllerLocation;
     }
 
@@ -452,7 +390,7 @@ public abstract class BasicMotor {
      * @param inverted If the motor should be inverted (opposite direction of the master).
      *                 Used for example when both of the motors are connected to one gear.
      */
-    public void followMotor(BasicMotor master, boolean inverted) {
+    public final void followMotor(BasicMotor master, boolean inverted) {
         // if it's the same motor, then we don't need to do anything
         if (master == this) {
             return;
@@ -463,7 +401,7 @@ public abstract class BasicMotor {
         }
 
         motorState = MotorState.FOLLOWING;
-        setMotorFollow(master, inverted);
+        setMotorFollow(master.motorInterface, inverted);
         stopRecordingMeasurements();
     }
 
@@ -471,7 +409,7 @@ public abstract class BasicMotor {
      * Stops following another motor.
      * This is used if the user no longer wants the motor to follow another motor.
      */
-    public void stopFollowing() {
+    public final void stopFollowing() {
         motorState = MotorState.STOPPED;
         stopMotorFollow();
         stopMotorOutput();
@@ -485,7 +423,7 @@ public abstract class BasicMotor {
      * @param master   The motor to follow.
      * @param inverted If the motor should be inverted (opposite direction of the master).
      */
-    protected abstract void setMotorFollow(BasicMotor master, boolean inverted);
+    protected abstract void setMotorFollow(MotorInterface master, boolean inverted);
 
     /**
      * Stops the motor from following another motor.
@@ -501,7 +439,7 @@ public abstract class BasicMotor {
      *
      * @param request The control request to set on the motor.
      */
-    public void setControl(Controller.ControllerRequest request) {
+    public final void setControl(Controller.ControllerRequest request) {
         controller.setControl(request);
     }
 
@@ -513,7 +451,7 @@ public abstract class BasicMotor {
      * @param mode     The control mode of the motor (position, velocity, voltage, percent output).
      * @param slot     The slot to use for this request (0, 1, or 2).
      */
-    public void setControl(double setpoint, Controller.ControlMode mode, int slot) {
+    public final void setControl(double setpoint, Controller.ControlMode mode, int slot) {
         controller.setControl(setpoint, mode, slot);
     }
 
@@ -524,7 +462,7 @@ public abstract class BasicMotor {
      * @param setpoint The setpoint of the motor (units depending on the mode).
      * @param mode     The control mode of the motor (position, velocity, voltage, percent output).
      */
-    public void setControl(double setpoint, Controller.ControlMode mode) {
+    public final void setControl(double setpoint, Controller.ControlMode mode) {
         controller.setControl(setpoint, mode);
     }
 
@@ -535,7 +473,7 @@ public abstract class BasicMotor {
      * @param mode                 The control mode of the motor (position, velocity, voltage, percent output).
      * @param arbitraryFeedForward The arbitrary feed forward to apply to the motor output.
      */
-    public void setControl(double setpoint, Controller.ControlMode mode, double arbitraryFeedForward) {
+    public final void setControl(double setpoint, Controller.ControlMode mode, double arbitraryFeedForward) {
         controller.setControl(new Controller.ControllerRequest(setpoint, mode, arbitraryFeedForward, 0));
     }
 
@@ -547,7 +485,7 @@ public abstract class BasicMotor {
      * @param arbitraryFeedForward The arbitrary feed forward to apply to the motor output.
      * @param slot                 The slot to use for this request (0, 1, or 2).
      */
-    public void setControl(double setpoint, Controller.ControlMode mode, double arbitraryFeedForward, int slot) {
+    public final void setControl(double setpoint, Controller.ControlMode mode, double arbitraryFeedForward, int slot) {
         controller.setControl(new Controller.ControllerRequest(setpoint, mode, arbitraryFeedForward, slot));
     }
 
@@ -557,7 +495,7 @@ public abstract class BasicMotor {
      *
      * @param volts The voltage to output to the motor.
      */
-    public void setVoltage(double volts) {
+    public final void setVoltage(double volts) {
         controller.setControl(volts, Controller.ControlMode.VOLTAGE, 0);
     }
 
@@ -568,7 +506,7 @@ public abstract class BasicMotor {
      *
      * @param percentOutput The percentage of the maximum output to set the motor to.
      */
-    public void setPrecentOutput(double percentOutput) {
+    public final void setPercentOutput(double percentOutput) {
         controller.setControl(percentOutput, Controller.ControlMode.PERCENT_OUTPUT, 0);
     }
 
@@ -579,7 +517,7 @@ public abstract class BasicMotor {
      *
      * @return The current position of the motor.
      */
-    public double getPosition() {
+    public final double getPosition() {
         return measurements.getMeasurement().position();
     }
 
@@ -590,7 +528,7 @@ public abstract class BasicMotor {
      *
      * @return the current velocity of the motor
      */
-    public double getVelocity() {
+    public final double getVelocity() {
         return measurements.getMeasurement().velocity();
     }
 
@@ -610,7 +548,7 @@ public abstract class BasicMotor {
      *
      * @return The latest sensor data from the motor.
      */
-    public LogFrame.SensorData getSensorData() {
+    public final LogFrame.SensorData getSensorData() {
         return logFrame.sensorData;
     }
 
@@ -622,7 +560,7 @@ public abstract class BasicMotor {
      *
      * @return True if the motor is at the setpoint, false otherwise.
      */
-    public boolean atSetpoint() {
+    public final boolean atSetpoint() {
         return logFrame.atSetpoint;
     }
 
@@ -634,7 +572,7 @@ public abstract class BasicMotor {
      *
      * @return True if the motor is at the goal of the motion profile, false otherwise.
      */
-    public boolean atGoal() {
+    public final boolean atGoal() {
         return logFrame.atGoal;
     }
 
@@ -644,7 +582,7 @@ public abstract class BasicMotor {
      *
      * @param newPosition The new position of the motor.
      */
-    public void resetEncoder(double newPosition) {
+    public final void resetEncoder(double newPosition) {
         resetEncoder(newPosition, 0);
     }
 
@@ -656,11 +594,11 @@ public abstract class BasicMotor {
      * @param newPosition The new position of the motor
      * @param newVelocity The new velocity of the motor
      */
-    public void resetEncoder(double newPosition, double newVelocity) {
+    public final void resetEncoder(double newPosition, double newVelocity) {
         if (!controller.getControlMode().isVelocityControl()) controller.reset(newPosition, newVelocity);
         else controller.reset(newVelocity, 0);
 
-        setMotorPosition((newPosition / measurements.getUnitConversion()) * measurements.getGearRatio());
+        measurements.setPosition((newPosition / measurements.getUnitConversion()) * measurements.getGearRatio());
     }
 
     // periodic functions
@@ -671,14 +609,6 @@ public abstract class BasicMotor {
      * calculating a motion profile, and calculating the PID output (if needed).
      */
     private void run() {
-        // if the motor is not initialized, then we need to initialize it
-        if (!initialized) {
-            var measurements = initializeMotor();
-            // if the measurements are still null, it means the motor has not been initialized yet
-            if (measurements == null) return;
-            else this.measurements = measurements;
-        }
-
         // doesn't need to do anything if the motor is following another motor
         if (motorState == MotorState.FOLLOWING) {
             return;
@@ -741,16 +671,6 @@ public abstract class BasicMotor {
      * @return The updated measurements of the motor.
      */
     private Measurements.Measurement updateMeasurements() {
-        // checks if the measurements are null, if so, then it will try to get the default measurements
-        if (measurements == null) {
-            measurements = getDefaultMeasurements();
-        }
-
-        if (measurements == null) {
-            // if the measurements are still null, then we cannot update the measurements
-            return Measurements.Measurement.EMPTY;
-        }
-
         return measurements.update(controllerLocation.getSeconds());
     }
 
@@ -776,8 +696,7 @@ public abstract class BasicMotor {
         // If the measurements are empty and the control mode requires PID control,
         // then we cannot run the controller.
         if ((controlMode.requiresPID() && !controlMode.isCurrentControl()) && measurements instanceof EmptyMeasurements) {
-            DriverStation.reportError("Using empty measurements with a controller that requires PID control. " +
-                    "Please set the measurements to a valid source.", false);
+            errorHandler.logError("Cannot use on motor controller PID when controller doesnt support it");
 
             return false;
         }
@@ -938,10 +857,10 @@ public abstract class BasicMotor {
      */
     private double getCurrentFromTorque(double torque) {
         if (config == null) {
-            DriverStation.reportError("motor: " + name + " Trying to convert torque and current without config set.", false);
+            errorHandler.logAndReportError("Trying to convert torque and current without config set.");
             return 0;
         }
-        return config.motorConfig.motorType.getCurrent(torque / getDefaultMeasurements().getGearRatio());
+        return config.motorConfig.motorType.getCurrent(torque / motorInterface.getDefaultMeasurements().getGearRatio());
     }
 
     /**
@@ -954,10 +873,10 @@ public abstract class BasicMotor {
      */
     private double getTorqueFromCurrent(double current) {
         if (config == null) {
-            DriverStation.reportError("motor: " + name + " Trying to convert torque and current without config set.", false);
+            errorHandler.logAndReportError("Trying to convert torque and current without config set.");
             return 0;
         }
-        return config.motorConfig.motorType.getTorque(current) * getDefaultMeasurements().getGearRatio();
+        return config.motorConfig.motorType.getTorque(current) * motorInterface.getDefaultMeasurements().getGearRatio();
     }
 
     /**
@@ -985,7 +904,6 @@ public abstract class BasicMotor {
      * If the pid controller is on the motor controller, it will also update the pid output in the log frame.
      */
     private void updateSensorData() {
-        if (!initialized) return;
         logFrame.sensorData = getLatestSensorData();
 
         if (controllerLocation == ControllerLocation.MOTOR) logFrame.pidOutput = getPIDLatestOutput();
@@ -996,8 +914,8 @@ public abstract class BasicMotor {
 
         if (!hasConstraintsChanged && Arrays.stream(hasPIDGainsChanged).noneMatch(value -> value)) return;
 
-        double gearRatio = getDefaultMeasurements().getGearRatio();
-        double unitConversion = getDefaultMeasurements().getUnitConversion();
+        double gearRatio = motorInterface.getDefaultMeasurements().getGearRatio();
+        double unitConversion = motorInterface.getDefaultMeasurements().getUnitConversion();
 
         // if the pid has changed, then update the built-in motor pid
         for (int i = 0; i < 3; i++) {
@@ -1008,9 +926,9 @@ public abstract class BasicMotor {
                         controller
                                 .getControllerGains()
                                 .getPidGains(i)
-                                .convertToMotorGains(gearRatio, unitConversion, getInternalPIDLoopTime());
+                                .convertToMotorGains(gearRatio, unitConversion);
 
-                updatePIDGainsToMotor(convertedGains, i);
+                motorInterface.updatePIDGainsToMotor(convertedGains, i);
             }
         }
 
@@ -1024,7 +942,7 @@ public abstract class BasicMotor {
                             .getControllerConstrains()
                             .convertToMotorConstraints(gearRatio, unitConversion);
 
-            updateConstraintsGainsToMotor(convertedConstraints);
+            motorInterface.updateConstraintsGainsToMotor(convertedConstraints);
         }
     }
 

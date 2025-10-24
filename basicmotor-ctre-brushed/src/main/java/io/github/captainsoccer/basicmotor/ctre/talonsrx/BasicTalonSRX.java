@@ -4,17 +4,12 @@ package io.github.captainsoccer.basicmotor.ctre.talonsrx;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
-import edu.wpi.first.wpilibj.DriverStation;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import io.github.captainsoccer.basicmotor.LogFrame;
+import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
-import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
-import io.github.captainsoccer.basicmotor.gains.PIDGains;
-import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
@@ -72,29 +67,8 @@ public class BasicTalonSRX extends BasicMotor {
         }
     }
 
-    /**
-     * The TalonSRX motor controller instance used by this BasicTalonSRX.
-     */
-    private final TalonSRX motor;
-
-    /**
-     * The configuration for the TalonSRX motor controller.
-     * This is used to configure the TalonSRX motor controller with the correct settings.
-     */
-    private final TalonSRXConfiguration config = new TalonSRXConfiguration();
-
-    /**
-     * The default measurements for the TalonSRX motor controller.
-     * This is used to provide measurements for the TalonSRX motor controller.
-     * If no measurements are provided, it will use the default empty measurements.
-     */
-    private final Measurements defaultMeasurements;
-
-    /**
-     * The current PID gains in the motor native units.
-     * Used to calculate the output of the PID controller.
-     */
-    private PIDGains motorGains;
+    /** The TalonSRX motor interface. */
+    private final TalonSRXInterface motorInterface;
 
     /**
      * The currently selected PID slot.
@@ -110,15 +84,9 @@ public class BasicTalonSRX extends BasicMotor {
      * @param name The name of the motor controller
      */
     public BasicTalonSRX(int id, String name){
-        super(new ControllerGains(), name);
+        super(new TalonSRXInterface(id, name), new ControllerGains());
 
-        this.motor = new TalonSRX(id);
-        this.motor.configFactoryDefault();
-        config.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
-
-        applyConfig();
-
-        defaultMeasurements = new EmptyMeasurements();
+        this.motorInterface = (TalonSRXInterface) super.motorInterface;
     }
 
     /**
@@ -131,18 +99,9 @@ public class BasicTalonSRX extends BasicMotor {
      * @param tickPerRevolution The number of ticks per revolution of the encoder.
      */
     public BasicTalonSRX(int id, String name, ControllerGains controllerGains, EncoderType encoderType, int tickPerRevolution) {
-        super(controllerGains, name);
+        super(new TalonSRXInterface(id, name, encoderType, tickPerRevolution), controllerGains);
 
-        this.motor = new TalonSRX(id);
-        this.motor.configFactoryDefault();
-        this.config.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
-
-        this.config.primaryPID.selectedFeedbackSensor = encoderType.feedbackDevice;
-        this.config.primaryPID.selectedFeedbackCoefficient = 1.0 / tickPerRevolution;
-
-        applyConfig();
-
-        defaultMeasurements = new TalonSRXMeasurements(motor, tickPerRevolution);
+        this.motorInterface = (TalonSRXInterface) super.motorInterface;
     }
 
     /**
@@ -151,87 +110,17 @@ public class BasicTalonSRX extends BasicMotor {
      * @param motorConfig The configuration for the TalonSRX motor controller.
      */
     public BasicTalonSRX(BasicTalonSRXConfig motorConfig){
-        super(motorConfig);
+        super(new TalonSRXInterface(motorConfig), motorConfig);
 
-        this.motor = new TalonSRX(motorConfig.motorConfig.id);
-        this.motor.configFactoryDefault();
-        this.config.voltageCompSaturation = MotorManager.config.motorIdealVoltage;
-
-        this.config.primaryPID.selectedFeedbackSensor = motorConfig.encoderConfig.type.feedbackDevice;
-        this.config.primaryPID.selectedFeedbackCoefficient = 1.0 / motorConfig.encoderConfig.tickPerRevolution;
-
-        applyConfig();
-
-        defaultMeasurements = new TalonSRXMeasurements(motor, motorConfig.encoderConfig.tickPerRevolution,
-                motorConfig.motorConfig.gearRatio, motorConfig.motorConfig.unitConversion);
+        this.motorInterface = (TalonSRXInterface) super.motorInterface;
 
         setCurrentLimits(motorConfig.currentLimitConfig.toCurrentLimits());
     }
 
     @Override
-    protected void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
-        motorGains = pidGains.convertToDutyCycle();
-
-        var pidConfig = switch (slot){
-            case 0 -> config.slot0;
-            case 1 -> config.slot1;
-            case 2 -> config.slot2;
-
-            default -> config.slot0;
-        };
-
-        pidConfig.kP = motorGains.getK_P();
-        pidConfig.kI = motorGains.getK_I();
-        pidConfig.kD = motorGains.getK_D();
-
-        pidConfig.allowableClosedloopError = motorGains.getTolerance();
-        pidConfig.integralZone = motorGains.getI_Zone();
-        pidConfig.maxIntegralAccumulator = motorGains.getI_MaxAccum();
-
-        applyConfig();
-    }
-
-    @Override
-    protected double getInternalPIDLoopTime() {
-        return 0.001; // TalonSRX has a fixed internal loop time of 1ms
-        //According to a chief delphi post:
-        // https://www.chiefdelphi.com/t/control-loop-timing-of-various-motor-controllers/370356/4
-    }
-
-    @Override
-    protected void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
-        config.peakOutputForward = constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
-        config.peakOutputReverse = -constraints.getMaxMotorOutput() / MotorManager.config.motorIdealVoltage;
-
-        config.nominalOutputForward = constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
-        config.nominalOutputReverse = -constraints.getVoltageDeadband() / MotorManager.config.motorIdealVoltage;
-
-        // How much time to go from 0 to 100% output in seconds, based on the voltage ramp rate
-        config.closedloopRamp = constraints.getRampRate();
-        config.openloopRamp = constraints.getRampRate();
-
-        if (constraints.getConstraintType() == ConstraintsGains.ConstraintType.LIMITED
-                && getDefaultMeasurements() instanceof TalonSRXMeasurements talonMeasurements) {
-            config.forwardSoftLimitEnable = true;
-            config.forwardSoftLimitThreshold = constraints.getMaxValue() * talonMeasurements.tickPerRevolution;
-
-            config.reverseSoftLimitEnable = true;
-            config.reverseSoftLimitThreshold = constraints.getMinValue() * talonMeasurements.tickPerRevolution;
-        } else {
-            config.forwardSoftLimitEnable = false;
-            config.reverseSoftLimitEnable = false;
-        }
-
-        applyConfig();
-    }
-
-    @Override
-    protected Measurements getDefaultMeasurements() {
-        return defaultMeasurements;
-    }
-
-    @Override
     public void setCurrentLimits(CurrentLimits currentLimits) {
+        var config = motorInterface.config;
+
         config.continuousCurrentLimit = currentLimits.getCurrentLimit();
 
         if (currentLimits instanceof TalonSRXCurrentLimits talonCurrentLimits &&
@@ -244,28 +133,12 @@ public class BasicTalonSRX extends BasicMotor {
             config.peakCurrentDuration = 0;
         }
 
-        applyConfig();
-    }
-
-    @Override
-    public void setIdleMode(IdleMode mode) {
-        var idleMode = switch (mode) {
-            case COAST -> com.ctre.phoenix.motorcontrol.NeutralMode.Coast;
-            case BRAKE -> com.ctre.phoenix.motorcontrol.NeutralMode.Brake;
-        };
-
-        motor.setNeutralMode(idleMode);
-    }
-
-    @Override
-    public void setMotorInverted(boolean inverted) {
-        motor.setInverted(inverted);
+        motorInterface.applyConfig();
     }
 
     @Override
     protected void stopRecordingMeasurements() {
         // Does nothing, as the TalonSRX does not support changing timings of can bus signals
-        DriverStation.reportWarning("motor: " + this.name + " does not stop recording the measurements", false);
     }
 
     @Override
@@ -279,12 +152,12 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     @Override
-    protected void setMotorFollow(BasicMotor master, boolean inverted) {
-        BasicTalonSRX masterMotor = (BasicTalonSRX) master;
+    protected void setMotorFollow(MotorInterface master, boolean inverted) {
+        TalonSRXInterface masterMotor = (TalonSRXInterface) master;
 
-        motor.setInverted(inverted != masterMotor.motor.getInverted());
+        motorInterface.motor.setInverted(inverted != masterMotor.motor.getInverted());
 
-        motor.follow(masterMotor.motor);
+        motorInterface.motor.follow(masterMotor.motor);
     }
 
     @Override
@@ -294,6 +167,7 @@ public class BasicTalonSRX extends BasicMotor {
 
     @Override
     protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
+        var motor = motorInterface.motor;
 
         if(slot != this.selectedSlot){
             this.selectedSlot = slot;
@@ -302,22 +176,22 @@ public class BasicTalonSRX extends BasicMotor {
 
         switch (mode) {
             // Converts voltage to percent output based on the ideal voltage of the motor
-            case VOLTAGE -> motor.set(TalonSRXControlMode.PercentOutput, setpoint / MotorManager.config.motorIdealVoltage);
+            case VOLTAGE -> motor.set(TalonSRXControlMode.PercentOutput, setpoint / MotorManager.config.DEFAULT_IDEAL_VOLTAGE);
 
             // Converts the voltage feedforward to percent output based on the ideal voltage of the motor
             case POSITION, PROFILED_POSITION -> motor.set(TalonSRXControlMode.Position, setpoint,
-                    DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.motorIdealVoltage);
+                    DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.DEFAULT_IDEAL_VOLTAGE);
 
             // Converts the velocity feedforward to percent output based on the ideal voltage of the motor
             case VELOCITY, PROFILED_VELOCITY -> motor.set(TalonSRXControlMode.Velocity, setpoint,
-                    DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.motorIdealVoltage);
+                    DemandType.ArbitraryFeedForward, feedForward / MotorManager.config.DEFAULT_IDEAL_VOLTAGE);
 
             case STOP -> stopMotorOutput();
 
             case PERCENT_OUTPUT ->  motor.set(TalonSRXControlMode.PercentOutput, setpoint);
 
             case CURRENT, TORQUE -> {
-                DriverStation.reportError("motor: " + super.name + " does not support current or torque control", false);
+                errorHandler.logAndReportError("talonSRX does not support current or torque control");
                 stopMotorOutput();
             }
         }
@@ -326,11 +200,13 @@ public class BasicTalonSRX extends BasicMotor {
 
     @Override
     protected void stopMotorOutput() {
-        motor.set(ControlMode.PercentOutput, 0);
+        motorInterface.motor.set(ControlMode.PercentOutput, 0);
     }
 
     @Override
     protected LogFrame.SensorData getLatestSensorData() {
+        var motor = motorInterface.motor;
+
         double temperature = motor.getTemperature();
 
         double inputVoltage = motor.getBusVoltage();
@@ -355,11 +231,15 @@ public class BasicTalonSRX extends BasicMotor {
 
     @Override
     protected LogFrame.PIDOutput getPIDLatestOutput() {
+        var motor = motorInterface.motor;
+
         double iAccum = motor.getIntegralAccumulator();
         double derivative = motor.getErrorDerivative();
         double error = motor.getClosedLoopError();
         //Allowed since on the same thread as the getSensorData call
         double busVoltage = super.logFrame.sensorData.voltageInput();
+
+        var motorGains = motorInterface.motorGains;
 
         double pOutput = motorGains.getK_P() * error * busVoltage;
         double iOutput = motorGains.getK_I() * iAccum * busVoltage;
@@ -374,17 +254,6 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     /**
-     * Applies the current configuration to the TalonSRX motor controller.
-     * This method will apply the current configuration to the TalonSRX motor controller.
-     */
-    private void applyConfig(){
-        var error = motor.configAllSettings(config);
-        if (error.value != 0) {
-            DriverStation.reportWarning("issues applying config for motor: " + super.name + ". Error: " + error.name(), false);
-        }
-    }
-
-    /**
      * Sets the encoder type for the TalonSRX motor controller.
      * This method will configure the encoder that is connected directly to the TalonSRX motor controller.
      * @param encoderType The type of encoder that is connected to the TalonSRX motor controller.
@@ -394,15 +263,17 @@ public class BasicTalonSRX extends BasicMotor {
      *                       This will be desired units per rotation.
      */
     public void setEncoderType(EncoderType encoderType, int tickPerRevolution, double gearRatio, double unitConversion) {
+        var config = motorInterface.config;
+
         config.primaryPID.selectedFeedbackSensor = encoderType.feedbackDevice;
         config.primaryPID.selectedFeedbackCoefficient = 1.0 / tickPerRevolution;
 
-        applyConfig();
+        motorInterface.applyConfig();
 
-        if(defaultMeasurements instanceof TalonSRXMeasurements) {
+        if(motorInterface.getDefaultMeasurements() instanceof TalonSRXMeasurements) {
             setDefaultMeasurements();
         } else {
-            setMeasurements(new TalonSRXMeasurements(motor, tickPerRevolution, gearRatio, unitConversion), false);
+            setMeasurements(new TalonSRXMeasurements(motorInterface.motor, tickPerRevolution, gearRatio, unitConversion), false);
         }
     }
 

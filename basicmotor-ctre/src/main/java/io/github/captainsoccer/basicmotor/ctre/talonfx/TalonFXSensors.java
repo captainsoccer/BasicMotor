@@ -10,7 +10,6 @@ import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 
 import java.util.Arrays;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -35,11 +34,10 @@ public class TalonFXSensors {
     private final double timeout;
 
     /**
-     * A supplier that provides the location of the controller.
-     * This is used to determine if the controller is on the motor controller or on the RIO.
-     * It is used to determine which signals to update and log.
+     * The location of the pid controller of the motor.
+     * This is used to determine which signals to update.
      */
-    private final Supplier<MotorManager.ControllerLocation> location;
+    private MotorManager.ControllerLocation location = MotorManager.ControllerLocation.MOTOR;
 
     /**
      * The status signal containing the temperature
@@ -117,12 +115,9 @@ public class TalonFXSensors {
      * Constructs a TalonFXSensors object with the given motor and refresh rate.
      *
      * @param motor    The TalonFX motor controller to get the sensors from.
-     * @param location The location of the pid controller (RIO or MOTOR).
-     *                 This is used to determine if there is need to log the motor's built-in PID output.
      */
-    public TalonFXSensors(TalonFX motor, Supplier<MotorManager.ControllerLocation> location) {
+    public TalonFXSensors(TalonFX motor) {
         double refreshHZ = MotorManager.config.SENSOR_LOOP_HZ;
-        this.location = location;
 
         timeout = 1 / (refreshHZ * TIMEOUT_REFRESH_MULTIPLIER);
 
@@ -154,7 +149,7 @@ public class TalonFXSensors {
                 kdOutput
         };
 
-        updateControllerLocation();
+        updateControllerLocation(MotorManager.ControllerLocation.MOTOR);
     }
 
     /**
@@ -178,7 +173,7 @@ public class TalonFXSensors {
 
         // updates the latest pid output if the controller is on the motor controller
         // used for logging
-        if (location.get() == MotorManager.ControllerLocation.MOTOR) {
+        if (location == MotorManager.ControllerLocation.MOTOR) {
             double pOutput = kpOutput.getValueAsDouble();
             double iOutput = kiOutput.getValueAsDouble();
             double dOutput = kdOutput.getValueAsDouble();
@@ -213,9 +208,11 @@ public class TalonFXSensors {
      * If the controller is on the motor controller, it updates all signals.
      * If the controller is on the RIO, it only updates the sensor signals
      *
+     * @param location The location of the controller (MOTOR or RIO).
      */
-    public void updateControllerLocation() {
-        if (location.get() == MotorManager.ControllerLocation.MOTOR) {
+    public void updateControllerLocation(MotorManager.ControllerLocation location) {
+        this.location = location;
+        if (location == MotorManager.ControllerLocation.MOTOR) {
             allSignals = Stream.concat(Arrays.stream(sensorsSignals), Arrays.stream(pidSignals))
                     .toArray(BaseStatusSignal[]::new);
         } else {

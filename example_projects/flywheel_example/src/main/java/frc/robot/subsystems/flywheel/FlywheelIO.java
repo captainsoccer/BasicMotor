@@ -15,5 +15,5 @@ public interface FlywheelIO {
 
     void setVoltage(double voltage);
 
-    void setPrecentOutput(double percentOutput);
+    void setPercentOutput(double percentOutput);
 }

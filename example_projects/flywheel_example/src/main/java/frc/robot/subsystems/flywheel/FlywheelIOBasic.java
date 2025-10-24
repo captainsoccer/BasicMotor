@@ -35,7 +35,7 @@ public class FlywheelIOBasic implements  FlywheelIO {
     }
 
     @Override
-    public void setPrecentOutput(double percentOutput) {
-        motor.setPrecentOutput(percentOutput);
+    public void setPercentOutput(double percentOutput) {
+        motor.setPercentOutput(percentOutput);
     }
 }

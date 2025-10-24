@@ -3,9 +3,7 @@ package io.github.captainsoccer.basicmotor.sim.elevator;
 
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
-import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
-import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
 
 /**
@@ -21,11 +19,6 @@ public class BasicElevatorSim extends BasicSimSystem {
     private final ElevatorSim elevator;
 
     /**
-     * The default measurements for the elevator simulation.
-     */
-    private final Measurements defaultMeasurements;
-
-    /**
      * Creates a BasicSimElevator instance with the provided ElevatorSim and name.
      *
      * @param elevator The ElevatorSim instance to use for the elevator simulation
@@ -33,10 +26,8 @@ public class BasicElevatorSim extends BasicSimSystem {
      * @param gains    The controller gains to use for the elevator simulation
      */
     public BasicElevatorSim(ElevatorSim elevator, String name, ControllerGains gains) {
-        super(name, gains);
+        super(new ElevatorSimInterface(elevator, name), gains);
         this.elevator = elevator;
-
-        defaultMeasurements = new ElevatorSimEncoder(elevator);
     }
 
     /**
@@ -46,11 +37,9 @@ public class BasicElevatorSim extends BasicSimSystem {
      * @param config The configuration for the elevator motor
      */
     public BasicElevatorSim(BasicMotorConfig config) {
-        super(config);
+        super(new ElevatorSimInterface(config), config);
 
-        this.elevator = createElevatorSim(config);
-
-        defaultMeasurements = new ElevatorSimEncoder(elevator);
+        this.elevator = ((ElevatorSimInterface) super.motorInterface).elevatorSim;
     }
 
     @Override
@@ -58,60 +47,8 @@ public class BasicElevatorSim extends BasicSimSystem {
         elevator.setInputVoltage(voltage);
     }
 
-    /**
-     * Creates an ElevatorSim based on the provided configuration.
-     * The configuration must have the all the parameters in the
-     * {@link BasicMotorConfig.SimulationConfig.ElevatorSimConfig} set.
-     *
-     * @param config The configuration for the elevator motor
-     * @return A new ElevatorSim instance configured according to the provided BasicMotorConfig
-     */
-    private static ElevatorSim createElevatorSim(BasicMotorConfig config) {
-        double minHeight;
-        double maxHeight;
-        if (config.constraintsConfig.constraintType == ConstraintsGains.ConstraintType.LIMITED) {
-            minHeight = config.constraintsConfig.minValue;
-            maxHeight = config.constraintsConfig.maxValue;
-        } else {
-            minHeight = 0;
-            maxHeight = Double.POSITIVE_INFINITY;
-        }
-
-        var simConfig = config.simulationConfig;
-
-        if (simConfig.kV == 0 && simConfig.kA == 0) {
-            return new ElevatorSim(
-                    config.motorConfig.motorType,
-                    config.motorConfig.gearRatio,
-                    simConfig.elevatorSimConfig.massKG,
-                    simConfig.elevatorSimConfig.pulleyRadiusMeters,
-                    minHeight,
-                    maxHeight,
-                    simConfig.elevatorSimConfig.enableGravitySimulation,
-                    minHeight,
-                    simConfig.positionStandardDeviation,
-                    simConfig.velocityStandardDeviation);
-        } else {
-            return new ElevatorSim(
-                    simConfig.kV,
-                    simConfig.kA,
-                    config.motorConfig.motorType,
-                    minHeight,
-                    maxHeight,
-                    simConfig.elevatorSimConfig.enableGravitySimulation,
-                    minHeight,
-                    simConfig.positionStandardDeviation,
-                    simConfig.velocityStandardDeviation);
-        }
-    }
-
     @Override
     protected double getCurrentDraw() {
         return elevator.getCurrentDrawAmps();
-    }
-
-    @Override
-    protected Measurements getDefaultMeasurements() {
-        return defaultMeasurements;
     }
 }

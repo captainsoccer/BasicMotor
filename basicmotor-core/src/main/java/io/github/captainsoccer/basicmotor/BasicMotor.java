@@ -506,7 +506,7 @@ public abstract class BasicMotor {
      *
      * @param percentOutput The percentage of the maximum output to set the motor to.
      */
-    public final void setPrecentOutput(double percentOutput) {
+    public final void setPercentOutput(double percentOutput) {
         controller.setControl(percentOutput, Controller.ControlMode.PERCENT_OUTPUT, 0);
     }
 

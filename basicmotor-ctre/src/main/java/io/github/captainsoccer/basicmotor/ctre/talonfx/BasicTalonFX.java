@@ -1,5 +1,6 @@
 package io.github.captainsoccer.basicmotor.ctre.talonfx;
 
+import com.ctre.phoenix6.hardware.TalonFX;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
@@ -238,6 +239,15 @@ public class BasicTalonFX extends BasicMotor {
         motorInterface.applyConfig();
 
         super.setDefaultMeasurements();
+    }
+
+    /**
+     * Gets the TalonFX of this motor.
+     * Useful when you need to interact directly with the talonFX
+     * @return The talonFX instance of this motor
+     */
+    public TalonFX getMotor() {
+        return motorInterface.motor;
     }
 
     /**

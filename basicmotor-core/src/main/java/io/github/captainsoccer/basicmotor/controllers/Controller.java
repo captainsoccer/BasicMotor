@@ -38,6 +38,11 @@ public class Controller implements Sendable {
     private final BasicPIDController[] pidController = new BasicPIDController[3];
 
     /**
+     * The controlled mode used by the pid controller on the smartdashboard.
+     */
+    private int sendableControlMode = 0;
+
+    /**
      * The latest request of the controller this contains the control mode and the goal.
      * This is set by the user to control the motor.
      */
@@ -362,9 +367,13 @@ public class Controller implements Sendable {
         boolean isProfiled = controllerGains.initSendable(builder);
 
         String setPointName = isProfiled ? "Setpoint" : "goal";
+
         //this acts both as the setpoint and the goal of the controller
-        builder.addDoubleProperty(
-                setPointName, () -> setpoint.position, (value) -> setControl(value, request.controlMode, request.slot));
+        builder.addDoubleProperty(setPointName, () -> setpoint.position,
+                (value) -> setControl(value, ControlMode.values()[this.sendableControlMode], request.slot));
+
+        builder.addIntegerProperty("controlMode", () -> request.controlMode.ordinal(),
+                (mode) -> this.sendableControlMode = (int)mode);
     }
 
     /**

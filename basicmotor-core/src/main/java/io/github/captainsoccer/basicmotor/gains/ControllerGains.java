@@ -375,11 +375,12 @@ public class ControllerGains {
      * Can be changed by calling {@link #setSendableSlot(int)} before calling this function.
      *
      * @param builder The sendable builder to use for the controller gains.
+     * @return isProfiled, whether the pid controller is rifled or not
      */
-    public void initSendable(SendableBuilder builder) {
+    public boolean initSendable(SendableBuilder builder) {
         var slot = slotGains[sendableSlot];
 
-        if (isProfiled(0)) {
+        if (isProfiled(sendableSlot)) {
             builder.setSmartDashboardType("ProfiledPIDController");
 
             builder.addDoubleProperty(
@@ -398,6 +399,8 @@ public class ControllerGains {
 
         buildPIDSendable(builder, slot);
         buildFeedForwardSendable(builder, slot);
+
+        return isProfiled(sendableSlot);
     }
 
     /**

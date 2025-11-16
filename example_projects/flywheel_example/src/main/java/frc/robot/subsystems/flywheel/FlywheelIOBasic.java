@@ -2,7 +2,6 @@ package frc.robot.subsystems.flywheel;
 
 
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.controllers.Controller.ControlMode;
 import io.github.captainsoccer.basicmotor.ctre.talonfx.BasicTalonFX;
@@ -14,8 +13,6 @@ public class FlywheelIOBasic implements  FlywheelIO {
     public FlywheelIOBasic() {
         this.motor = RobotBase.isReal() ? new BasicTalonFX(FlywheelConstants.motorConfig) :
                         new BasicFlywheelSim(FlywheelConstants.motorConfig);
-
-        SmartDashboard.putData(motor.getController());
     }
 
     @Override

@@ -1,5 +1,7 @@
 package io.github.captainsoccer.basicmotor.controllers;
 
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
@@ -38,9 +40,11 @@ public class Controller implements Sendable {
     private final BasicPIDController[] pidController = new BasicPIDController[3];
 
     /**
-     * The controlled mode used by the pid controller on the smartdashboard.
+     * The controllable control mode for the dashboard.
+     * This is used to change the control mode of the controller from the dashboard.
+     * only enabled when called from {@link #initSendable(SendableBuilder)}.
      */
-    private int sendableControlMode = 0;
+    private final SendableChooser<ControlMode> controlModeChooser = new SendableChooser<>();
 
     /**
      * The latest request of the controller this contains the control mode and the goal.
@@ -106,8 +110,6 @@ public class Controller implements Sendable {
         Objects.requireNonNull(request);
         Objects.requireNonNull(request.controlMode);
         Objects.requireNonNull(request.goal);
-
-        this.sendableControlMode = request.controlMode.ordinal();
 
         if (request.slot < 0 || request.slot >= pidController.length) {
             throw new IllegalArgumentException("Invalid slot: " + request.slot);
@@ -370,12 +372,17 @@ public class Controller implements Sendable {
 
         String setPointName = isProfiled ? "setpoint" : "goal";
 
+        for(ControlMode mode : ControlMode.values()) {
+            controlModeChooser.addOption(mode.name(), mode);
+        }
+
+        controlModeChooser.setDefaultOption(ControlMode.STOP.name(), ControlMode.STOP);
+
         //this acts both as the setpoint and the goal of the controller
         builder.addDoubleProperty(setPointName, () -> setpoint.position,
-                (value) -> setControl(value, ControlMode.values()[this.sendableControlMode], request.slot));
+                (value) -> setControl(value, controlModeChooser.getSelected(), request.slot));
 
-        builder.addIntegerProperty("controlMode", () -> request.controlMode.ordinal(),
-                (mode) -> this.sendableControlMode = (int)mode);
+        SmartDashboard.putData(SendableRegistry.getName(this) + "/controlMode", controlModeChooser);
     }
 
     /**

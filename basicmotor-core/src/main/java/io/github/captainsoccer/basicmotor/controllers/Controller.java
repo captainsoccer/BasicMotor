@@ -107,6 +107,8 @@ public class Controller implements Sendable {
         Objects.requireNonNull(request.controlMode);
         Objects.requireNonNull(request.goal);
 
+        this.sendableControlMode = request.controlMode.ordinal();
+
         if (request.slot < 0 || request.slot >= pidController.length) {
             throw new IllegalArgumentException("Invalid slot: " + request.slot);
         }

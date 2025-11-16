@@ -368,7 +368,7 @@ public class Controller implements Sendable {
     public void initSendable(SendableBuilder builder) {
         boolean isProfiled = controllerGains.initSendable(builder);
 
-        String setPointName = isProfiled ? "Setpoint" : "goal";
+        String setPointName = isProfiled ? "setpoint" : "goal";
 
         //this acts both as the setpoint and the goal of the controller
         builder.addDoubleProperty(setPointName, () -> setpoint.position,

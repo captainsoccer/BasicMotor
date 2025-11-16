@@ -370,7 +370,7 @@ public class Controller implements Sendable {
     public void initSendable(SendableBuilder builder) {
         boolean isProfiled = controllerGains.initSendable(builder);
 
-        String setPointName = isProfiled ? "setpoint" : "goal";
+        String setPointName = isProfiled ? "goal" : "setpoint";
 
         for(ControlMode mode : ControlMode.values()) {
             controlModeChooser.addOption(mode.name(), mode);

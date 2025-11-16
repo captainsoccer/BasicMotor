@@ -8,12 +8,6 @@ package frc.robot;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
-
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
@@ -35,28 +29,6 @@ public class Robot extends LoggedRobot
         Logger.start();
 
         robotContainer = new RobotContainer();
-
-        shit Shit = new shit();
-
-        SmartDashboard.putData("pid", Shit);
-        
-    }
-
-    public static class shit implements Sendable{
-
-        @Override
-        public void initSendable(SendableBuilder builder) {
-
-            PIDController controller = new PIDController(defaultPeriodSecs, defaultPeriodSecs, defaultPeriodSecs);
-
-            controller.initSendable(builder);
-
-            SendableChooser<String> chooser = new SendableChooser<>();
-
-            chooser.setDefaultOption("sss", "saf");
-
-            SmartDashboard.putData("pid/choose", chooser);
-        }
         
     }
     

@@ -1,5 +1,7 @@
 package io.github.captainsoccer.basicmotor.controllers;
 
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
@@ -36,6 +38,13 @@ public class Controller implements Sendable {
      * The PID controller used to calculate the PID output of the controller.
      */
     private final BasicPIDController[] pidController = new BasicPIDController[3];
+
+    /**
+     * The controllable control mode for the dashboard.
+     * This is used to change the control mode of the controller from the dashboard.
+     * only enabled when called from {@link #initSendable(SendableBuilder)}.
+     */
+    private final SendableChooser<ControlMode> controlModeChooser = new SendableChooser<>();
 
     /**
      * The latest request of the controller this contains the control mode and the goal.
@@ -359,11 +368,21 @@ public class Controller implements Sendable {
     // maintenance things
     @Override
     public void initSendable(SendableBuilder builder) {
-        controllerGains.initSendable(builder);
+        boolean isProfiled = controllerGains.initSendable(builder);
+
+        String setPointName = isProfiled ? "goal" : "setpoint";
+
+        for(ControlMode mode : ControlMode.values()) {
+            controlModeChooser.addOption(mode.name(), mode);
+        }
+
+        controlModeChooser.setDefaultOption(ControlMode.STOP.name(), ControlMode.STOP);
 
         //this acts both as the setpoint and the goal of the controller
-        builder.addDoubleProperty(
-                "setpoint", () -> setpoint.position, (value) -> setControl(value, request.controlMode, request.slot));
+        builder.addDoubleProperty(setPointName, () -> setpoint.position,
+                (value) -> setControl(value, controlModeChooser.getSelected(), request.slot));
+
+        SmartDashboard.putData(SendableRegistry.getName(this) + "/controlMode", controlModeChooser);
     }
 
     /**

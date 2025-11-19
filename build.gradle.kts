@@ -13,6 +13,7 @@ group   = providers.gradleProperty("group").get()
 
 val wpilibVersion = providers.gradleProperty("wpilibVersion").get()
 val advantageKitVersion = providers.gradleProperty("advantageKitVersion").get()
+val jacksonVersion = providers.gradleProperty("jacksonVersion").get()
 
 
 // ---- Common repositories for every module ----
@@ -46,6 +47,7 @@ subprojects {
         add("compileOnly", "edu.wpi.first.hal:hal-java:${wpilibVersion}")
         add("compileOnly", "org.littletonrobotics.akit:akit-java:${advantageKitVersion}")
         add("compileOnly", "us.hebi.quickbuf:quickbuf-runtime:1.3.3")
+        add("compileOnly", "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
     }
 
     plugins.withType<JavaPlugin> {

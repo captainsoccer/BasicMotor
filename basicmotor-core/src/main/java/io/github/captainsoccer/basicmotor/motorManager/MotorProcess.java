@@ -28,14 +28,14 @@ public class MotorProcess {
 
     /**
      * The period of the sensor loop in microseconds.
-     * Taken from {@link MotorManagerConfig#SENSOR_LOOP_HZ}.
+     * Default value is taken from {@link MotorManagerConfig#SENSOR_LOOP_HZ}.
      */
-    private final long sensorLoopMicroSeconds;
+    private long sensorLoopMicroseconds;
 
     /**
      * The period of the main loop in microseconds.
      */
-    private long mainLoopMicroSeconds;
+    private long mainLoopMicroseconds;
 
     /**
      * Lock to protect access to the notifier and timing variables.
@@ -64,19 +64,22 @@ public class MotorProcess {
      * @param mainLoop The main loop to run periodically.
      * @param sensorLoop The sensor loop to run periodically.
      * @param name The name of the motor used for the notifier.
+     * @param mainLoopPeriodSeconds The period of the main loop in seconds, can be changed later.
+     * @param sensorLoopPeriodSeconds The period of the sensor loop in seconds, can be changed later.
      */
-    public MotorProcess(Runnable mainLoop, Runnable sensorLoop, String name) {
+    public MotorProcess(Runnable mainLoop, Runnable sensorLoop, String name, double mainLoopPeriodSeconds, double sensorLoopPeriodSeconds) {
         this.mainLoop = mainLoop;
         this.sensorLoop = sensorLoop;
 
-        sensorLoopMicroSeconds = secondsToMicroseconds(1.0 / MotorManager.config.SENSOR_LOOP_HZ);
 
-        this.mainLoopMicroSeconds = secondsToMicroseconds(MotorManager.ControllerLocation.MOTOR.getSeconds());
+        this.mainLoopMicroseconds = secondsToMicroseconds(mainLoopPeriodSeconds);
+
+        this.sensorLoopMicroseconds = secondsToMicroseconds(sensorLoopPeriodSeconds);
 
         motorProcessThread = new Thread(() -> {
             // delays execution for the set amount of time
             try {
-                Thread.sleep((long)(MotorManager.config.STARTUP_DELAY_SECONDS * 1000));
+                Thread.sleep((long)(MotorManager.getConfig().STARTUP_DELAY_SECONDS * 1000));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -87,8 +90,8 @@ public class MotorProcess {
 
                 long currentTime = RobotController.getFPGATime();
 
-                mainLoopAlarmTime = currentTime + mainLoopMicroSeconds;
-                sensorLoopAlarmTime = currentTime + sensorLoopMicroSeconds;
+                mainLoopAlarmTime = currentTime + mainLoopMicroseconds;
+                sensorLoopAlarmTime = currentTime + sensorLoopMicroseconds;
 
                 NotifierJNI.updateNotifierAlarm(notifier, Math.min(mainLoopAlarmTime, sensorLoopAlarmTime));
             }
@@ -108,6 +111,19 @@ public class MotorProcess {
     }
 
     /**
+     * Constructs a MotorProcess with specified main and sensor loops and main loop period.
+     * @param mainLoop The main loop to run periodically.
+     * @param sensorLoop The sensor loop to run periodically.
+     * @param name The name of the motor used for the notifier.
+     *
+     */
+    public MotorProcess(Runnable mainLoop, Runnable sensorLoop, String name) {
+        this(mainLoop, sensorLoop, name, MotorManager.ControllerLocation.MOTOR.getSeconds(),
+                1.0 / MotorManager.getConfig().SENSOR_LOOP_HZ);
+    }
+
+
+    /**
      * Converts seconds to microseconds.
      * @param seconds The time in seconds.
      * @return The time in microseconds.
@@ -123,7 +139,20 @@ public class MotorProcess {
     public void setMainLoopTiming(double periodSeconds) {
         try {
             lock.lock();
-            this.mainLoopMicroSeconds = secondsToMicroseconds(periodSeconds);
+            this.mainLoopMicroseconds = secondsToMicroseconds(periodSeconds);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Sets the timing for the sensor loop.
+     * @param periodSeconds The period of the sensor loop in seconds.
+     */
+    public void setSensorLoopTiming(double periodSeconds) {
+        try {
+            lock.lock();
+            this.sensorLoopMicroseconds = secondsToMicroseconds(periodSeconds);
         } finally {
             lock.unlock();
         }
@@ -166,13 +195,13 @@ public class MotorProcess {
             // check if the alarm was for the main loop
             if(currentTime >= mainLoopAlarmTime) {
                 mainLoop.run();
-                mainLoopAlarmTime = currentTime + mainLoopMicroSeconds;
+                mainLoopAlarmTime = currentTime + mainLoopMicroseconds;
             }
 
             // check if the alarm was for the sensor loop
             if(currentTime >= sensorLoopAlarmTime) {
                 sensorLoop.run();
-                sensorLoopAlarmTime = currentTime + sensorLoopMicroSeconds;
+                sensorLoopAlarmTime = currentTime + sensorLoopMicroseconds;
             }
 
             // sets the next alarm time to the earliest of the two loops

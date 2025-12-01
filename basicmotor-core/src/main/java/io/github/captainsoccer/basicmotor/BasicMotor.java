@@ -783,7 +783,6 @@ public abstract class BasicMotor {
 
         double setpoint = controller.getSetpointAsDouble();
 
-
         double referenceMeasurement =
                 controlMode.isVelocityControl()
                         ? measurement.velocity()

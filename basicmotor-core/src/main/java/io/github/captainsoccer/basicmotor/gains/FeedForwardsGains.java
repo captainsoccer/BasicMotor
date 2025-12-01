@@ -33,6 +33,10 @@ public class FeedForwardsGains {
          */
         FRICTION_FEED_FORWARD,
         /**
+         * Changes the deadband for the friction feed forward when in position control mode.
+         */
+        FRICTION_FEED_FORWARD_DEADBAND,
+        /**
          * Changes the setpoint feed forward gain (multiplies the setpoint by a constant voltage)
          */
         SETPOINT_FEED_FORWARD
@@ -67,20 +71,36 @@ public class FeedForwardsGains {
     private final Function<Double, Double> feedForwardFunction;
 
     /**
+     * The deadband for the friction feed forward when in position control mode.
+     * If the motor is within this deadband of the setpoint, the friction feed forward will not be applied.
+     * This is to prevent the motor from oscillating around the setpoint when it is close to it.
+     * Used only in position control mode.
+     */
+    private final double frictionFeedForwardDeadband;
+
+    /**
      * Creates a feed forward gain with the given values.
      *
      * @param simpleFeedForward   The simple feed forward gain (volts)
      * @param frictionFeedForward The friction feed forward gain (volts) (Greater than or equal to zero)
+     * @param frictionFeedForwardDeadband The deadband for the friction feed forward when in position control mode (unit of control)
+     *                                    (Greater than or equal to zero)
      * @param setpointFeedForward The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
      * @param feedForwardFunction The feed forward function that takes the setpoint and returns a voltage (volts per unit of control)
      */
-    public FeedForwardsGains(double simpleFeedForward, double frictionFeedForward, double setpointFeedForward, Function<Double, Double> feedForwardFunction) {
+    public FeedForwardsGains(double simpleFeedForward, double frictionFeedForward, double frictionFeedForwardDeadband,
+                             double setpointFeedForward, Function<Double, Double> feedForwardFunction) {
+
         // simple feed forward can be negative, as it is a constant voltage added to the output
         this.simpleFeedForward = simpleFeedForward;
 
         if (frictionFeedForward < 0)
             throw new IllegalArgumentException("frictionFeedForward must be greater than or equal to zero");
         this.frictionFeedForward = frictionFeedForward;
+
+        if (frictionFeedForwardDeadband < 0)
+            throw new IllegalArgumentException("frictionFeedForwardDeadband must be greater than or equal to zero");
+        this.frictionFeedForwardDeadband = frictionFeedForwardDeadband;
 
         if (setpointFeedForward < 0)
             throw new IllegalArgumentException("setpointFeedForward must be greater than or equal to zero");
@@ -97,7 +117,7 @@ public class FeedForwardsGains {
      * @param setpointFeedForward The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
      */
     public FeedForwardsGains(double setpointFeedForward) {
-        this(0, 0, setpointFeedForward, (x) -> 0.0);
+        this(0, 0, 0, setpointFeedForward, (x) -> 0.0);
     }
 
     /**
@@ -108,7 +128,7 @@ public class FeedForwardsGains {
      * @param frictionFeedForward The friction feed forward gain (volts) (Greater than or equal to zero)
      */
     public FeedForwardsGains(double setpointFeedForward, double frictionFeedForward) {
-        this(0, frictionFeedForward, setpointFeedForward, (x) -> 0.0);
+        this(0, frictionFeedForward, 0, setpointFeedForward, (x) -> 0.0);
     }
 
     /**
@@ -119,7 +139,7 @@ public class FeedForwardsGains {
      * @param frictionFeedForward The friction feed forward gain (volts) (Greater than or equal to zero)
      */
     public FeedForwardsGains(double setpointFeedForward, double simpleFeedForward, double frictionFeedForward) {
-        this(frictionFeedForward, simpleFeedForward, setpointFeedForward, (x) -> 0.0);
+        this(simpleFeedForward, frictionFeedForward, 0, setpointFeedForward, (x) -> 0.0);
     }
 
     /**
@@ -127,7 +147,7 @@ public class FeedForwardsGains {
      * Means that there is no feed forward output from the controller.
      */
     public FeedForwardsGains() {
-        this(0, 0, 0, (x) -> 0.0);
+        this(0, 0, 0, 0, (x) -> 0.0);
     }
 
     /**
@@ -146,6 +166,15 @@ public class FeedForwardsGains {
      */
     public double getFrictionFeedForward() {
         return frictionFeedForward;
+    }
+
+    /**
+     * Gets the deadband for the friction feed forward when in position control mode.
+     *
+     * @return The deadband for the friction feed forward (unit of control)
+     */
+    public double getFrictionFeedForwardDeadband() {
+        return frictionFeedForwardDeadband;
     }
 
     /**
@@ -178,6 +207,29 @@ public class FeedForwardsGains {
     }
 
     /**
+     * Calculates the direction of travel of the mechanism based on the setpoint and measurement.
+     * This is used to determine the direction of travel for the friction feed forward.
+     * If using position control mode, it will check if the motor is within the
+     * {@link #frictionFeedForwardDeadband} of the setpoint to determine if the motor is stationary.
+     *
+     * @param setpoint    The setpoint of the controller (unit of control)
+     * @param measurement The current measurement of the controller (unit of control)
+     * @param controlMode The control mode of the controller.
+     * @return The direction of travel of the mechanism (1 for forward, -1 for backward, 0 for stationary)
+     */
+    public double calculateDirectionOfTravel(double setpoint, double measurement, Controller.ControlMode controlMode) {
+        if(controlMode.isPositionControl()) {
+            double delta = setpoint - measurement;
+
+            if(Math.abs(delta) <= frictionFeedForwardDeadband)
+                return 0.0;
+            else
+                return Math.signum(delta);
+        }
+        else return Math.signum(setpoint);
+    }
+
+    /**
      * Calculates the feed forward output of the controller.
      * This includes the simple feed forward, friction feed forward, setpoint feed forward,
      * feed forward function output, and any arbitrary feed forward value.
@@ -206,12 +258,12 @@ public class FeedForwardsGains {
      * @return A new FeedForwardsGains object with the updated feed forward gain.
      */
     public FeedForwardsGains changeValue(double value, ChangeType type) {
-        var array = new Double[]{simpleFeedForward, frictionFeedForward, setpointFeedForward};
+        var array = new Double[]{simpleFeedForward, frictionFeedForward, frictionFeedForwardDeadband, setpointFeedForward};
 
         if(array[type.ordinal()] == value) return this;
 
         array[type.ordinal()] = value;
 
-        return new FeedForwardsGains(array[0], array[1], array[2], feedForwardFunction);
+        return new FeedForwardsGains(array[0], array[1], array[2], array[3], feedForwardFunction);
     }
 }

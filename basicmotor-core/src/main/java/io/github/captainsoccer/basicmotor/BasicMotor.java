@@ -783,22 +783,16 @@ public abstract class BasicMotor {
 
         double setpoint = controller.getSetpointAsDouble();
 
-        // calculate the direction of travel
-        double directionOfTravel =
-                Math.signum(
-                        controlMode.isPositionControl()
-                                ? setpoint - measurement.position()
-                                : setpoint);
 
-        // calculate the feedforward output
-        var FFOutput = controller.calculateFeedForward(directionOfTravel);
-
-        // calculates the error of the controller
         double referenceMeasurement =
                 controlMode.isVelocityControl()
                         ? measurement.velocity()
                         : measurement.position();
 
+        // calculate the feedforward output
+        var FFOutput = controller.calculateFeedForward(referenceMeasurement);
+
+        // calculates the error of the controller
         double error = setpoint - referenceMeasurement;
 
         double totalOutput;

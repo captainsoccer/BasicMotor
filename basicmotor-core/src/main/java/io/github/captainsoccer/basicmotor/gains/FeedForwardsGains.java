@@ -135,7 +135,7 @@ public class FeedForwardsGains {
      * Creates a feed forward that has a setpoint feed forward gain, simple feed forward gain, and friction feed forward gain.
      *
      * @param setpointFeedForward The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
-     * @param simpleFeedForward   The simple feed forward gain (volts) (Greater than or equal to zero)
+     * @param simpleFeedForward   The simple feed forward gain (volts)
      * @param frictionFeedForward The friction feed forward gain (volts) (Greater than or equal to zero)
      */
     public FeedForwardsGains(double setpointFeedForward, double simpleFeedForward, double frictionFeedForward) {

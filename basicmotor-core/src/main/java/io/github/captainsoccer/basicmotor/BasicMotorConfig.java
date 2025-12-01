@@ -378,7 +378,6 @@ public class BasicMotorConfig {
         /**
          * The simple feed forward gain of the motor controller units are: (voltage)
          *
-         * <p>The value must be greater than or equal to zero (zero means no simple feed forward)
          * <p>It's just a constant voltage applied to the output used, for example, in elevators
          */
         public double simpleFeedForward = 0;

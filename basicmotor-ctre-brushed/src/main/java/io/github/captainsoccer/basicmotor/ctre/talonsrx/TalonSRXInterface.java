@@ -37,7 +37,7 @@ public class TalonSRXInterface extends MotorInterface {
 
         motor = new TalonSRX(id);
         this.motor.configFactoryDefault();
-        config.voltageCompSaturation = MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
+        config.voltageCompSaturation = MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE;
 
         applyConfig();
 
@@ -57,7 +57,7 @@ public class TalonSRXInterface extends MotorInterface {
 
         this.motor = new TalonSRX(id);
         this.motor.configFactoryDefault();
-        this.config.voltageCompSaturation = MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
+        this.config.voltageCompSaturation = MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE;
 
         this.config.primaryPID.selectedFeedbackSensor = encoderType.feedbackDevice;
         this.config.primaryPID.selectedFeedbackCoefficient = 1.0 / tickPerRevolution;
@@ -77,7 +77,7 @@ public class TalonSRXInterface extends MotorInterface {
 
         this.motor = new TalonSRX(motorConfig.motorConfig.id);
         this.motor.configFactoryDefault();
-        this.config.voltageCompSaturation = MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
+        this.config.voltageCompSaturation = MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE;
 
         this.config.primaryPID.selectedFeedbackSensor = motorConfig.encoderConfig.type.feedbackDevice;
         this.config.primaryPID.selectedFeedbackCoefficient = 1.0 / motorConfig.encoderConfig.tickPerRevolution;
@@ -145,11 +145,11 @@ public class TalonSRXInterface extends MotorInterface {
 
     @Override
     public void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
-        config.peakOutputForward = constraints.getMaxMotorOutput() / MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
-        config.peakOutputReverse = -constraints.getMaxMotorOutput() / MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
+        config.peakOutputForward = constraints.getMaxMotorOutput() / MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE;
+        config.peakOutputReverse = -constraints.getMaxMotorOutput() / MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE;
 
-        config.nominalOutputForward = constraints.getVoltageDeadband() / MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
-        config.nominalOutputReverse = -constraints.getVoltageDeadband() / MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
+        config.nominalOutputForward = constraints.getVoltageDeadband() / MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE;
+        config.nominalOutputReverse = -constraints.getVoltageDeadband() / MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE;
 
         // How much time to go from 0 to 100% output in seconds, based on the voltage ramp rate
         config.closedloopRamp = constraints.getRampRate();

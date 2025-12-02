@@ -127,7 +127,7 @@ public class MessageHandler {
 
             double currentTime = Timer.getTimestamp();
 
-            double MESSAGE_DISPLAY_SECONDS = MotorManager.config.MESSAGE_DISPLAY_TIMEOUT_SECONDS;
+            double MESSAGE_DISPLAY_SECONDS = MotorManager.getConfig().MESSAGE_DISPLAY_TIMEOUT_SECONDS;
 
             lock.lock();
 

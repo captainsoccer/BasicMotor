@@ -28,8 +28,6 @@ public class MotorManager {
      * The configuration for the motor manager.
      * This stores the default values for some of the parameters of the motor manager.
      * It Also stores the frequency of the sensor loop and the PID loop.
-     * If you want to change one of the parameters, You must change the value before constructing the motors.
-     * This is static to make simpler calls to the motor manager.
      */
     private final MotorManagerConfig config;
 

@@ -93,7 +93,29 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager" selected="Gradle.Build Robot">
+  <component name="RunManager" selected="Gradle.flywheel_example [simulateJava]">
+    <configuration name="flywheel_example [simulateJava]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="simulateJava" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Gradle.Build &amp; Deploy Robot" />
       <item itemvalue="Gradle.Build &amp; Deploy Robot for Debugging" />
@@ -102,9 +124,15 @@
       <item itemvalue="Gradle.Clean Build &amp; Deploy Robot" />
       <item itemvalue="Gradle.Clean Build &amp; Deploy Robot for Debugging" />
       <item itemvalue="Gradle.Clean Build Robot" />
+      <item itemvalue="Gradle.flywheel_example [simulateJava]" />
       <item itemvalue="Remote JVM Debug.Debug Robot via IP" />
       <item itemvalue="Remote JVM Debug.Debug Robot via USB" />
     </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.flywheel_example [simulateJava]" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>

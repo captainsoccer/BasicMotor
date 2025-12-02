@@ -56,6 +56,9 @@ public class MotorManagerConfig {
      */
     public static final MotorManagerConfig DEFAULT_CONFIG = new MotorManagerConfig();
 
+    /**
+     * The name of the configuration file used to load the motor manager config.
+     */
     public static final String CONFIG_JSON_NAME = "MotorManagerConfig.json";
 
     /**

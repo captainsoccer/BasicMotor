@@ -276,23 +276,37 @@ public class BasicTalonFX extends BasicMotor {
     }
 
     /**
-     * Configures the motor to use a CANcoder as the feedback sensor.
+     * uses a remote CAN coder as the encoder for the motor controller the user must ensure that the
+     * CAN coder is configured correctly and zeroed before using this method.
+     * If your motor controller and canCoder are connected to a canivore and you have a Phoenix Pro license,
+     * use the {@link #useFusedCanCoder(CANcoder, double, double, double)} method instead.
      *
-     * @param canCoder               The CANcoder to use as the remote encoder.
-     * @param sensorToMotorRatio     The ratio between the sensor and the motor (the value of the can coder to get the motor value).
-     * @param unitConversion         The value that will be multiplied by to convert the measurements to the desired units.
-     * @param mechanismToSensorRatio The ratio between the mechanism and the sensor (the value of the can coder to get the mechanism value).
-     * @param feedbackSensorSource   The feedback sensor source value (RemoteCANcoder or FusedCANcoder).
+     * @param canCoder               the CAN coder to use as the remote encoder
+     * @param unitConversion         the value the rotations of the can coder will be multiplied by to convert
+     *                               the measurements to the desired units
+     * @param mechanismToSensorRatio this value divides the ratio between the mechanism and the sensor
+     *                               (the value of the can coder to get the mechanism value)
      */
-    private void configureCanCoder(CANcoder canCoder, double sensorToMotorRatio, double unitConversion, double mechanismToSensorRatio, FeedbackSensorSourceValue feedbackSensorSource) {
+    public void useRemoteCanCoder(CANcoder canCoder, double unitConversion, double mechanismToSensorRatio) {
         Objects.requireNonNull(canCoder);
 
         var config = motorInterface.config;
 
         config.Feedback.FeedbackRemoteSensorID = canCoder.getDeviceID();
-        config.Feedback.RotorToSensorRatio = sensorToMotorRatio;
-        config.Feedback.FeedbackSensorSource = feedbackSensorSource;
+        config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
         motorInterface.applyConfig();
+
+        //because remote canCoder uses the canCoder position directly without
+        // conversion we convert the pid gains back to the 1:1 gains
+        if(getMeasurements().getGearRatio() != 1){
+            for(int i = 0; i < 3; i ++){
+
+                var newGains = getController().getControllerGains().getPidGains(i)
+                        .convertToMotorGains(1 / getMeasurements().getGearRatio(), 1);
+
+                getController().getControllerGains().setPidGains(newGains, i);
+            }
+        }
 
         setMeasurements(new CANcoderMeasurements(canCoder, mechanismToSensorRatio, unitConversion), false);
     }
@@ -304,15 +318,11 @@ public class BasicTalonFX extends BasicMotor {
      * use the {@link #useFusedCanCoder(CANcoder, double, double, double)} method instead.
      *
      * @param canCoder               the CAN coder to use as the remote encoder
-     * @param sensorToMotorRatio     this value multiplies the ratio between the sensor and the motor (the
-     *                               value of the can coder to get the motor value)
      * @param unitConversion         the value the rotations of the can coder will be multiplied by to convert
      *                               the measurements to the desired units
-     * @param mechanismToSensorRatio this value divides the ratio between the mechanism and the sensor
-     *                               (the value of the can coder to get the mechanism value)
      */
-    public void useRemoteCanCoder(CANcoder canCoder, double sensorToMotorRatio, double unitConversion, double mechanismToSensorRatio) {
-        configureCanCoder(canCoder, sensorToMotorRatio, unitConversion, mechanismToSensorRatio, FeedbackSensorSourceValue.RemoteCANcoder);
+    public void useRemoteCanCoder(CANcoder canCoder, double unitConversion) {
+        useRemoteCanCoder(canCoder, unitConversion, 1);
     }
 
     /**
@@ -322,27 +332,9 @@ public class BasicTalonFX extends BasicMotor {
      * use the {@link #useFusedCanCoder(CANcoder, double, double, double)} method instead.
      *
      * @param canCoder               the CAN coder to use as the remote encoder
-     * @param sensorToMotorRatio     this value multiplies the ratio between the sensor and the motor (the
-     *                               value of the can coder to get the motor value)
-     * @param unitConversion         the value the rotations of the can coder will be multiplied by to convert
-     *                               the measurements to the desired units
      */
-    public void useRemoteCanCoder(CANcoder canCoder, double sensorToMotorRatio, double unitConversion) {
-        useRemoteCanCoder(canCoder, sensorToMotorRatio, unitConversion, 1);
-    }
-
-    /**
-     * uses a remote CAN coder as the encoder for the motor controller the user must ensure that the
-     * CAN coder is configured correctly and zeroed before using this method.
-     * If your motor controller and canCoder are connected to a canivore and you have a Phoenix Pro license,
-     * use the {@link #useFusedCanCoder(CANcoder, double, double, double)} method instead.
-     *
-     * @param canCoder               the CAN coder to use as the remote encoder
-     * @param sensorToMotorRatio     this value multiplies the ratio between the sensor and the motor (the
-     *                               value of the can coder to get the motor value)
-     */
-    public void useRemoteCanCoder(CANcoder canCoder, double sensorToMotorRatio) {
-        useRemoteCanCoder(canCoder, sensorToMotorRatio, 1.0);
+    public void useRemoteCanCoder(CANcoder canCoder) {
+        useRemoteCanCoder(canCoder, 1.0);
     }
 
     /**
@@ -358,7 +350,16 @@ public class BasicTalonFX extends BasicMotor {
      *                               (the value of the can coder to get the mechanism value)
      */
     public void useFusedCanCoder(CANcoder canCoder, double sensorToMotorRatio, double unitConversion, double mechanismToSensorRatio){
-        configureCanCoder(canCoder, sensorToMotorRatio, unitConversion, mechanismToSensorRatio, FeedbackSensorSourceValue.FusedCANcoder);
+        Objects.requireNonNull(canCoder);
+
+        var config = motorInterface.config;
+
+        config.Feedback.FeedbackRemoteSensorID = canCoder.getDeviceID();
+        config.Feedback.RotorToSensorRatio = sensorToMotorRatio;
+        config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+        motorInterface.applyConfig();
+
+        setMeasurements(new CANcoderMeasurements(canCoder, mechanismToSensorRatio, unitConversion), false);
     }
 
     /**

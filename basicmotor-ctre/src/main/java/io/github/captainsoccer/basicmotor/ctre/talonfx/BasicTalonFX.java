@@ -292,10 +292,6 @@ public class BasicTalonFX extends BasicMotor {
 
         var config = motorInterface.config;
 
-        config.Feedback.FeedbackRemoteSensorID = canCoder.getDeviceID();
-        config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
-        motorInterface.applyConfig();
-
         //because remote canCoder uses the canCoder position directly without
         // conversion we convert the pid gains back to the 1:1 gains
         if(getMeasurements().getGearRatio() != 1){
@@ -307,6 +303,10 @@ public class BasicTalonFX extends BasicMotor {
                 getController().getControllerGains().setPidGains(newGains, i);
             }
         }
+
+        config.Feedback.FeedbackRemoteSensorID = canCoder.getDeviceID();
+        config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+        motorInterface.applyConfig();
 
         setMeasurements(new CANcoderMeasurements(canCoder, mechanismToSensorRatio, unitConversion), false);
     }

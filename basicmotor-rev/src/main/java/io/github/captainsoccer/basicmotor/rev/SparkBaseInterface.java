@@ -124,12 +124,8 @@ public class SparkBaseInterface extends MotorInterface {
         config.closedLoop.pid(gains.getK_P(), gains.getK_I(), gains.getK_D(), closedLoopSlot);
         config.closedLoop.iZone(gains.getI_Zone(), closedLoopSlot);
         config.closedLoop.iMaxAccum(gains.getI_MaxAccum(), closedLoopSlot);
-
-        if (gains.getTolerance() != 0) {
-            errorHandler.logAndReportWarning(
-                    "Spark motor controllers do not support setting tolerance when running closed loop control on the motor controller");
-        }
-
+        config.closedLoop.allowedClosedLoopError(gains.getTolerance(), closedLoopSlot);
+        
         applyConfig();
     }
 

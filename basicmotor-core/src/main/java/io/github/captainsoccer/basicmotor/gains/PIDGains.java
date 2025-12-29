@@ -102,7 +102,7 @@ public class PIDGains {
      * @param k_D The derivative gain (>= 0) (units are volts per unit of control per second)
      */
     public PIDGains(double k_P, double k_I, double k_D) {
-        this(k_P, k_I, k_D, Double.POSITIVE_INFINITY, MotorManager.config.DEFAULT_MAX_OUTPUT, 0);
+        this(k_P, k_I, k_D, Double.POSITIVE_INFINITY, MotorManager.getConfig().DEFAULT_MAX_OUTPUT, 0);
     }
 
     /**
@@ -114,7 +114,7 @@ public class PIDGains {
      * @param tolerance The tolerance of the PID controller (>= 0) (units are unit of control)
      */
     public PIDGains(double k_P, double k_I, double k_D, double tolerance) {
-        this(k_P, k_I, k_D, Double.POSITIVE_INFINITY, MotorManager.config.DEFAULT_MAX_OUTPUT, tolerance);
+        this(k_P, k_I, k_D, Double.POSITIVE_INFINITY, MotorManager.getConfig().DEFAULT_MAX_OUTPUT, tolerance);
     }
 
     /**
@@ -216,7 +216,7 @@ public class PIDGains {
      * @return The PID gains with the same PID structure but adjusted for duty cycle.
      */
     public PIDGains convertToDutyCycle() {
-        double motorIdleVoltage = MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
+        double motorIdleVoltage = MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE;
 
         return new PIDGains(
                 k_P / motorIdleVoltage,

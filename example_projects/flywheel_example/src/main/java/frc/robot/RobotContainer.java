@@ -16,7 +16,6 @@ public class RobotContainer {
     public RobotContainer() {
         flywheel = new Flywheel();
         configureBindings();
-        flywheel.setTargetVelocity(1);
     }
 
 

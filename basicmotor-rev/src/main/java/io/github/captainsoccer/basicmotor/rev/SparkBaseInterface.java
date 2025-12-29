@@ -42,7 +42,7 @@ public class SparkBaseInterface extends MotorInterface {
         super(name);
 
         this.motor = motor;
-        this.config = motorConfig.voltageCompensation(MotorManager.config.DEFAULT_IDEAL_VOLTAGE); // set the voltage compensation to the idle voltage
+        this.config = motorConfig.voltageCompensation(MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE); // set the voltage compensation to the idle voltage
         // all configs should be stored in code and not on motor
         applyConfig();
 
@@ -64,7 +64,7 @@ public class SparkBaseInterface extends MotorInterface {
     public SparkBaseInterface(SparkBase motor, SparkBaseConfig config, BasicMotorConfig motorConfig){
         super(motorConfig);
         this.motor = motor;
-        this.config = config.voltageCompensation(MotorManager.config.DEFAULT_IDEAL_VOLTAGE); // set the voltage compensation to the idle voltage
+        this.config = config.voltageCompensation(MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE); // set the voltage compensation to the idle voltage
         // all configs should be stored in code and not on motor
         applyConfig();
 
@@ -136,7 +136,7 @@ public class SparkBaseInterface extends MotorInterface {
 
     @Override
     public void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
-        double idealVoltage = MotorManager.config.DEFAULT_IDEAL_VOLTAGE;
+        double idealVoltage = MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE;
 
         // sets the max voltage to the max motor output
         config.closedLoop.maxOutput(constraints.getMaxMotorOutput() / idealVoltage);
@@ -180,7 +180,7 @@ public class SparkBaseInterface extends MotorInterface {
     public void configurePeriodicFrames(double mainLoopHZ) {
         var signals = config.signals;
         int sensorLoopPeriodMs =
-                (int) ((1 / MotorManager.config.SENSOR_LOOP_HZ) * 1000); // convert to milliseconds
+                (int) ((1 / MotorManager.getConfig().SENSOR_LOOP_HZ) * 1000); // convert to milliseconds
         int mainLoopPeriodMs = (int) ((1 / mainLoopHZ) * 1000); // convert to milliseconds
 
         signals.busVoltagePeriodMs(sensorLoopPeriodMs); // currently does nothing

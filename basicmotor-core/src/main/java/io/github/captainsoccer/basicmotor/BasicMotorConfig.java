@@ -290,7 +290,7 @@ public class BasicMotorConfig {
          * The default value is 13, but can be changed to any value.
          * Also, the default value can be changed in the #{@link MotorManagerConfig}
          */
-        public double iMaxAccum = MotorManager.config.DEFAULT_MAX_OUTPUT;
+        public double iMaxAccum = MotorManager.getConfig().DEFAULT_MAX_OUTPUT;
         /**
          * The tolerance of the PID controller units are: (unit of control)
          *
@@ -490,7 +490,7 @@ public class BasicMotorConfig {
          * <p>This is the maximum output of the motor controller in the forward direction
          * This is used to save power, relax the mechanism, and prevent damage to the motor.
          */
-        public double maxOutput = MotorManager.config.DEFAULT_MAX_OUTPUT;
+        public double maxOutput = MotorManager.getConfig().DEFAULT_MAX_OUTPUT;
 
         /**
          * The minimum output of the constraint units are: (voltage)
@@ -500,7 +500,7 @@ public class BasicMotorConfig {
          * <p>This is the minimum output of the motor controller in the reverse direction.
          * This is used to save power, relax the mechanism, and prevent damage to the motor.
          */
-        public double minOutput = -MotorManager.config.DEFAULT_MAX_OUTPUT;
+        public double minOutput = -MotorManager.getConfig().DEFAULT_MAX_OUTPUT;
         /**
          * The voltage deadband of the constraint units are: (voltage)
          *

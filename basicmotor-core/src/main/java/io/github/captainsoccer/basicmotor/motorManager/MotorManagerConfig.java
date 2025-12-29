@@ -57,6 +57,11 @@ public class MotorManagerConfig {
     public static final MotorManagerConfig DEFAULT_CONFIG = new MotorManagerConfig();
 
     /**
+     * The name of the configuration file used to load the motor manager config.
+     */
+    public static final String CONFIG_JSON_NAME = "MotorManagerConfig.json";
+
+    /**
      * Constructor for the motor manager config.
      *
      * @param PID_LOOP_HZ                     The frequency of the PID loop (in Hz) used for the pid controller on the rio.

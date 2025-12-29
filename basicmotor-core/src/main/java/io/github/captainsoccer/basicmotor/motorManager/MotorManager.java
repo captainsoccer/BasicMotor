@@ -1,13 +1,16 @@
 package io.github.captainsoccer.basicmotor.motorManager;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.wpi.first.wpilibj.Filesystem;
 import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -25,10 +28,8 @@ public class MotorManager {
      * The configuration for the motor manager.
      * This stores the default values for some of the parameters of the motor manager.
      * It Also stores the frequency of the sensor loop and the PID loop.
-     * If you want to change one of the parameters, You must change the value before constructing the motors.
-     * This is static to make simpler calls to the motor manager.
      */
-    public static MotorManagerConfig config = MotorManagerConfig.DEFAULT_CONFIG;
+    private final MotorManagerConfig config;
 
     /**
      * The singleton instance of the MotorManager.
@@ -47,6 +48,25 @@ public class MotorManager {
      * Use {@link #getInstance()} to get the instance of the MotorManager.
      */
     private MotorManager() {
+        File path = Filesystem.getDeployDirectory();
+
+        File configFile = new File(path, MotorManagerConfig.CONFIG_JSON_NAME);
+
+        MotorManagerConfig config = MotorManagerConfig.DEFAULT_CONFIG;
+
+        try{
+            if(configFile.exists()){
+                ObjectMapper mapper = new ObjectMapper();
+
+                config = mapper.readValue(configFile, MotorManagerConfig.class);
+            }
+        }
+        catch (IOException e) {
+            DriverStation.reportError("Could not read MotorManagerConfig from " + configFile.getAbsolutePath() +
+                    "\n Using default configuration.", e.getStackTrace());
+        }
+
+        this.config = config;
     }
 
     /**
@@ -59,6 +79,15 @@ public class MotorManager {
             instance = new MotorManager();
         }
         return instance;
+    }
+
+    /**
+     * Gets the configuration of the MotorManager.
+     *
+     * @return The configuration of the MotorManager.
+     */
+    public static MotorManagerConfig getConfig() {
+        return getInstance().config;
     }
 
     /**
@@ -190,7 +219,7 @@ public class MotorManager {
          * But it lacks control over the measurement source of the pid controller.
          * Takes the frequency from the {@link MotorManagerConfig#PROFILE_LOOP_HZ} which is the default profile loop frequency.
          */
-        MOTOR(() -> config.PROFILE_LOOP_HZ),
+        MOTOR(getConfig().PROFILE_LOOP_HZ),
         /**
          * The pid controller is running on the rio.
          * This means that the code on the rio is calculating everything and sending the output to the motor controller.
@@ -198,20 +227,20 @@ public class MotorManager {
          * But it can lead to more canbus traffic and robo rio cpu usage.
          * Takes the frequency from the {@link MotorManagerConfig#PID_LOOP_HZ} which is the default pid loop frequency.
          */
-        RIO(() -> config.PID_LOOP_HZ);
+        RIO(getConfig().PID_LOOP_HZ),;
 
         /**
          * The supplier of the frequency of the controller loop in Hz.
          */
-        private final DoubleSupplier hzSupplier;
+        private final double loopHz;
 
         /**
          * Constructor for the ControllerLocation enum.
          *
-         * @param hzSupplier The supplier of the frequency of the controller loop in Hz.
+         * @param loopHz The frequency of the controller loop in Hz.
          */
-        ControllerLocation(DoubleSupplier hzSupplier) {
-            this.hzSupplier = hzSupplier;
+        ControllerLocation(double loopHz) {
+            this.loopHz = loopHz;
         }
 
         /**
@@ -220,7 +249,7 @@ public class MotorManager {
          * @return The frequency of the controller loop in Hz.
          */
         public double getHZ() {
-            return hzSupplier.getAsDouble();
+            return loopHz;
         }
 
         /**
@@ -228,7 +257,7 @@ public class MotorManager {
          * @return The time in seconds for one iteration of the controller loop.
          */
         public double getSeconds() {
-            return 1.0 / hzSupplier.getAsDouble();
+            return 1.0 / loopHz;
         }
     }
 }

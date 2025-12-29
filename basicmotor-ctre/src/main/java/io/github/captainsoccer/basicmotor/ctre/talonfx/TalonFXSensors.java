@@ -117,7 +117,7 @@ public class TalonFXSensors {
      * @param motor    The TalonFX motor controller to get the sensors from.
      */
     public TalonFXSensors(TalonFX motor) {
-        double refreshHZ = MotorManager.config.SENSOR_LOOP_HZ;
+        double refreshHZ = MotorManager.getConfig().SENSOR_LOOP_HZ;
 
         timeout = 1 / (refreshHZ * TIMEOUT_REFRESH_MULTIPLIER);
 
@@ -200,7 +200,7 @@ public class TalonFXSensors {
      * @param defaultRate Whether to set the duty cycle to the default rate (100 Hz) or to the refresh rate.
      */
     public void setDutyCycleToDefaultRate(boolean defaultRate) {
-        dutyCycleSignal.setUpdateFrequency(defaultRate ? 100 : MotorManager.config.SENSOR_LOOP_HZ);
+        dutyCycleSignal.setUpdateFrequency(defaultRate ? 100 : MotorManager.getConfig().SENSOR_LOOP_HZ);
     }
 
     /**
@@ -225,7 +225,7 @@ public class TalonFXSensors {
         }
 
         for(BaseStatusSignal signal : allSignals) {
-            signal.setUpdateFrequency(MotorManager.config.SENSOR_LOOP_HZ);
+            signal.setUpdateFrequency(MotorManager.getConfig().SENSOR_LOOP_HZ);
         }
     }
 

@@ -3,6 +3,7 @@ package io.github.captainsoccer.basicmotor.ctre.talonfx;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import io.github.captainsoccer.basicmotor.BasicMotor;
@@ -102,13 +103,17 @@ public class TalonFXInterface extends MotorInterface {
                 switch (mode) {
                     case COAST -> NeutralModeValue.Coast;
                     case BRAKE -> NeutralModeValue.Brake;
-                };
+                }; 
 
         applyConfig();
     }
 
     @Override
     public void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
+
+        if(config.Feedback.FeedbackSensorSource == FeedbackSensorSourceValue.RemoteCANcoder)
+            pidGains = pidGains.convertToMotorGains(1 / defaultMeasurements.getGearRatio(), 1);
+
 // Thanks ctre for making them different types of configs for each slot
         switch (slot) {
             case 0 -> {

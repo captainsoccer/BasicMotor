@@ -3,7 +3,7 @@
     "name": "BasicMotor Rev",
     "version": "6.3.6",
     "uuid": "1cc08b8b-246f-4341-9157-0f9e3c2785f8",
-    "frcYear": "2025",
+    "frcYear": "2026",
     "mavenUrls": [
         "https://jitpack.io"
     ],

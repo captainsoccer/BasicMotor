@@ -3,7 +3,7 @@
     "name": "BasicMotor Full Brushless",
     "version": "6.3.6",
     "uuid": "09f0a944-983e-4f0e-9ba3-589adaa23033",
-    "frcYear": "2025",
+    "frcYear": "2026",
     "mavenUrls": [
         "https://jitpack.io"
     ],

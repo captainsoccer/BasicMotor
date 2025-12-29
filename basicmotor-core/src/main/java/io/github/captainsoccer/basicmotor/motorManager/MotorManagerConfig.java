@@ -121,7 +121,7 @@ public class MotorManagerConfig {
         this.PROFILE_LOOP_HZ = 50;
         this.SENSOR_LOOP_HZ = 4;
         this.DEFAULT_MAX_OUTPUT = 12;
-        this.DEFAULT_IDEAL_VOLTAGE = 13;
+        this.DEFAULT_IDEAL_VOLTAGE = 12;
         this.MESSAGE_DISPLAY_TIMEOUT_SECONDS = 3;
         this.STARTUP_DELAY_SECONDS = 5;
     }

@@ -49,13 +49,13 @@ public class MotorProcess {
 
     /**
      * The next alarm time for the main loop.
-     * This is in microseconds, relative to the fpga time.
+     * This is in microseconds, relative to the FPGA time.
      */
     private long mainLoopAlarmTime;
 
     /**
      * The next alarm time for the sensor loop.
-     * This is in microseconds, relative to the fpga time.
+     * This is in microseconds, relative to the FPGA time.
      */
     private long sensorLoopAlarmTime;
 

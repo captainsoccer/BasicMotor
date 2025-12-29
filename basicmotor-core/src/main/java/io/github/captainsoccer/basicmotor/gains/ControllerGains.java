@@ -431,6 +431,14 @@ public class ControllerGains {
                                 value, FeedForwardsGains.ChangeType.FRICTION_FEED_FORWARD));
 
         builder.addDoubleProperty(
+                "frictionFeedForwardDeadband",
+                () -> slot.getFeedForwardsGains().getFrictionFeedForwardDeadband(),
+                (value) ->
+                        slot.updateFeedForwardsGains(
+                                value, FeedForwardsGains.ChangeType.FRICTION_FEED_FORWARD_DEADBAND)
+        );
+
+        builder.addDoubleProperty(
                 "setpointFeedForward",
                 () -> slot.getFeedForwardsGains().getSetpointFeedForward(),
 

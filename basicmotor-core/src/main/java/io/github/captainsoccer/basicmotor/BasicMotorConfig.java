@@ -369,9 +369,15 @@ public class BasicMotorConfig {
          */
         public double setpointFeedForward = 0;
         /**
+         * The friction feed forward deadband of the motor controller units are: (unit of control).
+         * <p>The value must be greater than or equal to zero (zero means no deadband)
+         * Used only when using friction feed forward and using position control.
+         * This is the deadband around the setpoint where the friction feed forward will not be applied.
+         */
+        public double frictionFeedForwardDeadband = 0;
+        /**
          * The simple feed forward gain of the motor controller units are: (voltage)
          *
-         * <p>The value must be greater than or equal to zero (zero means no simple feed forward)
          * <p>It's just a constant voltage applied to the output used, for example, in elevators
          */
         public double simpleFeedForward = 0;
@@ -391,7 +397,7 @@ public class BasicMotorConfig {
          */
         public FeedForwardsGains getFeedForwards() {
             return new FeedForwardsGains(
-                    simpleFeedForward, frictionFeedForward, setpointFeedForward, customFeedForward);
+                    simpleFeedForward, frictionFeedForward, frictionFeedForwardDeadband, setpointFeedForward, customFeedForward);
         }
 
         /**

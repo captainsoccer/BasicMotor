@@ -316,15 +316,16 @@ public class Controller implements Sendable {
      * It uses the saved setpoint for calculating the feed forward output.
      * This includes the arbitrary feed forward set by the user.
      *
-     * @param directionOfTravel the direction of travel of the motor (used to calculate the friction
-     *                          feed forward)
+     * @param measurement The measurement of the controller (depending on the control mode).
+     *                    Used only when using position control for calculating the direction of travel.
      * @return The feed forward of the controller in volts
      */
-    public LogFrame.FeedForwardOutput calculateFeedForward(double directionOfTravel) {
-        return controllerGains
-                .getControllerFeedForwards(request.slot)
-                .calculateFeedForwardOutput(
-                        this.setpoint.position, directionOfTravel, request.arbFeedForward);
+    public LogFrame.FeedForwardOutput calculateFeedForward(double measurement) {
+        var feedForwards = controllerGains.getControllerFeedForwards(request.slot);
+
+        double directionOfTravel = feedForwards.calculateDirectionOfTravel(setpoint.position, measurement, request.controlMode);
+
+        return feedForwards.calculateFeedForwardOutput(this.setpoint.position, directionOfTravel, request.arbFeedForward);
     }
 
     /**

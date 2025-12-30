@@ -112,7 +112,7 @@ public class TalonFXInterface extends MotorInterface {
     public void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
 
         if(config.Feedback.FeedbackSensorSource == FeedbackSensorSourceValue.RemoteCANcoder)
-            pidGains = pidGains.convertToMotorGains(1 / defaultMeasurements.getGearRatio(), 1);
+            pidGains = unConvertPIDgains(pidGains);
 
 // Thanks ctre for making them different types of configs for each slot
         switch (slot) {
@@ -152,8 +152,23 @@ public class TalonFXInterface extends MotorInterface {
         applyConfig();
     }
 
+    /**
+     * Returns the pid gains to be in the real units (not motor units)
+     * because if using a remote canCoder it will be the real units (as the canCoder reads real and not motor)
+     * @param pidGains the motor units pid gains
+     * @return the real units pid gains
+     */
+    private PIDGains unConvertPIDgains(PIDGains pidGains) {
+        return pidGains.convertToMotorGains(1 / defaultMeasurements.getGearRatio(),
+                1 /  defaultMeasurements.getUnitConversion());
+    }
+
     @Override
     public void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
+
+        if(config.Feedback.FeedbackSensorSource == FeedbackSensorSourceValue.RemoteCANcoder)
+            constraints = unConvertConstraintsGains(constraints);
+
 // sets the max voltage to the max motor output
         config.Voltage.PeakForwardVoltage = constraints.getMaxMotorOutput();
         config.Voltage.PeakReverseVoltage = constraints.getMinMotorOutput();
@@ -190,6 +205,17 @@ public class TalonFXInterface extends MotorInterface {
 
         // applies the config to the motor
         applyConfig();
+    }
+
+    /**
+     * Returns the constraint gains to be in the real units (not motor units)
+     * because if using a remote canCoder it will be the real units (as the canCoder reads real and not motor)
+     * @param constraints the motor units constraints
+     * @return the real units constraints
+     */
+    private ConstraintsGains unConvertConstraintsGains(ConstraintsGains constraints) {
+        return constraints.convertToMotorConstraints(1 / defaultMeasurements.getGearRatio(),
+                1 / defaultMeasurements.getUnitConversion());
     }
 
     /**

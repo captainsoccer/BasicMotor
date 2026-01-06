@@ -1,4 +1,5 @@
 package io.github.captainsoccer.basicmotor.ctre.talonfx;
+import com.ctre.phoenix6.CANBus;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 
 /**
@@ -21,7 +22,7 @@ public class BasicTalonFXConfig extends BasicMotorConfig {
      * This is only useful when using a canivore and the motor is connected to a canivore.
      * Otherwise, do not change this value.
      */
-    public String canBusName = "rio";
+    public CANBus canBus = CANBus.roboRIO();
 
     /**
      * This enables the Field Oriented Control (FOC) for the TalonFX motor controller.
@@ -46,7 +47,7 @@ public class BasicTalonFXConfig extends BasicMotorConfig {
         super.copy(copy);
 
         copy.currentLimitConfig = this.currentLimitConfig.copy();
-        copy.canBusName = this.canBusName;
+        copy.canBus = this.canBus;
         copy.enableFOC = this.enableFOC;
         copy.waitForAllSignals = this.waitForAllSignals;
 

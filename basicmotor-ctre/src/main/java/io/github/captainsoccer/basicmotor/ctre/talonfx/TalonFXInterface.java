@@ -1,5 +1,6 @@
 package io.github.captainsoccer.basicmotor.ctre.talonfx;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -22,7 +23,7 @@ public class TalonFXInterface extends MotorInterface {
      * The name of the default can bus chain.
      * This is the can bus chain built into the robo rio.
      */
-    public static final String defaultCanBusName = "rio";
+    public static final CANBus defaultCanBusName = CANBus.roboRIO();
 
     /** The TalonFX motor controller. */
     public final TalonFX motor;
@@ -66,13 +67,13 @@ public class TalonFXInterface extends MotorInterface {
     public TalonFXInterface(BasicMotorConfig config) {
         super(config);
 
-        final String canBusName;
+        final CANBus canBus;
         if (config instanceof BasicTalonFXConfig talonConfig)
-            canBusName = talonConfig.canBusName;
+            canBus = talonConfig.canBus;
         else
-            canBusName = defaultCanBusName;
+            canBus = defaultCanBusName;
 
-        motor = new TalonFX(config.motorConfig.id, canBusName);
+        motor = new TalonFX(config.motorConfig.id, canBus);
         this.config = new TalonFXConfiguration();
 
         applyConfig();

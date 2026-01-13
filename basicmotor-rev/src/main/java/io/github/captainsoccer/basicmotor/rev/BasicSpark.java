@@ -1,6 +1,7 @@
 package io.github.captainsoccer.basicmotor.rev;
 
 import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
 import io.github.captainsoccer.basicmotor.BasicMotor;
@@ -218,7 +219,7 @@ public abstract class BasicSpark extends BasicMotor {
         ClosedLoopSlot closedLoopSlot = ClosedLoopSlot.values()[slot];
         
         //sets the closed loop output for the Spark motor controller
-        var errorSignal = motorInterface.motor.getClosedLoopController().setReference(setpoint, mode, closedLoopSlot, feedForward);
+        var errorSignal = motorInterface.motor.getClosedLoopController().setSetpoint(setpoint, mode, closedLoopSlot, feedForward);
 
         //if there was an error setting the closed loop output, report it
         if (errorSignal != REVLibError.kOk) {
@@ -329,7 +330,7 @@ public abstract class BasicSpark extends BasicMotor {
     public void setDefaultMeasurements() {
         var config = motorInterface.config;
 
-        config.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder);
+        config.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder);
 
         int maxPeriodMs =
                 32767; // maximum period in milliseconds for the Spark MAX according to the documentation
@@ -404,7 +405,7 @@ public abstract class BasicSpark extends BasicMotor {
         // sets the absolute encoder configuration
         setAbsoluteEncoderConfig(inverted, zeroOffset, sensorToMotorRatio, absoluteEncoderRange);
         // sets the feedback sensor for the closed loop controller
-        config.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder);
+        config.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
         int periodMs = (int) (MotorManager.ControllerLocation.MOTOR.getSeconds() * 1000); // convert to milliseconds
         // sets the period for the absolute encoder position and velocity
@@ -498,7 +499,7 @@ public abstract class BasicSpark extends BasicMotor {
         var config = motorInterface.config;
 
         // sets the feedback sensor for the closed loop controller
-        config.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAlternateOrExternalEncoder);
+        config.closedLoop.feedbackSensor(FeedbackSensor.kAlternateOrExternalEncoder);
 
         configExternalEncoder(inverted, sensorToMotorRatio);
 

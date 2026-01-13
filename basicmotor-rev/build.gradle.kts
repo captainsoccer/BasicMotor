@@ -3,7 +3,7 @@ plugins {
     `maven-publish`
 }
 
-val revLibVersion = "2025.0.3"
+val revLibVersion = "2026.0.0"
 
 java {
 //    toolchain {

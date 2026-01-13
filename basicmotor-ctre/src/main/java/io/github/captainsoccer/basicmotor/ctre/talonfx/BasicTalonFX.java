@@ -1,6 +1,7 @@
 package io.github.captainsoccer.basicmotor.ctre.talonfx;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
@@ -223,7 +224,8 @@ public class BasicTalonFX extends BasicMotor {
 
         motor.sensors.setDutyCycleToDefaultRate(true);
 
-        Follower follower = new Follower(motor.motor.getDeviceID(), inverted);
+        Follower follower =
+                new Follower(motor.motor.getDeviceID(), inverted ? MotorAlignmentValue.Opposed : MotorAlignmentValue.Aligned);
 
         this.motorInterface.motor.setControl(follower);
     }

@@ -1,6 +1,8 @@
 package io.github.captainsoccer.basicmotor.rev;
 
+import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
@@ -43,6 +45,7 @@ public class SparkBaseInterface extends MotorInterface {
 
         this.motor = motor;
         this.config = motorConfig.voltageCompensation(MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE); // set the voltage compensation to the idle voltage
+        config.encoder.velocityConversionFactor(1.0 / 60);
         // all configs should be stored in code and not on motor
         applyConfig();
 
@@ -65,6 +68,7 @@ public class SparkBaseInterface extends MotorInterface {
         super(motorConfig);
         this.motor = motor;
         this.config = config.voltageCompensation(MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE); // set the voltage compensation to the idle voltage
+        config.encoder.velocityConversionFactor(1.0 / 60);
         // all configs should be stored in code and not on motor
         applyConfig();
 
@@ -202,8 +206,8 @@ public class SparkBaseInterface extends MotorInterface {
         var okSignal =
                 motor.configure(
                         config,
-                        SparkBase.ResetMode.kResetSafeParameters,
-                        SparkBase.PersistMode.kNoPersistParameters);
+                        ResetMode.kResetSafeParameters,
+                        PersistMode.kNoPersistParameters);
 
         if (okSignal != REVLibError.kOk) {
             errorHandler.logAndReportError("Failed to apply configuration to Spark motor, Error: " + okSignal.name());

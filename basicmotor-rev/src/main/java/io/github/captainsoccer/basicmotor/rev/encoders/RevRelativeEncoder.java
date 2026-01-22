@@ -47,7 +47,7 @@ public class RevRelativeEncoder extends Measurements {
 
     @Override
     public Measurement update(double dt) {
-        currentVelocity = encoder.getVelocity() / 60; // Convert to rotations per second
+        currentVelocity = encoder.getVelocity(); // Convert to rotations per second
 
         acceleration = (currentVelocity - previousVelocity) / dt;
 

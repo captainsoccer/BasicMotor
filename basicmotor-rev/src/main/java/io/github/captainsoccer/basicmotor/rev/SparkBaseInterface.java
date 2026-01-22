@@ -1,6 +1,8 @@
 package io.github.captainsoccer.basicmotor.rev;
 
+import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
@@ -204,8 +206,8 @@ public class SparkBaseInterface extends MotorInterface {
         var okSignal =
                 motor.configure(
                         config,
-                        SparkBase.ResetMode.kResetSafeParameters,
-                        SparkBase.PersistMode.kNoPersistParameters);
+                        ResetMode.kResetSafeParameters,
+                        PersistMode.kNoPersistParameters);
 
         if (okSignal != REVLibError.kOk) {
             errorHandler.logAndReportError("Failed to apply configuration to Spark motor, Error: " + okSignal.name());

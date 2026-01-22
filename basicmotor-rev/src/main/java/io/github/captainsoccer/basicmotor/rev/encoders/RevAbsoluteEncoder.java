@@ -41,7 +41,7 @@ public class RevAbsoluteEncoder extends Measurements {
     @Override
     public Measurement update(double dt) {
         // converts rpm to rps
-        currentVelocity = encoder.getVelocity() / 60;
+        currentVelocity = encoder.getVelocity();
 
         acceleration = (currentVelocity - previousVelocity) / dt;
 

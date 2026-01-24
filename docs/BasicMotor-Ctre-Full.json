@@ -1,7 +1,7 @@
 {
     "fileName": "BasicMotor-Ctre-Full.json",
     "name": "BasicMotor Full",
-    "version": "6.4.2",
+    "version": "6.4.3",
     "uuid": "93dea7aa-3062-46af-ae27-7a95825df614",
     "frcYear": "2026",
     "mavenUrls": [
@@ -12,17 +12,17 @@
         {
             "groupId": "com.github.captainsoccer.BasicMotor",
             "artifactId": "basicmotor-core",
-            "version": "v6.4.2"
+            "version": "v6.4.3"
         },
         {
             "groupId": "com.github.captainsoccer.BasicMotor",
             "artifactId": "basicmotor-ctre",
-            "version": "v6.4.2"
+            "version": "v6.4.3"
         },
         {
             "groupId": "com.github.captainsoccer.BasicMotor",
             "artifactId": "basicmotor-ctre-brushed",
-            "version": "v6.4.2"
+            "version": "v6.4.3"
         }
     ],
     "jniDependencies": [

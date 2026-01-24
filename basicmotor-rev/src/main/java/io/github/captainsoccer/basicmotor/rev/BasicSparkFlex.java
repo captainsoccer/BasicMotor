@@ -111,7 +111,7 @@ public class BasicSparkFlex extends BasicSpark {
         config.externalEncoder.inverted(inverted);
         // sets the conversion factor for the absolute encoder position and velocity
         config.externalEncoder.positionConversionFactor(sensorToMotorRatio);
-        config.externalEncoder.velocityConversionFactor(sensorToMotorRatio);
+        config.externalEncoder.velocityConversionFactor(RPM_TO_RPS_CONVERSION * sensorToMotorRatio);
     }
 
     @Override

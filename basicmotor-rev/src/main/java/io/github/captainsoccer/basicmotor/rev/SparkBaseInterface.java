@@ -69,6 +69,7 @@ public class SparkBaseInterface extends MotorInterface {
         super(motorConfig);
         this.motor = motor;
         this.config = config;
+        
         if(!(motorConfig instanceof BasicSparkConfig sparkConfig && !sparkConfig.enableVoltageCompensation))
             config.voltageCompensation(MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE); // set the voltage compensation to the idle voltage
 

@@ -14,7 +14,6 @@ import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import io.github.captainsoccer.basicmotor.rev.encoders.RevAbsoluteEncoder;
 import io.github.captainsoccer.basicmotor.rev.encoders.RevRelativeEncoder;
@@ -39,6 +38,11 @@ public abstract class BasicSpark extends BasicMotor {
      * This value is based on chatGPT's answer to the question about the idle power draw of the Spark MAX motor controller.
      */
     private static final double SPARK_BASE_IDLE_POWER_DRAW = 0.72;
+
+    /**
+     * The ratio to multiply RPM to get RPS
+     */
+    public static final double RPM_TO_RPS_CONVERSION = 1.0 / 60;
 
     /**
      * Creates a new Spark Base motor controller with the provided parameters.
@@ -464,7 +468,8 @@ public abstract class BasicSpark extends BasicMotor {
         config.absoluteEncoder.inverted(inverted);
         // sets the conversion factor for the absolute encoder position and velocity
         config.absoluteEncoder.positionConversionFactor(sensorToMotorRatio);
-        config.absoluteEncoder.velocityConversionFactor(sensorToMotorRatio);
+        // first converts the velocity from RPM to RPS then applies the ratio
+        config.absoluteEncoder.velocityConversionFactor(RPM_TO_RPS_CONVERSION * sensorToMotorRatio);
         // sets the zero centered range of the absolute encoder
         config.absoluteEncoder.zeroCentered(absoluteEncoderRange.zeroCentered());
         // sets the zero offset of the absolute encoder

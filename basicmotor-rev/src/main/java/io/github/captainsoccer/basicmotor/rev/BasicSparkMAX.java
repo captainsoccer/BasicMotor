@@ -117,7 +117,8 @@ public class BasicSparkMAX extends BasicSpark {
         config.alternateEncoder.inverted(inverted);
         // sets the conversion factor for the absolute encoder position and velocity
         config.alternateEncoder.positionConversionFactor(sensorToMotorRatio);
-        config.alternateEncoder.velocityConversionFactor(sensorToMotorRatio);
+        // first converts the velocity to RPS instead of RPM then applies the gear ratio
+        config.alternateEncoder.velocityConversionFactor(RPM_TO_RPS_CONVERSION * sensorToMotorRatio);
     }
 
     @Override

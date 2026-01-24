@@ -440,7 +440,7 @@ public class ControllerGains {
 
         builder.addDoubleProperty(
                 "setpointFeedForward",
-                () -> slot.getFeedForwardsGains().getSetpointFeedForward(),
+                () -> slot.getFeedForwardsGains().getkV(),
 
                 (value) ->
                         slot.updateFeedForwardsGains(

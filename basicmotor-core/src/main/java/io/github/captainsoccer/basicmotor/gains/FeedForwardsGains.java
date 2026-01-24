@@ -42,6 +42,28 @@ public class FeedForwardsGains {
         SETPOINT_FEED_FORWARD
     }
 
+    public interface KG {
+        double calculate(double setpoint);
+
+        default KG ELEVATOR(double kG){
+            return setpoint -> kG;
+        }
+
+        default KG ARM_COS(double kG){
+            return setpoint -> Math.cos(rotationsToRadians(setpoint)) * kG;
+        }
+
+        default KG ARM_SIN(double kG){
+            return setpoint -> Math.sin(rotationsToRadians(setpoint)) * kG;
+        }
+
+        default double rotationsToRadians(double rotation){
+            return rotation / (Math.PI * 2);
+        }
+    }
+
+    private final KG kG;
+
     /**
      * A constant voltage added to the motor output.(volts)
      * This is useful for mechanisms that have a constant force applied to them.
@@ -61,8 +83,9 @@ public class FeedForwardsGains {
      * For example, a flywheel that requires a certain voltage to reach a certain speed.
      * Or any closed loop that controls velocity.
      */
-    private final double setpointFeedForward;
+    private final double kV;
 
+    private final double kA;
     /**
      * A functions that takes the setpoint of the controller and returns a Voltage that is added to the output.(volts per unit of control)
      * Useful for mechanisms that require a more complex feed forward calculation.
@@ -81,15 +104,15 @@ public class FeedForwardsGains {
     /**
      * Creates a feed forward gain with the given values.
      *
-     * @param simpleFeedForward   The simple feed forward gain (volts)
-     * @param frictionFeedForward The friction feed forward gain (volts) (Greater than or equal to zero)
+     * @param simpleFeedForward           The simple feed forward gain (volts)
+     * @param frictionFeedForward         The friction feed forward gain (volts) (Greater than or equal to zero)
      * @param frictionFeedForwardDeadband The deadband for the friction feed forward when in position control mode (unit of control)
      *                                    (Greater than or equal to zero)
-     * @param setpointFeedForward The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
-     * @param feedForwardFunction The feed forward function that takes the setpoint and returns a voltage (volts per unit of control)
+     * @param kV                          The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
+     * @param feedForwardFunction         The feed forward function that takes the setpoint and returns a voltage (volts per unit of control)
      */
     public FeedForwardsGains(double simpleFeedForward, double frictionFeedForward, double frictionFeedForwardDeadband,
-                             double setpointFeedForward, Function<Double, Double> feedForwardFunction) {
+                             double kV, Function<Double, Double> feedForwardFunction) {
 
         // simple feed forward can be negative, as it is a constant voltage added to the output
         this.simpleFeedForward = simpleFeedForward;
@@ -102,9 +125,9 @@ public class FeedForwardsGains {
             throw new IllegalArgumentException("frictionFeedForwardDeadband must be greater than or equal to zero");
         this.frictionFeedForwardDeadband = frictionFeedForwardDeadband;
 
-        if (setpointFeedForward < 0)
+        if (kV < 0)
             throw new IllegalArgumentException("setpointFeedForward must be greater than or equal to zero");
-        this.setpointFeedForward = setpointFeedForward;
+        this.kV = kV;
 
         //no checks can be done on the feedForwardFunction, as it is a custom function
         this.feedForwardFunction = feedForwardFunction;
@@ -114,32 +137,32 @@ public class FeedForwardsGains {
      * Creates a feed forward that is only a setpoint feed forward gain.
      * Useful for simple flywheels or other mechanisms that only require a setpoint feed forward gain.
      *
-     * @param setpointFeedForward The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
+     * @param kV The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
      */
-    public FeedForwardsGains(double setpointFeedForward) {
-        this(0, 0, 0, setpointFeedForward, (x) -> 0.0);
+    public FeedForwardsGains(double kV) {
+        this(0, 0, 0, kV, (x) -> 0.0);
     }
 
     /**
      * Creates a feed forward that the setpoint feed forward gain and friction feed forward gain.
      * Useful for simple flywheels or other mechanism that require a setpoint feed forward gain and want to counteract friction.
      *
-     * @param setpointFeedForward The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
+     * @param kV                  The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
      * @param frictionFeedForward The friction feed forward gain (volts) (Greater than or equal to zero)
      */
-    public FeedForwardsGains(double setpointFeedForward, double frictionFeedForward) {
-        this(0, frictionFeedForward, 0, setpointFeedForward, (x) -> 0.0);
+    public FeedForwardsGains(double kV, double frictionFeedForward) {
+        this(0, frictionFeedForward, 0, kV, (x) -> 0.0);
     }
 
     /**
      * Creates a feed forward that has a setpoint feed forward gain, simple feed forward gain, and friction feed forward gain.
      *
-     * @param setpointFeedForward The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
+     * @param kV                  The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
      * @param simpleFeedForward   The simple feed forward gain (volts)
      * @param frictionFeedForward The friction feed forward gain (volts) (Greater than or equal to zero)
      */
-    public FeedForwardsGains(double setpointFeedForward, double simpleFeedForward, double frictionFeedForward) {
-        this(simpleFeedForward, frictionFeedForward, 0, setpointFeedForward, (x) -> 0.0);
+    public FeedForwardsGains(double kV, double simpleFeedForward, double frictionFeedForward) {
+        this(simpleFeedForward, frictionFeedForward, 0, kV, (x) -> 0.0);
     }
 
     /**
@@ -182,8 +205,8 @@ public class FeedForwardsGains {
      *
      * @return The setpoint feed forward gain (volts per unit of control)
      */
-    public double getSetpointFeedForward() {
-        return setpointFeedForward;
+    public double getkV() {
+        return kV;
     }
 
     /**
@@ -218,15 +241,14 @@ public class FeedForwardsGains {
      * @return The direction of travel of the mechanism (1 for forward, -1 for backward, 0 for stationary)
      */
     public double calculateDirectionOfTravel(double setpoint, double measurement, Controller.ControlMode controlMode) {
-        if(controlMode.isPositionControl()) {
+        if (controlMode.isPositionControl()) {
             double delta = setpoint - measurement;
 
-            if(Math.abs(delta) <= frictionFeedForwardDeadband)
+            if (Math.abs(delta) <= frictionFeedForwardDeadband)
                 return 0.0;
             else
                 return Math.signum(delta);
-        }
-        else return Math.signum(setpoint);
+        } else return Math.signum(setpoint);
     }
 
     /**
@@ -244,7 +266,7 @@ public class FeedForwardsGains {
         return new LogFrame.FeedForwardOutput(
                 simpleFeedForward,
                 frictionFeedForward * directionOfTravel,
-                setpointFeedForward * setpoint,
+                kV * setpoint,
                 getCalculatedFeedForward(setpoint),
                 arbitraryFeedForward);
     }
@@ -258,9 +280,9 @@ public class FeedForwardsGains {
      * @return A new FeedForwardsGains object with the updated feed forward gain.
      */
     public FeedForwardsGains changeValue(double value, ChangeType type) {
-        var array = new Double[]{simpleFeedForward, frictionFeedForward, frictionFeedForwardDeadband, setpointFeedForward};
+        var array = new Double[]{simpleFeedForward, frictionFeedForward, frictionFeedForwardDeadband, kV};
 
-        if(array[type.ordinal()] == value) return this;
+        if (array[type.ordinal()] == value) return this;
 
         array[type.ordinal()] = value;
 

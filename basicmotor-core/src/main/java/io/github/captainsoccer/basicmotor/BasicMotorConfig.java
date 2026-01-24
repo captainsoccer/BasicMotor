@@ -430,7 +430,7 @@ public class BasicMotorConfig {
 
             config.simpleFeedForward = feedForwards.getSimpleFeedForward();
             config.frictionFeedForward = feedForwards.getFrictionFeedForward();
-            config.setpointFeedForward = feedForwards.getSetpointFeedForward();
+            config.setpointFeedForward = feedForwards.getkV();
             config.customFeedForward = feedForwards.getFeedForwardFunction();
 
             return config;

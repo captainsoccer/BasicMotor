@@ -3,12 +3,13 @@ package io.github.captainsoccer.basicmotor.gains;
 
 import java.util.function.Function;
 
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 
 /**
  * This class is used to store and calculate feed forward gains for a motor controller.
- * This class supports simple feed forward, friction feed forward, setpoint feed forward, and a custom function for feed forward.
+ * This class supports a gravity feedforward, friction feedforward, velocity feedforward, acceleration feedforward and a custom feedforward function.
  * Values here can be updated from the dashboard through the {@link Controller}.
  * All feed forwards are calculated in volts.
  * You can calculate most of the feed forwards using tools like SysID.
@@ -25,10 +26,6 @@ public class FeedForwardsGains {
      */
     public enum ChangeType {
         /**
-         * Changes the simple feed forward gain (adds constant voltage to the output)
-         */
-        KG,
-        /**
          * Changes the friction feed forward gain (adds constant voltage to the output based on the direction of travel)
          */
         FRICTION_FEED_FORWARD,
@@ -37,18 +34,24 @@ public class FeedForwardsGains {
          */
         FRICTION_FEED_FORWARD_DEADBAND,
         /**
-         * Changes the setpoint feed forward gain (multiplies the setpoint by a constant voltage)
+         * Changes the velocity feed forward gain (multiplies the target velocity by a constant voltage)
          */
-        KV
+        KV,
+        /**
+         * Changes the acceleration feedforward gain (only applies to motion profiling)
+         */
+        KA
     }
 
     /**
      * The interface that represent a gravity feedForward for mechanisms.
      * Use static methods to create the feedForward
      */
+    @FunctionalInterface
     public interface KG {
         /**
          * calculates the feedforward based on the setpoint
+         *
          * @param setpoint the setpoint of the motor (default units are rotations)
          * @return the feedForward to apply in volts
          */
@@ -57,53 +60,59 @@ public class FeedForwardsGains {
         /**
          * Creates a feed forward for an elevator mechanism.
          * This does not use the setpoint as the elevator feedforward always works
+         *
          * @param kG The feed forward to apply in volts
          * @return the KG to give to the motor
          */
-        static KG ELEVATOR(double kG){
+        static KG ELEVATOR(double kG) {
             return setpoint -> kG;
         }
 
         /**
          * creates a feedforward for an arm system based on the cosine of the target angle
+         *
          * @param kG The feedforward to apply times the cosine (volts)
          * @return the KG to give to the motor
          */
-        static KG ARM_COS(double kG){
+        static KG ARM_COS(double kG) {
             return setpoint -> Math.cos(rotationsToRadians(setpoint)) * kG;
         }
 
         /**
          * creates a feedforward for an arm system based on the sine of the target angle
+         *
          * @param kG The feedforward to apply times the sine (volts)
          * @return the KG to give to the motor
          */
-        static KG ARM_SIN(double kG){
+        static KG ARM_SIN(double kG) {
             return setpoint -> Math.sin(rotationsToRadians(setpoint)) * kG;
         }
 
         /**
          * Applies no feedForward
+         *
          * @return an empty feedForward
          */
-        static KG NONE(){
+        static KG NONE() {
             return setpoint -> 0;
         }
 
         /**
          * converts rotation to radians
+         *
          * @param rotation the rotation to convert
          * @return the angle in radians
          */
-        static double rotationsToRadians(double rotation){
+        static double rotationsToRadians(double rotation) {
             return rotation / (Math.PI * 2);
         }
     }
 
     /**
-     * The KG gain, used for systems like arms and elevators
+     * The KG gain, used for systems like arms and elevators.
+     * this feedforward applies only to position control.
      */
-    private final KG kG = KG.NONE();
+    private final KG kG;
 
     /**
      * A constant voltage added to the motor output based on the direction of travel.(volts)
@@ -123,11 +132,17 @@ public class FeedForwardsGains {
      * A voltage that is multiplied by the setpoint of the motor, then added to the output.(volts per unit of control)
      * Useful for mechanisms that require a voltage that is proportional to the setpoint.
      * For example, a flywheel that requires a certain voltage to reach a certain speed.
-     * Or any closed loop that controls velocity.
+     * Used only for velocity control.
      */
     private final double kV;
 
+    /**
+     * A voltage that is multiplied by the acceleration of the setpoint when using motion profiles.
+     * This feedforward only applies when using motion profile.
+     * This improves the behavior of the mechanism using a motion profile.
+     */
     private final double kA;
+
     /**
      * A functions that takes the setpoint of the controller and returns a Voltage that is added to the output.(volts per unit of control)
      * Useful for mechanisms that require a more complex feed forward calculation.
@@ -138,18 +153,19 @@ public class FeedForwardsGains {
     /**
      * Creates a feed forward gain with the given values.
      *
-     * @param simpleFeedForward           The simple feed forward gain (volts)
+     * @param kG                          The gravity feedForward gain
      * @param frictionFeedForward         The friction feed forward gain (volts) (Greater than or equal to zero)
      * @param frictionFeedForwardDeadband The deadband for the friction feed forward when in position control mode (unit of control)
      *                                    (Greater than or equal to zero)
      * @param kV                          The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
+     * @param kA                          The acceleration feedforward gain
      * @param feedForwardFunction         The feed forward function that takes the setpoint and returns a voltage (volts per unit of control)
      */
-    public FeedForwardsGains(double simpleFeedForward, double frictionFeedForward, double frictionFeedForwardDeadband,
-                             double kV, Function<Double, Double> feedForwardFunction) {
+    public FeedForwardsGains(KG kG, double frictionFeedForward, double frictionFeedForwardDeadband,
+                             double kV, double kA, Function<Double, Double> feedForwardFunction) {
 
         // simple feed forward can be negative, as it is a constant voltage added to the output
-        this.simpleFeedForward = simpleFeedForward;
+        this.kG = kG;
 
         if (frictionFeedForward < 0)
             throw new IllegalArgumentException("frictionFeedForward must be greater than or equal to zero");
@@ -163,6 +179,10 @@ public class FeedForwardsGains {
             throw new IllegalArgumentException("setpointFeedForward must be greater than or equal to zero");
         this.kV = kV;
 
+        if (kA < 0)
+            throw new IllegalArgumentException("setpointFeedForward must be greater than or equal to zero");
+        this.kA = kA;
+
         //no checks can be done on the feedForwardFunction, as it is a custom function
         this.feedForwardFunction = feedForwardFunction;
     }
@@ -174,7 +194,7 @@ public class FeedForwardsGains {
      * @param kV The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
      */
     public FeedForwardsGains(double kV) {
-        this(0, 0, 0, kV, (x) -> 0.0);
+        this(KG.NONE(), 0, 0, kV, 0, (x) -> 0.0);
     }
 
     /**
@@ -185,18 +205,18 @@ public class FeedForwardsGains {
      * @param frictionFeedForward The friction feed forward gain (volts) (Greater than or equal to zero)
      */
     public FeedForwardsGains(double kV, double frictionFeedForward) {
-        this(0, frictionFeedForward, 0, kV, (x) -> 0.0);
+        this(KG.NONE(), frictionFeedForward, 0, kV, 0, (x) -> 0.0);
     }
 
     /**
-     * Creates a feed forward that has a setpoint feed forward gain, simple feed forward gain, and friction feed forward gain.
+     * Creates a feed forward that has a velocity feed forward gain, gravity forward gain, and friction feed forward gain.
      *
      * @param kV                  The setpoint feed forward gain (volts per unit of control) (Greater than or equal to zero)
-     * @param simpleFeedForward   The simple feed forward gain (volts)
+     * @param kG                  The gravity feedforward gain
      * @param frictionFeedForward The friction feed forward gain (volts) (Greater than or equal to zero)
      */
-    public FeedForwardsGains(double kV, double simpleFeedForward, double frictionFeedForward) {
-        this(simpleFeedForward, frictionFeedForward, 0, kV, (x) -> 0.0);
+    public FeedForwardsGains(double kV, KG kG, double frictionFeedForward) {
+        this(kG, frictionFeedForward, 0, kV, 0, (x) -> 0.0);
     }
 
     /**
@@ -204,16 +224,16 @@ public class FeedForwardsGains {
      * Means that there is no feed forward output from the controller.
      */
     public FeedForwardsGains() {
-        this(0, 0, 0, 0, (x) -> 0.0);
+        this(KG.NONE(), 0, 0, 0, 0, (x) -> 0.0);
     }
 
     /**
-     * Gets the simple feed forward gain.
+     * Gets the gravity feedforward gain.
      *
-     * @return The simple feed forward gain (volts)
+     * @return the KG gain (function that returns voltage)
      */
-    public double getSimpleFeedForward() {
-        return simpleFeedForward;
+    public KG getKG() {
+        return kG;
     }
 
     /**
@@ -235,12 +255,22 @@ public class FeedForwardsGains {
     }
 
     /**
-     * Gets the setpoint feed forward gain.
+     * Gets the velocity feedforward gain
      *
-     * @return The setpoint feed forward gain (volts per unit of control)
+     * @return The velocity feedforward gain (volts per unit of control)
      */
-    public double getkV() {
+    public double getKV() {
         return kV;
+    }
+
+    /**
+     * Gets the acceleration feedforward
+     * This only applies to motion profiles
+     *
+     * @return The acceleration feedforward (volts per unit of control squared)
+     */
+    public double getKA() {
+        return kA;
     }
 
     /**
@@ -264,45 +294,66 @@ public class FeedForwardsGains {
     }
 
     /**
-     * Calculates the direction of travel of the mechanism based on the setpoint and measurement.
-     * This is used to determine the direction of travel for the friction feed forward.
-     * If using position control mode, it will check if the motor is within the
-     * {@link #frictionFeedForwardDeadband} of the setpoint to determine if the motor is stationary.
+     * Calculates the feed forward output of the controller.
+     * This includes all the feedforwards stored.
      *
-     * @param setpoint    The setpoint of the controller (unit of control)
-     * @param measurement The current measurement of the controller (unit of control)
-     * @param controlMode The control mode of the controller.
-     * @return The direction of travel of the mechanism (1 for forward, -1 for backward, 0 for stationary)
+     * @param setpoint             The setpoint of the controller (unit of control)
+     * @param measurement          The measurement of the controller, used to calculate the friction feedforward
+     * @param controlMode          The control mode of the controller, used to determine which feedforwards to use.
+     * @param arbitraryFeedForward The arbitrary feed forward provided by the user (volts)
+     * @return The feed forward output of the controller.
      */
-    public double calculateDirectionOfTravel(double setpoint, double measurement, Controller.ControlMode controlMode) {
+    public LogFrame.FeedForwardOutput calculateFeedForwardOutput(
+            TrapezoidProfile.State setpoint, double measurement, Controller.ControlMode controlMode, double arbitraryFeedForward) {
+
+        return new LogFrame.FeedForwardOutput(
+                controlMode.isPositionControl() ? kG.calculate(setpoint.position) : 0,
+                calculateFrictionFeedForward(setpoint.position, measurement, controlMode),
+                calculateKV(setpoint, controlMode),
+                controlMode == Controller.ControlMode.PROFILED_VELOCITY ? setpoint.velocity * kA : 0,
+                controlMode.requiresPID() ? getCalculatedFeedForward(setpoint.position) : 0,
+                arbitraryFeedForward
+        );
+    }
+
+    /**
+     * Calculates the velocity feedForward based on the control mode and the setpoint.
+     * the velocity feedforward is used only when using velocity control or using profiled position
+     *
+     * @param setpoint    the setpoint of the motor
+     * @param controlMode the control mode of the motor
+     * @return the calculated velocity feedForward
+     */
+    private double calculateKV(TrapezoidProfile.State setpoint, Controller.ControlMode controlMode) {
+        if (controlMode.isVelocityControl()) return setpoint.position * kV;
+
+        if (controlMode == Controller.ControlMode.PROFILED_POSITION) return setpoint.velocity * kV;
+
+        return 0;
+    }
+
+    /**
+     * Calculates the friction feedForward based on the setpoint measurement and control mode.
+     * the friction feedforward only applies when using either position control mode or velocity.
+     * if using position control mode it checks if the error is within the {@link #frictionFeedForwardDeadband}.
+     * @param setpoint the setpoint of the motor
+     * @param measurement the measurement of the motor
+     * @param controlMode the control mode of the motor
+     * @return the friction feedForward to apply
+     */
+    private double calculateFrictionFeedForward(double setpoint, double measurement, Controller.ControlMode controlMode) {
         if (controlMode.isPositionControl()) {
             double delta = setpoint - measurement;
 
             if (Math.abs(delta) <= frictionFeedForwardDeadband)
                 return 0.0;
             else
-                return Math.signum(delta);
-        } else return Math.signum(setpoint);
-    }
+                return Math.signum(delta) * frictionFeedForward;
+        }
+        else if(controlMode.isVelocityControl())
+            return Math.signum(setpoint) * frictionFeedForward;
 
-    /**
-     * Calculates the feed forward output of the controller.
-     * This includes the simple feed forward, friction feed forward, setpoint feed forward,
-     * feed forward function output, and any arbitrary feed forward value.
-     *
-     * @param setpoint             The setpoint of the controller (unit of control)
-     * @param directionOfTravel    The direction of travel of the mechanism (1 for forward, -1 for backward)
-     * @param arbitraryFeedForward The arbitrary feed forward provided by the user (volts)
-     * @return The feed forward output of the controller.
-     */
-    public LogFrame.FeedForwardOutput calculateFeedForwardOutput(
-            double setpoint, double directionOfTravel, double arbitraryFeedForward) {
-        return new LogFrame.FeedForwardOutput(
-                simpleFeedForward,
-                frictionFeedForward * directionOfTravel,
-                kV * setpoint,
-                getCalculatedFeedForward(setpoint),
-                arbitraryFeedForward);
+        return 0;
     }
 
     /**
@@ -314,12 +365,12 @@ public class FeedForwardsGains {
      * @return A new FeedForwardsGains object with the updated feed forward gain.
      */
     public FeedForwardsGains changeValue(double value, ChangeType type) {
-        var array = new Double[]{simpleFeedForward, frictionFeedForward, frictionFeedForwardDeadband, kV};
+        var array = new Double[]{frictionFeedForward, frictionFeedForwardDeadband, kV, kA};
 
         if (array[type.ordinal()] == value) return this;
 
         array[type.ordinal()] = value;
 
-        return new FeedForwardsGains(array[0], array[1], array[2], array[3], feedForwardFunction);
+        return new FeedForwardsGains(kG, array[0], array[1], array[2], array[3], feedForwardFunction);
     }
 }

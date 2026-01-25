@@ -139,7 +139,7 @@ public enum TankConstants {
      * @param inverted whether the output of this side should be inverted
      * @param pidGains the PID gains for the motor (for velocity control)
      * @param feedForwards the feed forwards for the motor (for velocity control)
-     * @param kA the kA constant for the motor (for simulation) (kv is the setpoint feed forward)
+     * @param kA the kA constant for the motor (for simulation) (kv is the velocity feed forward)
      */
     TankConstants(int leadID, int followID, boolean inverted, PIDGains pidGains, FeedForwardsGains feedForwards, double kA){
         leadMotorConfig = createCommonMotorConfig();

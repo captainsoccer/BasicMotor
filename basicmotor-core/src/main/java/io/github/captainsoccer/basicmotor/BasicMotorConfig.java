@@ -361,14 +361,6 @@ public class BasicMotorConfig {
          */
         public double frictionFeedForward = 0;
         /**
-         * The setpoint feed forward gain of the motor controller units are: (voltage / unit of control).
-         *
-         * <p>The value must be greater than or equal to zero (zero means no setpoint feed forward)
-         * <p>This is usually used in velocity control, but it is just a feed forward gain that is
-         * multiplied by the setpoint
-         */
-        public double setpointFeedForward = 0;
-        /**
          * The friction feed forward deadband of the motor controller units are: (unit of control).
          * <p>The value must be greater than or equal to zero (zero means no deadband)
          * Used only when using friction feed forward and using position control.
@@ -376,11 +368,24 @@ public class BasicMotorConfig {
          */
         public double frictionFeedForwardDeadband = 0;
         /**
-         * The simple feed forward gain of the motor controller units are: (voltage)
+         * The setpoint feed forward gain of the motor controller units are: (voltage / unit of velocity).
+         *
+         * <p>The value must be greater than or equal to zero (zero means no setpoint feed forward)
+         * <p>This value is only used when using velocity control mode or profiled position control mode.
+         */
+        public double velocityFeedforward = 0;
+        /**
+         * The acceleration feedforward gain of the motor controller, units are: (voltage / unit of acceleration)
+         *
+         * <p>The value is only used when using a profiled velocity control mode and is applied when the motion profile is active.
+         */
+        public double accelerationFeedforward = 0;
+        /**
+         * The gravity feed forward gain of the motor controller units are: (voltage)
          *
          * <p>It's just a constant voltage applied to the output used, for example, in elevators
          */
-        public double simpleFeedForward = 0;
+        public FeedForwardsGains.KG gravityFeedforward = FeedForwardsGains.KG.NONE();
         /**
          * A custom feed forward function that takes the setpoint and returns a value.
          * It takes a setpoint in units of control and returns a value in volts.
@@ -397,7 +402,7 @@ public class BasicMotorConfig {
          */
         public FeedForwardsGains getFeedForwards() {
             return new FeedForwardsGains(
-                    simpleFeedForward, frictionFeedForward, frictionFeedForwardDeadband, setpointFeedForward, customFeedForward);
+                    gravityFeedforward, frictionFeedForward, frictionFeedForwardDeadband, velocityFeedforward, accelerationFeedforward, customFeedForward);
         }
 
         /**
@@ -411,9 +416,10 @@ public class BasicMotorConfig {
         public FeedForwardConfig copy() {
             var copy = new FeedForwardConfig();
 
-            copy.simpleFeedForward = this.simpleFeedForward;
+            copy.gravityFeedforward = this.gravityFeedforward;
             copy.frictionFeedForward = this.frictionFeedForward;
-            copy.setpointFeedForward = this.setpointFeedForward;
+            copy.velocityFeedforward = this.velocityFeedforward;
+            copy.accelerationFeedforward = this.accelerationFeedforward;
             copy.customFeedForward = this.customFeedForward;
 
             return copy;
@@ -428,9 +434,10 @@ public class BasicMotorConfig {
         public static FeedForwardConfig fromFeedForwards(FeedForwardsGains feedForwards) {
             var config = new FeedForwardConfig();
 
-            config.simpleFeedForward = feedForwards.getSimpleFeedForward();
+            config.gravityFeedforward = feedForwards.getKG();
             config.frictionFeedForward = feedForwards.getFrictionFeedForward();
-            config.setpointFeedForward = feedForwards.getkV();
+            config.velocityFeedforward = feedForwards.getKV();
+            config.accelerationFeedforward = feedForwards.getKA();
             config.customFeedForward = feedForwards.getFeedForwardFunction();
 
             return config;

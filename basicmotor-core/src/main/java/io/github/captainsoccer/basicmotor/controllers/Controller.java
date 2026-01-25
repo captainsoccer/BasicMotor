@@ -323,9 +323,7 @@ public class Controller implements Sendable {
     public LogFrame.FeedForwardOutput calculateFeedForward(double measurement) {
         var feedForwards = controllerGains.getControllerFeedForwards(request.slot);
 
-        double directionOfTravel = feedForwards.calculateDirectionOfTravel(setpoint.position, measurement, request.controlMode);
-
-        return feedForwards.calculateFeedForwardOutput(this.setpoint.position, directionOfTravel, request.arbFeedForward);
+        return feedForwards.calculateFeedForwardOutput(this.setpoint, measurement, request.controlMode, request.arbFeedForward);
     }
 
     /**
@@ -384,6 +382,15 @@ public class Controller implements Sendable {
                 (value) -> setControl(value, controlModeChooser.getSelected(), request.slot));
 
         SmartDashboard.putData(SendableRegistry.getName(this) + "/controlMode", controlModeChooser);
+    }
+
+    /**
+     * sets the slot that gets sent to the dashboard.
+     * This method needs to be called before sending the controller to the dashboard.
+     * @param slot The slot to send to the dashboard
+     */
+    public void setSendableSlot(int slot){
+        controllerGains.setSendableSlot(slot);
     }
 
     /**

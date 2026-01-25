@@ -114,9 +114,10 @@ public class LogFrame {
      * This is in a record due to multithreading and performance reasons.
      * all the units are in volts.
      *
-     * @param kG     The simple feedforward output of the controller.
+     * @param kG                    The gravity feedforward output of the controller
      * @param frictionFeedForward   The friction feedforward output of the controller.
-     * @param kV   The setpoint feedforward output of the controller.
+     * @param kV                    The velocity feedforward output of the controller.
+     * @param kA                    The acceleration feedforward output of the controller.
      * @param calculatedFeedForward The feedforward calculated from the feedforward function.
      * @param arbitraryFeedForward  The feedforward set by the user with the control request.
      * @param totalOutput           The total output of the feedforward (the sum of all feedforward outputs).
@@ -125,6 +126,7 @@ public class LogFrame {
             double kG,
             double frictionFeedForward,
             double kV,
+            double kA,
             double calculatedFeedForward,
             double arbitraryFeedForward,
             double totalOutput) {
@@ -132,7 +134,7 @@ public class LogFrame {
         /**
          * An empty feedforward output used when no feedforward data is available.
          */
-        public static final FeedForwardOutput EMPTY = new FeedForwardOutput(0, 0, 0, 0, 0);
+        public static final FeedForwardOutput EMPTY = new FeedForwardOutput(0, 0, 0, 0, 0, 0);
 
         /**
          * The record holding the feedforward output of the controller.
@@ -140,28 +142,32 @@ public class LogFrame {
          * all the units are in volts.
          * This will calculate the total output of the feedforward
          *
-         * @param simpleFeedForward     The simple feedforward output of the controller.
+         * @param kG                    The gravity feedforward output of the controller
          * @param frictionFeedForward   The friction feedforward output of the controller.
-         * @param setPointFeedForward   The setpoint feedforward output of the controller.
+         * @param kV                    The velocity feedforward output of the controller.
+         * @param kA                    The acceleration feedforward output of the controller.
          * @param calculatedFeedForward The feedforward calculated from the feedforward function.
          * @param arbitraryFeedForward  The feedforward set by the user with the control request.
          */
         public FeedForwardOutput(
-                double simpleFeedForward,
+                double kG,
                 double frictionFeedForward,
-                double setPointFeedForward,
+                double kV,
+                double kA,
                 double calculatedFeedForward,
                 double arbitraryFeedForward) {
             this(
-                    simpleFeedForward,
+                    kG,
                     frictionFeedForward,
-                    setPointFeedForward,
+                    kV,
+                    kA,
                     calculatedFeedForward,
                     arbitraryFeedForward,
 
-                    simpleFeedForward
+                    kG
                             + frictionFeedForward
-                            + setPointFeedForward
+                            + kV
+                            + kA
                             + calculatedFeedForward
                             + arbitraryFeedForward);
         }

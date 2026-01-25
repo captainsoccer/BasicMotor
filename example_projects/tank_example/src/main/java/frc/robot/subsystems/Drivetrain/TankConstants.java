@@ -150,7 +150,7 @@ public enum TankConstants {
         leadMotorConfig.slot0Config.pidConfig = PIDConfig.fromGains(pidGains);
         leadMotorConfig.slot0Config.feedForwardConfig = FeedForwardConfig.fromFeedForwards(feedForwards);
 
-        leadMotorConfig.simulationConfig.kV = feedForwards.getSetpointFeedForward();
+        leadMotorConfig.simulationConfig.kV = feedForwards.getKV();
         leadMotorConfig.simulationConfig.kA = kA;
 
         followerMotorConfig = new BasicSparkConfig();

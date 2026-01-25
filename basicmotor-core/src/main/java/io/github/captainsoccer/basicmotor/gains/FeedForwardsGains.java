@@ -27,7 +27,7 @@ public class FeedForwardsGains {
         /**
          * Changes the simple feed forward gain (adds constant voltage to the output)
          */
-        SIMPLE_FEED_FORWARD,
+        KG,
         /**
          * Changes the friction feed forward gain (adds constant voltage to the output based on the direction of travel)
          */
@@ -39,43 +39,85 @@ public class FeedForwardsGains {
         /**
          * Changes the setpoint feed forward gain (multiplies the setpoint by a constant voltage)
          */
-        SETPOINT_FEED_FORWARD
+        KV
     }
 
+    /**
+     * The interface that represent a gravity feedForward for mechanisms.
+     * Use static methods to create the feedForward
+     */
     public interface KG {
+        /**
+         * calculates the feedforward based on the setpoint
+         * @param setpoint the setpoint of the motor (default units are rotations)
+         * @return the feedForward to apply in volts
+         */
         double calculate(double setpoint);
 
-        default KG ELEVATOR(double kG){
+        /**
+         * Creates a feed forward for an elevator mechanism.
+         * This does not use the setpoint as the elevator feedforward always works
+         * @param kG The feed forward to apply in volts
+         * @return the KG to give to the motor
+         */
+        static KG ELEVATOR(double kG){
             return setpoint -> kG;
         }
 
-        default KG ARM_COS(double kG){
+        /**
+         * creates a feedforward for an arm system based on the cosine of the target angle
+         * @param kG The feedforward to apply times the cosine (volts)
+         * @return the KG to give to the motor
+         */
+        static KG ARM_COS(double kG){
             return setpoint -> Math.cos(rotationsToRadians(setpoint)) * kG;
         }
 
-        default KG ARM_SIN(double kG){
+        /**
+         * creates a feedforward for an arm system based on the sine of the target angle
+         * @param kG The feedforward to apply times the sine (volts)
+         * @return the KG to give to the motor
+         */
+        static KG ARM_SIN(double kG){
             return setpoint -> Math.sin(rotationsToRadians(setpoint)) * kG;
         }
 
-        default double rotationsToRadians(double rotation){
+        /**
+         * Applies no feedForward
+         * @return an empty feedForward
+         */
+        static KG NONE(){
+            return setpoint -> 0;
+        }
+
+        /**
+         * converts rotation to radians
+         * @param rotation the rotation to convert
+         * @return the angle in radians
+         */
+        static double rotationsToRadians(double rotation){
             return rotation / (Math.PI * 2);
         }
     }
 
-    private final KG kG;
-
     /**
-     * A constant voltage added to the motor output.(volts)
-     * This is useful for mechanisms that have a constant force applied to them.
-     * (Like an elevator)
+     * The KG gain, used for systems like arms and elevators
      */
-    private final double simpleFeedForward;
+    private final KG kG = KG.NONE();
 
     /**
      * A constant voltage added to the motor output based on the direction of travel.(volts)
      * This is used to counteract friction in the mechanism.
      */
     private final double frictionFeedForward;
+
+    /**
+     * The deadband for the friction feed forward when in position control mode.
+     * If the motor is within this deadband of the setpoint, the friction feed forward will not be applied.
+     * This is to prevent the motor from oscillating around the setpoint when it is close to it.
+     * Used only in position control mode.
+     */
+    private final double frictionFeedForwardDeadband;
 
     /**
      * A voltage that is multiplied by the setpoint of the motor, then added to the output.(volts per unit of control)
@@ -92,14 +134,6 @@ public class FeedForwardsGains {
      * For example, an arm that the force of gravity is the sine of the angle of the arm.
      */
     private final Function<Double, Double> feedForwardFunction;
-
-    /**
-     * The deadband for the friction feed forward when in position control mode.
-     * If the motor is within this deadband of the setpoint, the friction feed forward will not be applied.
-     * This is to prevent the motor from oscillating around the setpoint when it is close to it.
-     * Used only in position control mode.
-     */
-    private final double frictionFeedForwardDeadband;
 
     /**
      * Creates a feed forward gain with the given values.

@@ -114,17 +114,17 @@ public class LogFrame {
      * This is in a record due to multithreading and performance reasons.
      * all the units are in volts.
      *
-     * @param simpleFeedForward     The simple feedforward output of the controller.
+     * @param kG     The simple feedforward output of the controller.
      * @param frictionFeedForward   The friction feedforward output of the controller.
-     * @param setPointFeedForward   The setpoint feedforward output of the controller.
+     * @param kV   The setpoint feedforward output of the controller.
      * @param calculatedFeedForward The feedforward calculated from the feedforward function.
      * @param arbitraryFeedForward  The feedforward set by the user with the control request.
      * @param totalOutput           The total output of the feedforward (the sum of all feedforward outputs).
      */
     public record FeedForwardOutput(
-            double simpleFeedForward,
+            double kG,
             double frictionFeedForward,
-            double setPointFeedForward,
+            double kV,
             double calculatedFeedForward,
             double arbitraryFeedForward,
             double totalOutput) {

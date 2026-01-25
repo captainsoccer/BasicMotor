@@ -125,7 +125,7 @@ public class SlotGains {
      * @param changeType the type of feed forward gain to change
      */
     public void updateFeedForwardsGains(double value, FeedForwardsGains.ChangeType changeType) {
-        if(value < 0 && changeType != FeedForwardsGains.ChangeType.SIMPLE_FEED_FORWARD){
+        if(value < 0 && changeType != FeedForwardsGains.ChangeType.KG){
             DriverStation.reportError("Feed forward gain values cannot be negative. Ignoring value: " + value, false);
             return;
         }

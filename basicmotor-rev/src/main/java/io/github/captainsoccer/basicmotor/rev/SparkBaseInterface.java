@@ -44,6 +44,7 @@ public class SparkBaseInterface extends MotorInterface {
         super(name);
 
         this.motor = motor;
+
         this.config = motorConfig.voltageCompensation(MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE); // set the voltage compensation to the idle voltage
         config.encoder.velocityConversionFactor(BasicSpark.RPM_TO_RPS_CONVERSION);
         // all configs should be stored in code and not on motor
@@ -67,7 +68,13 @@ public class SparkBaseInterface extends MotorInterface {
     public SparkBaseInterface(SparkBase motor, SparkBaseConfig config, BasicMotorConfig motorConfig){
         super(motorConfig);
         this.motor = motor;
-        this.config = config.voltageCompensation(MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE); // set the voltage compensation to the idle voltage
+        this.config = config;
+        
+        if(!(motorConfig instanceof BasicSparkConfig sparkConfig && !sparkConfig.enableVoltageCompensation))
+            config.voltageCompensation(MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE); // set the voltage compensation to the idle voltage
+        else
+            config.disableVoltageCompensation();
+
         config.encoder.velocityConversionFactor(BasicSpark.RPM_TO_RPS_CONVERSION);
         // all configs should be stored in code and not on motor
         applyConfig();
@@ -138,9 +145,12 @@ public class SparkBaseInterface extends MotorInterface {
     public void updateConstraintsGainsToMotor(ConstraintsGains constraints) {
         double idealVoltage = MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE;
 
-        // sets the max voltage to the max motor output
-        config.closedLoop.maxOutput(constraints.getMaxMotorOutput() / idealVoltage);
-        config.closedLoop.minOutput(constraints.getMinMotorOutput() / idealVoltage);
+        for(int i = 0; i < 3; i ++){
+            var slot = ClosedLoopSlot.fromInt(i);
+            // sets the max voltage to the max motor output
+            config.closedLoop.maxOutput(constraints.getMaxMotorOutput() / idealVoltage, slot);
+            config.closedLoop.minOutput(constraints.getMinMotorOutput() / idealVoltage, slot);
+        }
 
         config.closedLoopRampRate(constraints.getRampRate());
         config.openLoopRampRate(constraints.getRampRate());

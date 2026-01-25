@@ -166,7 +166,7 @@ public enum SwerveModuleConstants {
         DRIVE_MOTOR_CONFIG.slot0Config.pidConfig = PIDConfig.fromGains(drivePIDGains);
         DRIVE_MOTOR_CONFIG.slot0Config.feedForwardConfig = FeedForwardConfig.fromFeedForwards(driveFeedForwards);
 
-        DRIVE_MOTOR_CONFIG.simulationConfig.kV = driveFeedForwards.getSetpointFeedForward();
+        DRIVE_MOTOR_CONFIG.simulationConfig.kV = driveFeedForwards.getKV();
         DRIVE_MOTOR_CONFIG.simulationConfig.kA = driveKA;
 
         //apply specific configurations for the steer motor

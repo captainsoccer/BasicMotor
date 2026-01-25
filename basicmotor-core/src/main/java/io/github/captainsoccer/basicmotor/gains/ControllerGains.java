@@ -408,20 +408,12 @@ public class ControllerGains {
     }
 
     /**
-     * Builds the sendable for the feed forwards (simpleFeedForward, frictionFeedForward, setpointFeedForward).
+     * Builds the sendable for the feed forwards (friction, frictionDeadband, velocity, acceleration)
      *
      * @param builder The sendable builder
      * @param slot    The slot to build the sendable for
      */
     private void buildFeedForwardSendable(SendableBuilder builder, SlotGains slot) {
-        builder.addDoubleProperty(
-                "simpleFeedForward",
-                () -> slot.getFeedForwardsGains().getSimpleFeedForward(),
-
-                (value) ->
-                        slot.updateFeedForwardsGains(
-                                value, FeedForwardsGains.ChangeType.SIMPLE_FEED_FORWARD));
-
         builder.addDoubleProperty(
                 "frictionFeedForward",
                 () -> slot.getFeedForwardsGains().getFrictionFeedForward(),
@@ -439,12 +431,20 @@ public class ControllerGains {
         );
 
         builder.addDoubleProperty(
-                "setpointFeedForward",
-                () -> slot.getFeedForwardsGains().getSetpointFeedForward(),
+                "kV",
+                () -> slot.getFeedForwardsGains().getKV(),
 
                 (value) ->
                         slot.updateFeedForwardsGains(
-                                value, FeedForwardsGains.ChangeType.SETPOINT_FEED_FORWARD));
+                                value, FeedForwardsGains.ChangeType.KV));
+
+        builder.addDoubleProperty(
+                "kA",
+                () -> slot.getFeedForwardsGains().getKA(),
+
+                (value) ->
+                        slot.updateFeedForwardsGains(
+                                value, FeedForwardsGains.ChangeType.KA));
     }
 
     /**

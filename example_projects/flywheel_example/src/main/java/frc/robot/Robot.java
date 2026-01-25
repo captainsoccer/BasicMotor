@@ -60,7 +60,7 @@ public class Robot extends LoggedRobot
         
         if (autonomousCommand != null)
         {
-            autonomousCommand.schedule();
+            CommandScheduler.getInstance().schedule(autonomousCommand);
         }
     }
     

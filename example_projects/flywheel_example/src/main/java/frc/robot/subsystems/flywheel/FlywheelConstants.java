@@ -25,7 +25,7 @@ public class FlywheelConstants {
         motorConfig.slot0Config.pidConfig.kI = 0; // Integral gain
         motorConfig.slot0Config.pidConfig.kD = 0; // Derivative gain
 
-        motorConfig.slot0Config.feedForwardConfig.setpointFeedForward = 0.56; // Feedforward for setpoint
+        motorConfig.slot0Config.feedForwardConfig.velocityFeedforward = 0.56; // Feedforward for setpoint
         motorConfig.slot0Config.feedForwardConfig.frictionFeedForward = 0.05; // Friction feedforward
 
         motorConfig.constraintsConfig.maxOutput = 10; // Maximum output in Volts

@@ -14,6 +14,11 @@ import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 public class BasicSparkConfig extends BasicMotorConfig {
 
     /**
+     * enables voltage compensation for the motor to allow for more consistent operation for different battery loads.
+     */
+    public boolean enableVoltageCompensation = true;
+
+    /**
      * The current limit configuration for the spark base motor controller.
      */
     public CurrentLimitConfig currentLimitConfig = new CurrentLimitConfig();

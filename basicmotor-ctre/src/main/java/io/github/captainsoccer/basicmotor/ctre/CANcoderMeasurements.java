@@ -75,9 +75,6 @@ public class CANcoderMeasurements extends Measurements {
      * This method does not optimize the canbus usage of the canCoder.
      *
      * @param canCoder                The CANCoder to use for the measurements.
-     * @param canCoderToMechanismRatio The ratio of the canCoder rotations to the mechanism rotations.
-     *                                 A number larger than 1 means the canCoder spins more than the mechanism.
-     *                                 In most cases, this will be 1.
      * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
      *                                 See {@link MotorConfig#unitConversion} for more information.
      * @param throughRIO               If true, the canCoder will use the timings of a roboRIO pid controller,
@@ -88,8 +85,8 @@ public class CANcoderMeasurements extends Measurements {
      *                                 Use this only if you have a licensed version of Phoenix Pro connected to a canivore.
      *                                 Otherwise, it will slow down the robot code significantly.
      */
-    public CANcoderMeasurements(CANcoder canCoder, double canCoderToMechanismRatio, double unitConversion, boolean throughRIO, boolean timeSync) {
-        super(canCoderToMechanismRatio, unitConversion);
+    public CANcoderMeasurements(CANcoder canCoder, double unitConversion, boolean throughRIO, boolean timeSync) {
+        super(1, unitConversion);
 
         this.timeSync = timeSync;
 
@@ -111,9 +108,6 @@ public class CANcoderMeasurements extends Measurements {
      * Creates a new measurements object with the given CANCoder.
      *
      * @param cancoder                 The CANCoder to use for the measurements.
-     * @param canCoderToMechanismRatio The ratio of the canCoder rotations to the mechanism rotations.
-     *                                 A number larger than 1 means the canCoder spins more than the mechanism.
-     *                                 In most cases, this will be 1.
      * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
      *                                 See {@link MotorConfig#unitConversion} for more information.
      * @param throughRIO               If true, the canCoder will use the timings of a roboRIO pid controller,
@@ -121,22 +115,19 @@ public class CANcoderMeasurements extends Measurements {
      *                                 If the canCoder cannot communicate directly with the motor
      *                                 (like a talonFX), this should be true.
      */
-    public CANcoderMeasurements(CANcoder cancoder, double canCoderToMechanismRatio, double unitConversion, boolean throughRIO) {
-        this(cancoder, canCoderToMechanismRatio, unitConversion, throughRIO, false);
+    public CANcoderMeasurements(CANcoder cancoder, double unitConversion, boolean throughRIO) {
+        this(cancoder, unitConversion, throughRIO, false);
     }
 
     /**
      * Creates a new measurements object with the given CANCoder.
      *
      * @param cancoder                 The CANCoder to use for the measurements.
-     * @param canCoderToMechanismRatio The ratio of the canCoder rotations to the mechanism rotations.
-     *                                 A number larger than 1 means the canCoder spins more than the mechanism.
-     *                                 In most cases, this will be 1.
      * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
      *                                 See {@link MotorConfig#unitConversion} for more information.
      */
-    public CANcoderMeasurements(CANcoder cancoder, double canCoderToMechanismRatio, double unitConversion) {
-        this(cancoder, canCoderToMechanismRatio, unitConversion, true);
+    public CANcoderMeasurements(CANcoder cancoder, double unitConversion) {
+        this(cancoder, unitConversion, true);
     }
 
     @Override

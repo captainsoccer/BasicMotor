@@ -112,7 +112,7 @@ public class TalonFXInterface extends MotorInterface {
     @Override
     public void updatePIDGainsToMotor(PIDGains pidGains, int slot) {
 
-        if(config.Feedback.FeedbackSensorSource == FeedbackSensorSourceValue.RemoteCANcoder)
+        if(config.Feedback.FeedbackSensorSource != FeedbackSensorSourceValue.RotorSensor)
             pidGains = unConvertPIDgains(pidGains);
 
 // Thanks ctre for making them different types of configs for each slot

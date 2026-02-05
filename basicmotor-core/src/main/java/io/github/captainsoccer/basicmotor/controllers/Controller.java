@@ -15,6 +15,7 @@ import io.github.captainsoccer.basicmotor.gains.FeedForwardsGains;
 
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * This class is used to control the {@link BasicMotor}.
@@ -27,6 +28,12 @@ public class Controller implements Sendable {
      * This is used to log errors and warnings of the controller.
      */
     private final ErrorHandler errorHandler;
+
+    /**
+     * The supplier of the current measurement of the motor.
+     * This is used to reset the controller if needed.
+     */
+    private final Supplier<Measurements.Measurement> measurementSupplier;
 
     /**
      * The gains of the controller.
@@ -74,12 +81,14 @@ public class Controller implements Sendable {
             ControllerGains controllerGains,
             Consumer<Integer> hasPIDGainsChangeRunnable,
             Runnable hasConstraintsChangeRunnable,
-            ErrorHandler errorHandler) {
+            ErrorHandler errorHandler,
+            Supplier<Measurements.Measurement> measurementSupplier) {
         this.controllerGains = controllerGains;
         //sets the callbacks for when the PID gains or constraints are changed
         this.controllerGains.setHasPIDGainsChanged(hasPIDGainsChangeRunnable);
         this.controllerGains.setHasConstraintsChanged(hasConstraintsChangeRunnable);
 
+        this.measurementSupplier = measurementSupplier;
         this.errorHandler = errorHandler;
 
         //creates the PID controller with the given gains
@@ -117,6 +126,12 @@ public class Controller implements Sendable {
 
         if (request.controlMode.isProfiled() && !controllerGains.isProfiled(request.slot)) {
             errorHandler.logWarning("Using a profiled control mode without a profile set in the controller gains. using normal request");
+        }
+
+        if(request.controlMode != this.request.controlMode){
+            Measurements.Measurement measurement = measurementSupplier.get();
+            if(request.controlMode.isVelocityControl()) reset(measurement.velocity(), measurement.acceleration());
+            else reset(measurement.position(), measurement.velocity());
         }
 
         this.request = request;

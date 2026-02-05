@@ -3,7 +3,7 @@ plugins {
     `maven-publish`
 }
 
-val phoenix6Version = "26.1.0"
+val phoenix6Version = "26.1.1"
 val phoenix5Version = "5.36.0"
 
 java {

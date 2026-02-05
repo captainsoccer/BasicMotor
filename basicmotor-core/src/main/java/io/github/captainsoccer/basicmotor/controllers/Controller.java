@@ -76,6 +76,8 @@ public class Controller implements Sendable {
      *                                     This function is to flag when the constraints are changed
      *                                     so the motor can send the updates to the motor controller on a slower thread.
      * @param errorHandler                 The error handler of the controller, used to log errors and warnings.
+     * @param measurementSupplier          The supplier for the current measurement of the motor, used for resting the
+     *                                     controller when control mode changes
      */
     public Controller(
             ControllerGains controllerGains,
@@ -128,9 +130,9 @@ public class Controller implements Sendable {
             errorHandler.logWarning("Using a profiled control mode without a profile set in the controller gains. using normal request");
         }
 
-        if(request.controlMode != this.request.controlMode){
+        if (request.controlMode != this.request.controlMode) {
             Measurements.Measurement measurement = measurementSupplier.get();
-            if(request.controlMode.isVelocityControl()) reset(measurement.velocity(), measurement.acceleration());
+            if (request.controlMode.isVelocityControl()) reset(measurement.velocity(), measurement.acceleration());
             else reset(measurement.position(), measurement.velocity());
         }
 
@@ -386,7 +388,7 @@ public class Controller implements Sendable {
 
         String setPointName = isProfiled ? "goal" : "setpoint";
 
-        for(ControlMode mode : ControlMode.values()) {
+        for (ControlMode mode : ControlMode.values()) {
             controlModeChooser.addOption(mode.name(), mode);
         }
 
@@ -402,9 +404,10 @@ public class Controller implements Sendable {
     /**
      * sets the slot that gets sent to the dashboard.
      * This method needs to be called before sending the controller to the dashboard.
+     *
      * @param slot The slot to send to the dashboard
      */
-    public void setSendableSlot(int slot){
+    public void setSendableSlot(int slot) {
         controllerGains.setSendableSlot(slot);
     }
 

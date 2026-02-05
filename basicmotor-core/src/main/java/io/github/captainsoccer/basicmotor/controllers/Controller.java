@@ -15,6 +15,7 @@ import io.github.captainsoccer.basicmotor.gains.FeedForwardsGains;
 
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * This class is used to control the {@link BasicMotor}.
@@ -27,6 +28,12 @@ public class Controller implements Sendable {
      * This is used to log errors and warnings of the controller.
      */
     private final ErrorHandler errorHandler;
+
+    /**
+     * The supplier of the current measurement of the motor.
+     * This is used to reset the controller if needed.
+     */
+    private final Supplier<Measurements.Measurement> measurementSupplier;
 
     /**
      * The gains of the controller.
@@ -69,17 +76,21 @@ public class Controller implements Sendable {
      *                                     This function is to flag when the constraints are changed
      *                                     so the motor can send the updates to the motor controller on a slower thread.
      * @param errorHandler                 The error handler of the controller, used to log errors and warnings.
+     * @param measurementSupplier          The supplier for the current measurement of the motor, used for resting the
+     *                                     controller when control mode changes
      */
     public Controller(
             ControllerGains controllerGains,
             Consumer<Integer> hasPIDGainsChangeRunnable,
             Runnable hasConstraintsChangeRunnable,
-            ErrorHandler errorHandler) {
+            ErrorHandler errorHandler,
+            Supplier<Measurements.Measurement> measurementSupplier) {
         this.controllerGains = controllerGains;
         //sets the callbacks for when the PID gains or constraints are changed
         this.controllerGains.setHasPIDGainsChanged(hasPIDGainsChangeRunnable);
         this.controllerGains.setHasConstraintsChanged(hasConstraintsChangeRunnable);
 
+        this.measurementSupplier = measurementSupplier;
         this.errorHandler = errorHandler;
 
         //creates the PID controller with the given gains
@@ -117,6 +128,12 @@ public class Controller implements Sendable {
 
         if (request.controlMode.isProfiled() && !controllerGains.isProfiled(request.slot)) {
             errorHandler.logWarning("Using a profiled control mode without a profile set in the controller gains. using normal request");
+        }
+
+        if (request.controlMode != this.request.controlMode) {
+            Measurements.Measurement measurement = measurementSupplier.get();
+            if (request.controlMode.isVelocityControl()) reset(measurement.velocity(), measurement.acceleration());
+            else reset(measurement.position(), measurement.velocity());
         }
 
         this.request = request;
@@ -371,7 +388,7 @@ public class Controller implements Sendable {
 
         String setPointName = isProfiled ? "goal" : "setpoint";
 
-        for(ControlMode mode : ControlMode.values()) {
+        for (ControlMode mode : ControlMode.values()) {
             controlModeChooser.addOption(mode.name(), mode);
         }
 
@@ -387,9 +404,10 @@ public class Controller implements Sendable {
     /**
      * sets the slot that gets sent to the dashboard.
      * This method needs to be called before sending the controller to the dashboard.
+     *
      * @param slot The slot to send to the dashboard
      */
-    public void setSendableSlot(int slot){
+    public void setSendableSlot(int slot) {
         controllerGains.setSendableSlot(slot);
     }
 

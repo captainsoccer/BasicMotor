@@ -84,7 +84,7 @@ public abstract class BasicSpark extends BasicMotor {
 
         this.motorInterface = (SparkBaseInterface) super.motorInterface;
 
-        if(motorConfig instanceof BasicSparkConfig sparkBaseConfig){
+        if (motorConfig instanceof BasicSparkConfig sparkBaseConfig) {
             setCurrentLimits(sparkBaseConfig.currentLimitConfig.getCurrentLimits());
 
             if (sparkBaseConfig.externalEncoderConfig.useExternalEncoder
@@ -103,7 +103,9 @@ public abstract class BasicSpark extends BasicMotor {
                         absoluteEncoderConfig.inverted,
                         absoluteEncoderConfig.zeroOffset,
                         absoluteEncoderConfig.sensorToMotorRatio,
-                        absoluteEncoderConfig.absoluteEncoderRange);
+                        absoluteEncoderConfig.absoluteEncoderRange,
+                        absoluteEncoderConfig.mechanismToSensorRatio,
+                        getMeasurements().getUnitConversion());
             }
 
             // if the motor is using only an external encoder, configure it
@@ -115,8 +117,7 @@ public abstract class BasicSpark extends BasicMotor {
                         externalEncoderConfig.sensorToMotorRatio,
                         externalEncoderConfig.mechanismToSensorRatio);
             }
-        }
-        else
+        } else
             errorHandler.logAndReportWarning("Not using specific spark base config for configuration, defaulting to brushless motor type.", true);
     }
 
@@ -221,7 +222,7 @@ public abstract class BasicSpark extends BasicMotor {
      */
     private void setClosedLoopOutput(double setpoint, double feedForward, SparkBase.ControlType mode, int slot) {
         ClosedLoopSlot closedLoopSlot = ClosedLoopSlot.values()[slot];
-        
+
         //sets the closed loop output for the Spark motor controller
         var errorSignal = motorInterface.motor.getClosedLoopController().setSetpoint(setpoint, mode, closedLoopSlot, feedForward);
 
@@ -287,7 +288,6 @@ public abstract class BasicSpark extends BasicMotor {
     protected void updateMainLoopTiming(MotorManager.ControllerLocation location) {
         motorInterface.configurePeriodicFrames(location.getHZ());
     }
-
 
 
     @Override
@@ -398,12 +398,21 @@ public abstract class BasicSpark extends BasicMotor {
      * @param absoluteEncoderRange The range that the absolute encoder should report.
      *                             This will be in the encoders rotations.
      *                             (0 to 1, -0.5 to 0.5, etc.)
+     * @param gearRatio            The ratio between the encoder and the mechanism. this is the divider for the encoder reading
+     *                             For example, if the motor has a gear ratio of 2:1, it means that for every 2 rotations of the motor, the mechanism rotates once.
+     * @param unitConversion       The value that will be multiplied by to convert the measurements to the desired units.
+     *                             This will be desired units per rotation.
+     *                             For example, if the desired units are meters and the motor has a gear ratio of 2:1,
+     *                             then the unit conversion should be 2 * Math.PI (the circumference of a circle with radius 1).
+     *                             More info at {@link BasicMotorConfig.MotorConfig#unitConversion}.
      */
     public void useAbsoluteEncoder(
             boolean inverted,
             double zeroOffset,
             double sensorToMotorRatio,
-            AbsoluteEncoderRange absoluteEncoderRange) {
+            AbsoluteEncoderRange absoluteEncoderRange,
+            double gearRatio,
+            double unitConversion) {
         var config = motorInterface.config;
 
         // sets the absolute encoder configuration
@@ -421,7 +430,26 @@ public abstract class BasicSpark extends BasicMotor {
         motorInterface.applyConfig();
 
         // set the measurements to the absolute encoder measurements
-        setMeasurements(new RevAbsoluteEncoder(motorInterface.motor.getAbsoluteEncoder()), false);
+        setMeasurements(new RevAbsoluteEncoder(motorInterface.motor.getAbsoluteEncoder(), sensorToMotorRatio * gearRatio, unitConversion), false);
+    }
+
+    /**
+     * Configures the motor controller to use an absolute encoder connected directly to the motor controller.
+     *
+     * @param inverted           If the absolute encoder is inverted.
+     *                           The default positive direction of the encoder is clockwise.
+     *                           This is opposite to the default positive direction of a motor.
+     * @param zeroOffset         The position the encoder reports that should be considered zero.
+     * @param sensorToMotorRatio The number which the reading of the absolute encoder should be
+     *                           multiplied by to get the motor output.
+     *                           This does not include unit conversion.
+     *                           This will be larger than 1.0 if the sensor is in a reduction to the motor.
+     * @param sensorRange        The range that the absolute encoder should report.
+     *                           This will be in the encoders rotations.
+     *                           (0 to 1, -0.5 to 0.5, etc.)
+     */
+    public void useAbsoluteEncoder(boolean inverted, double zeroOffset, double sensorToMotorRatio, AbsoluteEncoderRange sensorRange) {
+        useAbsoluteEncoder(inverted, zeroOffset, sensorToMotorRatio, sensorRange, 1, 1);
     }
 
     /**
@@ -437,7 +465,7 @@ public abstract class BasicSpark extends BasicMotor {
      *                           This will be larger than 1.0 if the sensor is in a reduction to the motor.
      */
     public void useAbsoluteEncoder(boolean inverted, double zeroOffset, double sensorToMotorRatio) {
-        useAbsoluteEncoder(inverted, zeroOffset, sensorToMotorRatio, AbsoluteEncoderRange.ZERO_TO_ONE);
+        useAbsoluteEncoder(inverted, zeroOffset, sensorToMotorRatio, AbsoluteEncoderRange.ZERO_TO_ONE, 1, 1);
     }
 
     /**
@@ -518,7 +546,7 @@ public abstract class BasicSpark extends BasicMotor {
         motorInterface.applyConfig();
 
         // set the measurements to the absolute encoder measurements
-        setMeasurements(new RevRelativeEncoder(getExternalEncoder(), mechanismToSensorRatio, unitConversion), false);
+        setMeasurements(new RevRelativeEncoder(getExternalEncoder(), sensorToMotorRatio * mechanismToSensorRatio, unitConversion), false);
     }
 
     /**

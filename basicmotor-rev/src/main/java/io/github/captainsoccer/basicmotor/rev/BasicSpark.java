@@ -33,8 +33,8 @@ public abstract class BasicSpark extends BasicMotor {
     private enum MotorEfficiencyFactor{
         NEO1(0.84 / 90.0, DCMotor.getNEO(1)),
         NEO2(0.84 / 90.0, DCMotor.getNEO(1)),
-        NEO_VORTEX(1, DCMotor.getNeoVortex(1)),
-        NEO_550(1, DCMotor.getNeo550(1)),
+        NEO_VORTEX(0.726 / 101, DCMotor.getNeoVortex(1)),
+        NEO_550(0.725 / 183, DCMotor.getNeo550(1)),
         UNKNOWN(1, DCMotor.getNeo550(1));
 
         /**

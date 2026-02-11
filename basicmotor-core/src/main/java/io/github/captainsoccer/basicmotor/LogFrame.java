@@ -47,13 +47,6 @@ public class LogFrame {
      */
     public boolean atGoal = false;
 
-    /**
-     * The applied torque of the motor.
-     * This is the torque that the motor is applying.
-     * This is only calculated if using a motor configuration with the correct gear ratio and motor type.
-     */
-    public double appliedTorque = 0;
-
     //Helper classes
 
     /**
@@ -73,6 +66,8 @@ public class LogFrame {
      *                      This is used to check how much energy the motor is consuming.
      * @param powerOutput   The power output of the motor (in watts).
      *                      This is used to check how much energy loss the motor has.
+     * @param appliedTorque The torque that the motor applies (in newton meters).
+     *                      This is used to see how much force the motor applies
      * @param dutyCycle     The duty cycle of the motor (in -1 to 1 range).
      *                      This is the ratio of the voltage output to the voltage input.
      */
@@ -84,12 +79,49 @@ public class LogFrame {
             double voltageInput,
             double powerDraw,
             double powerOutput,
+            double appliedTorque,
             double dutyCycle) {
+
+        /**
+         * The record holding the sensor data of the motor
+         * This is in a record due to multithreading and performance reasons.
+         *
+         * @param temperature              The temperature of the motor (in degrees Celsius)
+         * @param currentDraw              The current draw of the motor (in amps).
+         *                                 This is how much current the motor is drawing from the battery.
+         * @param currentOutput            The current output of the motor (in amps).
+         *                                 This is how much current is in the motor coils.
+         * @param voltageOutput            The voltage output of the motor (in volts).
+         *                                 This is how much voltage is being applied to the motor coils.
+         * @param voltageInput             The voltage input of the motor (in volts).
+         *                                 This will be the battery voltage available to the motor.
+         * @param appliedTorque            The torque that the motor applies (in newton meters).
+         *                                 This is used to see how much force the motor applies
+         * @param dutyCycle                The duty cycle of the motor (in -1 to 1 range).
+         *                                 This is the ratio of the voltage output to the voltage input.
+         * @param velocityRadiansPerSecond The velocity of the motor in radians per second.
+         *                                 Used to calculate the power output of the motor
+         */
+        public SensorData(
+                double temperature,
+                double currentDraw,
+                double currentOutput,
+                double voltageOutput,
+                double voltageInput,
+                double appliedTorque,
+                double dutyCycle,
+                double velocityRadiansPerSecond) {
+
+            this(temperature, currentDraw, currentOutput, voltageOutput, voltageInput,
+                    voltageInput * currentDraw,
+                    appliedTorque * velocityRadiansPerSecond,
+                    appliedTorque, dutyCycle);
+        }
 
         /**
          * An empty sensor data used when no sensors are available or when the motor is not initialized.
          */
-        public static final SensorData EMPTY = new SensorData(0, 0, 0, 0, 0, 0, 0, 0);
+        public static final SensorData EMPTY = new SensorData(0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     /**
@@ -228,7 +260,6 @@ public class LogFrame {
             table.put("Measurement", measurement);
             table.put("AtSetpoint", atSetpoint);
             table.put("AtGoal", atGoal);
-            table.put("AppliedTorque", appliedTorque);
         }
 
         @Override
@@ -239,7 +270,6 @@ public class LogFrame {
             measurement = table.get("Measurement", measurement);
             atSetpoint = table.get("AtSetpoint", atSetpoint);
             atGoal = table.get("AtGoal", atGoal);
-            appliedTorque = table.get("AppliedTorque", appliedTorque);
         }
 
         @SuppressWarnings("MethodDoesntCallSuperMethod")
@@ -252,7 +282,6 @@ public class LogFrame {
             copy.measurement = this.measurement;
             copy.atSetpoint = this.atSetpoint;
             copy.atGoal = this.atGoal;
-            copy.appliedTorque = this.appliedTorque;
             return copy;
         }
     }

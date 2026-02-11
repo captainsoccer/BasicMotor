@@ -4,6 +4,7 @@ import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
+import edu.wpi.first.math.system.plant.DCMotor;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
@@ -25,12 +26,80 @@ import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig.AbsoluteEncoderCo
  * This class assumes that the motor is brushless.
  */
 public abstract class BasicSpark extends BasicMotor {
+    /**
+     * an enum that stores the efficiency of rev Motors.
+     * This is used to convert the power output of the motor to the power draw.
+     */
+    private enum MotorEfficiencyFactor{
+        NEO1(0.84 / 90.0, DCMotor.getNEO(1)),
+        NEO2(0.84 / 90.0, DCMotor.getNEO(1)),
+        NEO_VORTEX(1, DCMotor.getNeoVortex(1)),
+        NEO_550(1, DCMotor.getNeo550(1)),
+        UNKNOWN(1, DCMotor.getNeo550(1));
+
+        /**
+         * The motor efficiency factor from the ctr motor data
+         */
+        private final double motorEfficiencyFactor;
+
+        /**
+         * The default DC motor of this type of motor, used to find the motor from the stall torque.
+         */
+        private final DCMotor motor;
+
+        /**
+         * creates an enum of the motor efficiency
+         * @param motorEfficiencyFactor the efficiency factor of the motor (efficiency ratio per rotations per second)
+         */
+        MotorEfficiencyFactor(double motorEfficiencyFactor, DCMotor motor){
+            this.motorEfficiencyFactor = motorEfficiencyFactor;
+            this.motor = motor;
+        }
+
+        /**
+         * returns the motor efficiency factor of the selected motor.
+         * @param stallTorque the stall torque of the chosen motor.
+         * @return the correct efficiency factor of the motor
+         */
+        public static MotorEfficiencyFactor fromMotorStallTorque(double stallTorque){
+
+            for(MotorEfficiencyFactor motor : MotorEfficiencyFactor.values()){
+                double value = motor.motor.stallTorqueNewtonMeters;
+
+                if(stallTorque % value == 0) return motor;
+            }
+
+            return UNKNOWN;
+        }
+
+        /**
+         * calculates the power draw of the motor based on the powerOutput and the measured efficiency of the motor
+         * @param powerOutput the power output of the motor in watts
+         * @param velocityRPS the velocity of the motor in rotations per second (of the motor, without gear ratio)
+         * @return the estimated power draw
+         */
+        public double getPowerDraw(double powerOutput, double velocityRPS){
+            if(this == UNKNOWN) return powerOutput;
+
+            double efficiency = velocityRPS * motorEfficiencyFactor;
+
+            return (powerOutput / efficiency) + SPARK_BASE_IDLE_POWER_DRAW;
+        }
+    }
 
     /**
      * The motor interface for the Spark Base motor controller.
      * This is used to access the motor controller and its configuration.
      */
     private final SparkBaseInterface motorInterface;
+
+    /**
+     * Due to the lack of current reporting on the supply side of spark motor controller,
+     * The library estimates the efficiency of the motor using known data.
+     * This assumes the efficiency is linear.
+     * This is only used for power draw estimation
+     */
+    private final MotorEfficiencyFactor motorEfficiencyFactor;
 
     /**
      * The idle power draw of the motor controller.
@@ -57,7 +126,7 @@ public abstract class BasicSpark extends BasicMotor {
      * @param unitConversion The conversion factor for the motor's position units.
      *                       This will be multiplied by the motor's rotation to get the position with the desired units.
      */
-    public BasicSpark(
+    protected BasicSpark(
             SparkBase motor,
             SparkBaseConfig config,
             ControllerGains gains,
@@ -68,6 +137,7 @@ public abstract class BasicSpark extends BasicMotor {
         super(new SparkBaseInterface(motor, config, name, gearRatio, unitConversion), gains);
 
         this.motorInterface = (SparkBaseInterface) super.motorInterface;
+        motorEfficiencyFactor = MotorEfficiencyFactor.UNKNOWN;
     }
 
     /**
@@ -79,10 +149,13 @@ public abstract class BasicSpark extends BasicMotor {
      *                    This should be an empty configuration that will be applied to the motor controller.
      * @param motorConfig The configuration of the motor controller.
      */
-    public BasicSpark(SparkBase motor, SparkBaseConfig config, BasicMotorConfig motorConfig) {
+    protected BasicSpark(SparkBase motor, SparkBaseConfig config, BasicMotorConfig motorConfig) {
         super(new SparkBaseInterface(motor, config, motorConfig), motorConfig);
 
         this.motorInterface = (SparkBaseInterface) super.motorInterface;
+
+        this.motorEfficiencyFactor =
+                MotorEfficiencyFactor.fromMotorStallTorque(motorConfig.motorConfig.motorType.stallTorqueNewtonMeters);
 
         if (motorConfig instanceof BasicSparkConfig sparkBaseConfig) {
             setCurrentLimits(sparkBaseConfig.currentLimitConfig.getCurrentLimits());
@@ -163,7 +236,7 @@ public abstract class BasicSpark extends BasicMotor {
     }
 
     @Override
-    protected LogFrame.SensorData getLatestSensorData() {
+    protected LogFrame.SensorData getLatestSensorData(double kT) {
         var motor = motorInterface.motor;
 
         double voltage = motor.getBusVoltage();
@@ -172,9 +245,14 @@ public abstract class BasicSpark extends BasicMotor {
         double dutyCycle = motor.getAppliedOutput();
 
         double outputVoltage = motor.getAppliedOutput() * voltage;
-        double powerOutput = outputVoltage * current;
+        double appliedTorque = kT * current;
+        double powerOutput = getVelocityRadiansPerSecond() * appliedTorque;
 
-        double powerDraw = SPARK_BASE_IDLE_POWER_DRAW + powerOutput; // idle power draw + output power
+        var measurements = getMeasurements();
+
+        double velocity = (measurements.getVelocity() / measurements.getUnitConversion()) * measurements.getGearRatio();
+
+        double powerDraw = motorEfficiencyFactor.getPowerDraw(powerOutput, velocity);
         double currentDraw = powerDraw / voltage; // current draw is power draw / voltage
 
         return new LogFrame.SensorData(
@@ -185,6 +263,7 @@ public abstract class BasicSpark extends BasicMotor {
                 voltage,
                 powerDraw,
                 powerOutput,
+                appliedTorque,
                 dutyCycle);
     }
 

@@ -533,6 +533,13 @@ public abstract class BasicMotor {
     }
 
     /**
+     * @return the velocity of the motor in radians per second
+     */
+    protected final double getVelocityRadiansPerSecond(){
+        return ((getVelocity() / measurements.getUnitConversion()) * 2 * Math.PI);
+    }
+
+    /**
      * Gets the latest sensor data from the motor.
      * The sensor data holds the following data:
      * <ul>
@@ -897,13 +904,10 @@ public abstract class BasicMotor {
      * If the pid controller is on the motor controller, it will also update the pid output in the log frame.
      */
     private void updateSensorData() {
-        logFrame.sensorData = getLatestSensorData();
+        double kT = config != null ? config.motorConfig.motorType.KtNMPerAmp : 0;
+        logFrame.sensorData = getLatestSensorData(kT);
 
         if (controllerLocation == ControllerLocation.MOTOR) logFrame.pidOutput = getPIDLatestOutput();
-
-        if (config != null) {
-            logFrame.appliedTorque = getTorqueFromCurrent(logFrame.sensorData.currentOutput());
-        }
 
         if (!hasConstraintsChanged && Arrays.stream(hasPIDGainsChanged).noneMatch(value -> value)) return;
 
@@ -944,7 +948,7 @@ public abstract class BasicMotor {
      *
      * @return The latest sensor data from the motor.
      */
-    protected abstract LogFrame.SensorData getLatestSensorData();
+    protected abstract LogFrame.SensorData getLatestSensorData(double kT);
 
     /**
      * Gets the latest PID output from the motor.

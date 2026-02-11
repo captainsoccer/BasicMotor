@@ -143,7 +143,7 @@ public class BasicVictorSPX extends BasicMotor {
     }
 
     @Override
-    protected LogFrame.SensorData getLatestSensorData() {
+    protected LogFrame.SensorData getLatestSensorData(double kT) {
         //VictorSPX does not support current sensing.
         var motor = this.motorInterface.motor;
 

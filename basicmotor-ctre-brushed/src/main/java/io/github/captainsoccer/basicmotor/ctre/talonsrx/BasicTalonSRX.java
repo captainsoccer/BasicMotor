@@ -204,7 +204,7 @@ public class BasicTalonSRX extends BasicMotor {
     }
 
     @Override
-    protected LogFrame.SensorData getLatestSensorData() {
+    protected LogFrame.SensorData getLatestSensorData(double kT) {
         var motor = motorInterface.motor;
 
         double temperature = motor.getTemperature();
@@ -216,6 +216,7 @@ public class BasicTalonSRX extends BasicMotor {
         double currentDraw = motor.getSupplyCurrent();
 
         double dutyCycle = motor.getMotorOutputPercent();
+        double appliedTorque = kT * currentOutput;
 
         return new LogFrame.SensorData(
                 temperature,
@@ -224,7 +225,8 @@ public class BasicTalonSRX extends BasicMotor {
                 outputVoltage,
                 inputVoltage,
                 inputVoltage * currentDraw,
-                outputVoltage * currentOutput,
+                appliedTorque * getVelocityRadiansPerSecond(),
+                appliedTorque,
                 dutyCycle
         );
     }

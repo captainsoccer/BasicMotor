@@ -127,7 +127,7 @@ public abstract class BasicSimSystem extends BasicMotor {
   protected abstract void setInputVoltage(double voltage);
 
   @Override
-  protected LogFrame.SensorData getLatestSensorData() {
+  protected LogFrame.SensorData getLatestSensorData(double kT) {
     double voltageInput = RobotController.getBatteryVoltage();
     double voltageOutput = this.voltageOutput;
 
@@ -137,6 +137,8 @@ public abstract class BasicSimSystem extends BasicMotor {
         voltageInput * currentDraw; // also power output because this is a simulation system
 
     double currentOutput = powerDraw / voltageOutput;
+
+    double appliedTorque = currentOutput * getVelocityRadiansPerSecond();
 
     double temp = 0; // no temperature in simulation
 
@@ -151,6 +153,7 @@ public abstract class BasicSimSystem extends BasicMotor {
         voltageInput,
         powerDraw,
         powerDraw,
+        appliedTorque,
         dutyCycle);
   }
 

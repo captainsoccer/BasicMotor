@@ -402,6 +402,10 @@ public abstract class BasicSpark extends BasicMotor {
 
         motorInterface.config.follow(motor.motor, inverted);
         motorInterface.applyConfig();
+        
+
+        motor.config.signals.appliedOutputPeriodMs(10);
+        motor.applyConfig();
     }
 
     @Override

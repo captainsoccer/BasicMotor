@@ -66,7 +66,9 @@ public abstract class BasicSpark extends BasicMotor {
             for(MotorEfficiencyFactor motor : MotorEfficiencyFactor.values()){
                 double value = motor.motor.stallTorqueNewtonMeters;
 
-                if(stallTorque % value == 0) return motor;
+                double division = stallTorque / value;
+
+                if(division == (int)division) return motor;
             }
 
             return UNKNOWN;

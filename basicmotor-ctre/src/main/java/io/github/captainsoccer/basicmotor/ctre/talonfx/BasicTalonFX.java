@@ -187,8 +187,8 @@ public class BasicTalonFX extends BasicMotor {
     }
 
     @Override
-    protected LogFrame.SensorData getLatestSensorData() {
-        return motorInterface.sensors.getSensorData();
+    protected LogFrame.SensorData getLatestSensorData(double kT) {
+        return motorInterface.sensors.getSensorData(kT, getVelocityRadiansPerSecond());
     }
 
     @Override

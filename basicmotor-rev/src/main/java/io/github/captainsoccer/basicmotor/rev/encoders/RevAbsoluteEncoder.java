@@ -33,8 +33,16 @@ public class RevAbsoluteEncoder extends Measurements {
      * There is no gear ratio as the absolute encoder will always be connected in a 1:1 ratio to the mechanism.
      *
      * @param encoder        The absolute encoder used to get the measurements from the motor controller
+     * @param gearRatio      The ratio between the encoder and the mechanism. this is the divider for the encoder reading
+     *                       For example, if the motor has a gear ratio of 2:1, it means that for every 2 rotations of the motor, the mechanism rotates once.
+     * @param unitConversion The value that will be multiplied by to convert the measurements to the desired units.
+     *                       This will be desired units per rotation.
+     *                       For example, if the desired units are meters and the motor has a gear ratio of 2:1,
+     *                       then the unit conversion should be 2 * Math.PI (the circumference of a circle with radius 1).
+     *                       More info at {@link BasicMotorConfig.MotorConfig#unitConversion}.
      */
-    public RevAbsoluteEncoder(AbsoluteEncoder encoder) {
+    public RevAbsoluteEncoder(AbsoluteEncoder encoder, double gearRatio, double unitConversion) {
+        super(gearRatio, unitConversion);
         this.encoder = encoder;
     }
 

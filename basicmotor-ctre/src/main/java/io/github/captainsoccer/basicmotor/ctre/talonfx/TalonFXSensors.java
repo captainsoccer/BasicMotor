@@ -156,9 +156,11 @@ public class TalonFXSensors {
      * Gets the sensor data from the motor controller.
      * This refreshes the status signals based on the configured refresh rate.
      *
+     * @param kT The current to torque ratio
+     * @param velocityRadainsPerSecond the velocity of the motor in radians per second
      * @return The sensor data.
      */
-    public LogFrame.SensorData getSensorData() {
+    public LogFrame.SensorData getSensorData(double kT, double velocityRadainsPerSecond) {
         if (waitForAll) BaseStatusSignal.waitForAll(timeout, allSignals);
         else BaseStatusSignal.refreshAll(allSignals);
 
@@ -167,8 +169,9 @@ public class TalonFXSensors {
         double currentOutput = statorCurrentSignal.getValueAsDouble();
         double voltageOutput = motorVoltageSignal.getValueAsDouble();
         double voltageInput = supplyVoltageSignal.getValueAsDouble();
+        double appliedTorque = currentOutput * kT;
         double powerDraw = currentDraw * voltageInput;
-        double powerOutput = currentOutput * voltageOutput;
+        double powerOutput = appliedTorque * velocityRadainsPerSecond;
         double dutyCycle = dutyCycleSignal.getValueAsDouble();
 
         // updates the latest pid output if the controller is on the motor controller
@@ -190,6 +193,7 @@ public class TalonFXSensors {
                 voltageInput,
                 powerDraw,
                 powerOutput,
+                appliedTorque,
                 dutyCycle);
     }
 

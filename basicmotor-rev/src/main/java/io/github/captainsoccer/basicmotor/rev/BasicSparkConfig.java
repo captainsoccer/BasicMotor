@@ -274,6 +274,14 @@ public class BasicSparkConfig extends BasicMotorConfig {
         public AbsoluteEncoderRange absoluteEncoderRange = AbsoluteEncoderRange.ZERO_TO_ONE;
 
         /**
+         * The number that the reading of the external encoder should be divided by to get the mechanism position.
+         * In most cases, this number will stay 1, due to the sensor being mounted directly on the mechanism.
+         * But if the sensor has a reduction to the mechanism, this value will be greater than 1.0.
+         * (i.e. the sensor spins more than the mechanism)
+         */
+        public double mechanismToSensorRatio = 1.0;
+
+        /**
          * Creates a copy of the absolute encoder configuration.
          * This method creates a new instance of AbsoluteEncoderConfig and copies the values from the current instance to the new instance.
          *
@@ -287,6 +295,7 @@ public class BasicSparkConfig extends BasicMotorConfig {
             copy.zeroOffset = this.zeroOffset;
             copy.sensorToMotorRatio = this.sensorToMotorRatio;
             copy.absoluteEncoderRange = this.absoluteEncoderRange;
+            copy.mechanismToSensorRatio = this.mechanismToSensorRatio;
 
             return copy;
         }

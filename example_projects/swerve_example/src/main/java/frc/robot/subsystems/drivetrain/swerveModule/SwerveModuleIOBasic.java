@@ -39,7 +39,7 @@ public class SwerveModuleIOBasic extends SwerveModuleIO{
 
             canCoder = configureCanCoder(constants);
 
-            var canCoderMeasurements = new CANcoderMeasurements(canCoder, 1, 1);
+            var canCoderMeasurements = new CANcoderMeasurements(canCoder, 1);
 
             canCoder.getMagnetHealth(false).setUpdateFrequency(4);
 

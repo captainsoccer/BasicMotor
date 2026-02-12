@@ -1,5 +1,6 @@
 package io.github.captainsoccer.basicmotor.ctre.talonfx;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import io.github.captainsoccer.basicmotor.BasicMotor;
@@ -17,6 +18,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * This class represents a basic TalonFX motor controller.
@@ -59,6 +61,12 @@ public class BasicTalonFX extends BasicMotor {
      * Used when using the built-in FOC controller of the TalonFX.
      */
     private final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0).withUpdateFreqHz(0);
+
+    /**
+     * The canCoder this motor is connected to.
+     * If the motor isn't connected to a canCoder it is null.
+     */
+    private CANcoder activeCanCoder = null;
 
     /**
      * Constructor for the TalonFX motor controller
@@ -113,6 +121,9 @@ public class BasicTalonFX extends BasicMotor {
             enableFOC(talonConfig.enableFOC);
 
             enableTimeSync(talonConfig.waitForAllSignals);
+
+            if(talonConfig.canCoderConfig.canCoderType != FeedbackSensorSourceValue.RotorSensor)
+                useCanCoder(talonConfig.canCoderConfig);
         }
     }
 
@@ -278,14 +289,32 @@ public class BasicTalonFX extends BasicMotor {
     }
 
     /**
+     * Gets the active canCoder on this motor
+     * @return empty if there is no cancoder, otherwise the used cancoder
+     */
+    public Optional<CANcoder> getActiveCanCoder(){
+        if (activeCanCoder == null) return Optional.empty();
+        return Optional.of(activeCanCoder);
+    }
+
+    /**
      * Use canCoder for this motor
      * @param canCoder the canCoder to use
      * @param sensorToMotorRatio the ratio between the sensor to the motor
+     * @param mechanismToSensor the ratio between the mechanism to the sensor,
+     *                          where a value greater than 1 means that the sensor spins more than the mechanism.
      * @param unitConversion the unit conversion if needed
      * @param type the type of encoder to use
      */
-    private void useCanCoder(CANcoder canCoder, double sensorToMotorRatio, double unitConversion, FeedbackSensorSourceValue type){
+    public void useCanCoder(CANcoder canCoder, double sensorToMotorRatio, double mechanismToSensor, double unitConversion, FeedbackSensorSourceValue type){
         Objects.requireNonNull(canCoder);
+
+        if(type == FeedbackSensorSourceValue.RotorSensor) return;
+
+        if(type != FeedbackSensorSourceValue.RemoteCANcoder &&
+                type != FeedbackSensorSourceValue.FusedCANcoder &&
+                type != FeedbackSensorSourceValue.SyncCANcoder)
+            throw new IllegalArgumentException("Basic TalonFX doesn't support anything but canCoder");
 
         //because remote canCoder uses the canCoder position directly without
         // conversion we convert the pid gains back to the 1:1 gains
@@ -307,7 +336,27 @@ public class BasicTalonFX extends BasicMotor {
         config.Feedback.FeedbackSensorSource = type;
         motorInterface.applyConfig();
 
-        setMeasurements(new CANcoderMeasurements(canCoder, unitConversion), false);
+        setMeasurements(new CANcoderMeasurements(canCoder, mechanismToSensor, unitConversion, false), false);
+
+        this.activeCanCoder = canCoder;
+    }
+
+    public void useCanCoder(BasicTalonFXConfig.CanCoderConfig config){
+        useCanCoder(createCanCoderFromConfig(config), config.sensorToMotorRatio, config.mechanismToSensorRatio, getMeasurements().getUnitConversion(), config.canCoderType);
+    }
+
+    private static CANcoder createCanCoderFromConfig(BasicTalonFXConfig.CanCoderConfig config){
+        CANcoder canCoder = new CANcoder(config.canCoderID, config.canCoderCanBus);
+
+        CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
+
+        var magnetConfig = canCoderConfig.MagnetSensor;
+        magnetConfig.MagnetOffset = -config.zeroOffset;
+        magnetConfig.AbsoluteSensorDiscontinuityPoint = config.canCoderDiscontinuityPoint;
+
+        canCoder.getConfigurator().apply(canCoderConfig);
+
+        return canCoder;
     }
 
     /**

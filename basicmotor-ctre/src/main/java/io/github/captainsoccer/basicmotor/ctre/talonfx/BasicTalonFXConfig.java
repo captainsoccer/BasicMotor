@@ -1,5 +1,6 @@
 package io.github.captainsoccer.basicmotor.ctre.talonfx;
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 
 /**
@@ -16,6 +17,11 @@ public class BasicTalonFXConfig extends BasicMotorConfig {
      * Use this to protect the motor from overheating and drawing too much current.
      */
     public CurrentLimitConfig currentLimitConfig = new CurrentLimitConfig();
+
+    /**
+     *
+     */
+    public CanCoderConfig canCoderConfig = new CanCoderConfig();
 
     /**
      * The name of the CAN bus that the TalonFX motor controller is connected to.
@@ -121,5 +127,18 @@ public class BasicTalonFXConfig extends BasicMotorConfig {
 
             return copy;
         }
+    }
+
+    public static class CanCoderConfig{
+        public FeedbackSensorSourceValue canCoderType = FeedbackSensorSourceValue.RotorSensor;
+
+        public int canCoderID = 0;
+        public double zeroOffset= 0;
+        public double canCoderDiscontinuityPoint = 0;
+
+        public CANBus canCoderCanBus = CANBus.roboRIO();
+
+        public double sensorToMotorRatio = 1;
+        public double mechanismToSensorRatio = 1;
     }
 }

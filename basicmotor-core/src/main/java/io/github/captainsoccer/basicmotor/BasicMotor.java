@@ -533,6 +533,15 @@ public abstract class BasicMotor {
     }
 
     /**
+     * Returns the current error of the closed loop.
+     * error will be in units of control
+     * @return The error of the closed loop controller in units of control
+     */
+    public final double getError(){
+        return  logFrame.controllerFrame.error();
+    }
+
+    /**
      * @return the velocity of the motor in radians per second
      */
     protected final double getVelocityRadiansPerSecond(){

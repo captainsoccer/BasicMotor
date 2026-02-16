@@ -1,7 +1,7 @@
 {
     "fileName": "BasicMotor-Core.json",
     "name": "BasicMotor Core",
-    "version": "6.6.0-beta",
+    "version": "6.7.0",
     "uuid": "faa487b0-6832-4c4b-9d38-d6e8b4893548",
     "frcYear": "2026",
     "mavenUrls": [
@@ -12,7 +12,7 @@
         {
             "groupId": "com.github.captainsoccer.BasicMotor",
             "artifactId": "basicmotor-core",
-            "version": "v6.6.0-beta"
+            "version": "v6.7.0"
         }
     ],
     "jniDependencies": [

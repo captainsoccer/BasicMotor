@@ -1,5 +1,6 @@
 package io.github.captainsoccer.basicmotor.ctre.talonfx;
 import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
 
 /**
@@ -16,6 +17,13 @@ public class BasicTalonFXConfig extends BasicMotorConfig {
      * Use this to protect the motor from overheating and drawing too much current.
      */
     public CurrentLimitConfig currentLimitConfig = new CurrentLimitConfig();
+
+    /**
+     * The configuration for the canCoder.
+     * Use this to create automatically a canCoder for the motor.
+     * you can access the created canCoder with the {@link BasicTalonFX#getActiveCanCoder()}.
+     */
+    public CanCoderConfig canCoderConfig = new CanCoderConfig();
 
     /**
      * The name of the CAN bus that the TalonFX motor controller is connected to.
@@ -47,6 +55,7 @@ public class BasicTalonFXConfig extends BasicMotorConfig {
         super.copy(copy);
 
         copy.currentLimitConfig = this.currentLimitConfig.copy();
+        copy.canCoderConfig = canCoderConfig.copy();
         copy.canBus = this.canBus;
         copy.enableFOC = this.enableFOC;
         copy.waitForAllSignals = this.waitForAllSignals;
@@ -118,6 +127,73 @@ public class BasicTalonFXConfig extends BasicMotorConfig {
             copy.supplyCurrentLimit = this.supplyCurrentLimit;
             copy.lowerLimitTime = this.lowerLimitTime;
             copy.lowerCurrentLimit = this.lowerCurrentLimit;
+
+            return copy;
+        }
+    }
+
+    /**
+     * The config for the CanCoder that can be used with a talonFX directly
+     */
+    public static class CanCoderConfig{
+        /**
+         * The type of canCoder to use.
+         * If no using a canCoder leave at the default RotorSensor.
+         * Some types may require phoenix pro
+         */
+        public FeedbackSensorSourceValue canCoderType = FeedbackSensorSourceValue.RotorSensor;
+
+        /**
+         * The CAN ID of the canCoder to use
+         */
+        public int canCoderID = 0;
+        /**
+         * The zero offset of the canCoder.
+         * This is the value subtracted from the canCoder raw position
+         */
+        public double zeroOffset= 0;
+        /**
+         * The discontinuity of the canCoder.
+         * This is where the absolute position reading jumps from its max value to it's minimum value.
+         * The default is 0: which means the canCoder will read values between 0 to 1 and jump from 1 to zero.
+         * recommended value for swerve azimuth is 0.5, which means the canCoder will read between -0.5 to 0.5.
+         */
+        public double canCoderDiscontinuityPoint = 0;
+
+        /**
+         * The canBus the canCoder is connected to.
+         * The Cancoder and talonFX must be on the same can bus in order for it to work.
+         * if not using a canivore leave it at the default value of roboRio.
+         */
+        public CANBus canCoderCanBus = CANBus.roboRIO();
+
+        /**
+         * The ratio between the sensor reading and the motor.
+         * This value is multiplied by the encoder reading to get the reading of the motor.
+         * A value greater than 1 represent a reduction (the canCoder spins more than the motor)
+         */
+        public double sensorToMotorRatio = 1;
+        /**
+         * The ratio between the mechanism to the sensor.
+         * this value will be the divisor for the sensor reading in order to get the mechanism reading.
+         * A value greater than 1 represents a reduction (the mechanism spins less than the sensor).
+         */
+        public double mechanismToSensorRatio = 1;
+
+        /**
+         * Copies all the value in this configuration to a new configuration
+         * @return the new configuration
+         */
+        public CanCoderConfig copy(){
+            var copy = new CanCoderConfig();
+
+            copy.canCoderType = canCoderType;
+            copy.canCoderID = canCoderID;
+            copy.zeroOffset = zeroOffset;
+            copy.canCoderDiscontinuityPoint = canCoderDiscontinuityPoint;
+            copy.canCoderCanBus = canCoderCanBus;
+            copy.sensorToMotorRatio = sensorToMotorRatio;
+            copy.mechanismToSensorRatio = mechanismToSensorRatio;
 
             return copy;
         }

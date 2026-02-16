@@ -533,6 +533,15 @@ public abstract class BasicMotor {
     }
 
     /**
+     * Returns the current error of the closed loop.
+     * error will be in units of control
+     * @return The error of the closed loop controller in units of control
+     */
+    public final double getError(){
+        return  logFrame.controllerFrame.error();
+    }
+
+    /**
      * @return the velocity of the motor in radians per second
      */
     protected final double getVelocityRadiansPerSecond(){
@@ -904,7 +913,7 @@ public abstract class BasicMotor {
      * If the pid controller is on the motor controller, it will also update the pid output in the log frame.
      */
     private void updateSensorData() {
-        double kT = config != null ? config.motorConfig.motorType.KtNMPerAmp : 0;
+        double kT = config != null ? config.motorConfig.motorType.KtNMPerAmp * config.motorConfig.gearRatio : 0;
         logFrame.sensorData = getLatestSensorData(kT);
 
         if (controllerLocation == ControllerLocation.MOTOR) logFrame.pidOutput = getPIDLatestOutput();
@@ -946,6 +955,8 @@ public abstract class BasicMotor {
     /**
      * Gets the latest sensor data from the motor.
      *
+     * @param kT The torque to current ratio, used to calculate the torque that the motor applies (units are: nm / ampere)
+     *           The kT also has the gear ratio applied to it.
      * @return The latest sensor data from the motor.
      */
     protected abstract LogFrame.SensorData getLatestSensorData(double kT);

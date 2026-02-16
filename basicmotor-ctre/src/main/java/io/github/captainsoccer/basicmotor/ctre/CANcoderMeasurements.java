@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import io.github.captainsoccer.basicmotor.ctre.talonfx.BasicTalonFXConfig;
 import io.github.captainsoccer.basicmotor.ctre.talonfx.TalonFXSensors;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
@@ -74,19 +75,21 @@ public class CANcoderMeasurements extends Measurements {
      * Creates a new measurements object with the given signals sets the refresh rate of the signals.
      * This method does not optimize the canbus usage of the canCoder.
      *
-     * @param canCoder                The CANCoder to use for the measurements.
-     * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
-     *                                 See {@link MotorConfig#unitConversion} for more information.
-     * @param throughRIO               If true, the canCoder will use the timings of a roboRIO pid controller,
-     *                                 else it will use the timings of a motor controller pid controller.
-     *                                 If the canCoder cannot communicate directly with the motor
-     *                                 (like a talonFX), this should be true.
-     * @param timeSync                 If true, the measurements will wait for all signals to update before returning the values.
-     *                                 Use this only if you have a licensed version of Phoenix Pro connected to a canivore.
-     *                                 Otherwise, it will slow down the robot code significantly.
+     * @param canCoder          The CANCoder to use for the measurements.
+     * @param mechanismToSensor the ratio between the mechanism to the sensor,
+     *                          where a value greater than 1 means that the sensor spins more than the mechanism.
+     * @param unitConversion    The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
+     *                          See {@link MotorConfig#unitConversion} for more information.
+     * @param throughRIO        If true, the canCoder will use the timings of a roboRIO pid controller,
+     *                          else it will use the timings of a motor controller pid controller.
+     *                          If the canCoder cannot communicate directly with the motor
+     *                          (like a talonFX), this should be true.
+     * @param timeSync          If true, the measurements will wait for all signals to update before returning the values.
+     *                          Use this only if you have a licensed version of Phoenix Pro connected to a canivore.
+     *                          Otherwise, it will slow down the robot code significantly.
      */
-    public CANcoderMeasurements(CANcoder canCoder, double unitConversion, boolean throughRIO, boolean timeSync) {
-        super(1, unitConversion);
+    public CANcoderMeasurements(CANcoder canCoder, double mechanismToSensor, double unitConversion, boolean throughRIO, boolean timeSync) {
+        super(mechanismToSensor, unitConversion);
 
         this.timeSync = timeSync;
 
@@ -95,8 +98,7 @@ public class CANcoderMeasurements extends Measurements {
         this.positionSignal = canCoder.getPosition(false);
         this.velocitySignal = canCoder.getVelocity(false);
 
-        double refreshHZ =
-                throughRIO ? MotorManager.ControllerLocation.RIO.getHZ() : MotorManager.ControllerLocation.MOTOR.getHZ();
+        double refreshHZ = throughRIO ? MotorManager.ControllerLocation.RIO.getHZ() : 100;
 
         positionSignal.setUpdateFrequency(refreshHZ);
         velocitySignal.setUpdateFrequency(refreshHZ);
@@ -107,27 +109,29 @@ public class CANcoderMeasurements extends Measurements {
     /**
      * Creates a new measurements object with the given CANCoder.
      *
-     * @param cancoder                 The CANCoder to use for the measurements.
-     * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
-     *                                 See {@link MotorConfig#unitConversion} for more information.
-     * @param throughRIO               If true, the canCoder will use the timings of a roboRIO pid controller,
-     *                                 else it will use the timings of a motor controller pid controller.
-     *                                 If the canCoder cannot communicate directly with the motor
-     *                                 (like a talonFX), this should be true.
+     * @param cancoder          The CANCoder to use for the measurements.
+     * @param mechanismToSensor the ratio between the mechanism to the sensor,
+     *                          where a value greater than 1 means that the sensor spins more than the mechanism.
+     * @param unitConversion    The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
+     *                          See {@link MotorConfig#unitConversion} for more information.
+     * @param throughRIO        If true, the canCoder will use the timings of a roboRIO pid controller,
+     *                          else it will use the timings of a motor controller pid controller.
+     *                          If the canCoder cannot communicate directly with the motor
+     *                          (like a talonFX), this should be true.
      */
-    public CANcoderMeasurements(CANcoder cancoder, double unitConversion, boolean throughRIO) {
-        this(cancoder, unitConversion, throughRIO, false);
+    public CANcoderMeasurements(CANcoder cancoder, double mechanismToSensor, double unitConversion, boolean throughRIO) {
+        this(cancoder, mechanismToSensor, unitConversion, throughRIO, false);
     }
 
     /**
      * Creates a new measurements object with the given CANCoder.
      *
-     * @param cancoder                 The CANCoder to use for the measurements.
-     * @param unitConversion           The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
-     *                                 See {@link MotorConfig#unitConversion} for more information.
+     * @param cancoder       The CANCoder to use for the measurements.
+     * @param unitConversion The value that the mehcnasims rotations will be multiplied by to convert the measurements to the desired units.
+     *                       See {@link MotorConfig#unitConversion} for more information.
      */
     public CANcoderMeasurements(CANcoder cancoder, double unitConversion) {
-        this(cancoder, unitConversion, true);
+        this(cancoder, 1, unitConversion, true);
     }
 
     @Override

@@ -254,6 +254,11 @@ public class BasicTalonFX extends BasicMotor {
         super.setDefaultMeasurements();
     }
 
+    @Override
+    public boolean isConnected(){
+        return motorInterface.motor.isAlive();
+    }
+
     /**
      * Gets the TalonFX of this motor.
      * Useful when you need to interact directly with the talonFX

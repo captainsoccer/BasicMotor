@@ -617,6 +617,12 @@ public abstract class BasicMotor {
         measurements.setPosition((newPosition / measurements.getUnitConversion()) * measurements.getGearRatio());
     }
 
+    /**
+     * checks whether the motor is alive and connected or not.
+     * @return if the motor is connected
+     */
+    public abstract boolean isConnected();
+
     // periodic functions
 
     /**

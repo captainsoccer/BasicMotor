@@ -1,6 +1,7 @@
 package io.github.captainsoccer.basicmotor.ctre.talonsrx;
 
 
+import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
@@ -75,6 +76,11 @@ public class BasicTalonSRX extends BasicMotor {
      * This is used to determine which PID slot to use when setting the PID gains.
      */
     private int selectedSlot = 0;
+
+    /**
+     * value that holds if the motor is alive or not
+     */
+    private boolean isAlive = true;
 
     /**
      * Creates a BasicTalonSRX instance with the provided motor ID and name.
@@ -195,6 +201,18 @@ public class BasicTalonSRX extends BasicMotor {
                 stopMotorOutput();
             }
         }
+
+        var error = motor.getLastError();
+
+        if(error != ErrorCode.OK){
+            if(error == ErrorCode.RxTimeout || error == ErrorCode.SigNotUpdated){
+                isAlive = false;
+            }
+
+            errorHandler.logAndReportError("Failed to set closed loop output, error: " + error.name());
+        }
+        else
+            isAlive = true;
     }
 
 
@@ -253,6 +271,11 @@ public class BasicTalonSRX extends BasicMotor {
                 dOutput,
                 pOutput + iOutput + dOutput
         );
+    }
+
+    @Override
+    public boolean isConnected(){
+        return isAlive;
     }
 
     /**

@@ -1,5 +1,6 @@
 package io.github.captainsoccer.basicmotor.ctre.victorspx;
 
+import com.ctre.phoenix.ErrorCode;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotorConfig;
@@ -21,6 +22,11 @@ import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
 public class BasicVictorSPX extends BasicMotor {
 
     private final VictorSPXInterface motorInterface;
+
+    /**
+     * value that holds if the motor is alive or not
+     */
+    private boolean isAlive = true;
 
     /**
      * Creates a BasicVictorSPX instance with the provided motor ID and name.
@@ -135,6 +141,18 @@ public class BasicVictorSPX extends BasicMotor {
 
             case STOP -> stopMotorOutput();
         }
+
+        var error = motor.getLastError();
+
+        if(error != ErrorCode.OK){
+            if(error == ErrorCode.RxTimeout || error == ErrorCode.SigNotUpdated){
+                isAlive = false;
+            }
+
+            errorHandler.logAndReportError("Failed to set closed loop output, error: " + error.name());
+        }
+        else
+            isAlive = true;
     }
 
     @Override
@@ -163,6 +181,11 @@ public class BasicVictorSPX extends BasicMotor {
                 0,
                 dutyCycle
         );
+    }
+
+    @Override
+    public boolean isConnected(){
+        return isAlive;
     }
 
     @Override

@@ -104,6 +104,11 @@ public abstract class BasicSpark extends BasicMotor {
     private final MotorEfficiencyFactor motorEfficiencyFactor;
 
     /**
+     * value that holds if the motor is alive or not
+     */
+    private boolean isAlive = true;
+
+    /**
      * The idle power draw of the motor controller.
      * This value is used to estimate the power draw of the motor.
      * This value is based on chatGPT's answer to the question about the idle power draw of the Spark MAX motor controller.
@@ -272,14 +277,18 @@ public abstract class BasicSpark extends BasicMotor {
     @Override
     protected void setMotorOutput(double setpoint, double feedForward, Controller.ControlMode mode, int slot) {
         var motor = motorInterface.motor;
+        var closedLoopController = motor.getClosedLoopController();
 
-        switch (mode) {
+        REVLibError errorSignal = switch (mode) {
             // stop the motor output
-            case STOP -> stopMotorOutput();
+            case STOP -> {
+                motor.stopMotor();
+                yield REVLibError.kOk;
+            }
             // set the motor output to a voltage
-            case VOLTAGE -> motor.setVoltage(setpoint);
+            case VOLTAGE -> closedLoopController.setSetpoint(setpoint, SparkBase.ControlType.kVoltage);
             // set the motor output to a duty cycle
-            case PERCENT_OUTPUT -> motor.set(setpoint);
+            case PERCENT_OUTPUT -> closedLoopController.setSetpoint(setpoint, SparkBase.ControlType.kDutyCycle);
             // set the motor output to a position
             case POSITION, PROFILED_POSITION -> setClosedLoopOutput(
                     setpoint, feedForward, SparkBase.ControlType.kPosition, slot);
@@ -288,7 +297,23 @@ public abstract class BasicSpark extends BasicMotor {
                     setpoint, feedForward, SparkBase.ControlType.kVelocity, slot);
 
             case TORQUE, CURRENT -> setClosedLoopOutput(setpoint, 0, SparkBase.ControlType.kCurrent, slot);
+        };
+
+        //if there was an error setting the closed loop output, report it
+        if (errorSignal != REVLibError.kOk) {
+            errorHandler.logAndReportError("Failed to set closed loop output, error: " + errorSignal.name());
+
+            if(errorSignal == REVLibError.kCANDisconnected || errorSignal == REVLibError.kTimeout)
+                isAlive = false;
+
         }
+        else
+            isAlive = true;
+    }
+
+    @Override
+    public boolean isConnected(){
+        return isAlive;
     }
 
     /**
@@ -301,16 +326,11 @@ public abstract class BasicSpark extends BasicMotor {
      * @param mode        The control type for the closed loop output.
      * @param slot        The PID slot to use for the control request (0, 1, or 2).
      */
-    private void setClosedLoopOutput(double setpoint, double feedForward, SparkBase.ControlType mode, int slot) {
+    private REVLibError setClosedLoopOutput(double setpoint, double feedForward, SparkBase.ControlType mode, int slot) {
         ClosedLoopSlot closedLoopSlot = ClosedLoopSlot.values()[slot];
 
         //sets the closed loop output for the Spark motor controller
-        var errorSignal = motorInterface.motor.getClosedLoopController().setSetpoint(setpoint, mode, closedLoopSlot, feedForward);
-
-        //if there was an error setting the closed loop output, report it
-        if (errorSignal != REVLibError.kOk) {
-            errorHandler.logAndReportError("Failed to set closed loop output, error: " + errorSignal.name());
-        }
+        return motorInterface.motor.getClosedLoopController().setSetpoint(setpoint, mode, closedLoopSlot, feedForward);
     }
 
     @Override

@@ -103,6 +103,11 @@ public abstract class BasicSimSystem extends BasicMotor {
     setOutput(output);
   }
 
+  @Override
+  public boolean isConnected(){
+    return true;
+  }
+
   /**
    * Sets the output voltage of the motor simulation.
    *

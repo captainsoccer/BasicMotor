@@ -3,7 +3,7 @@ plugins {
     `maven-publish`
 }
 
-val phoenix6Version = "26.1.1"
+val phoenix6Version = "26.1.3"
 
 java {
 //    toolchain {

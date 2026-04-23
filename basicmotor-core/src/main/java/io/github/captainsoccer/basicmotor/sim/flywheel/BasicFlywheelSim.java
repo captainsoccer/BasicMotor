@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.sim.flywheel;
 
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
 

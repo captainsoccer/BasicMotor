@@ -3,7 +3,7 @@ package io.github.captainsoccer.basicmotor.ctre.victorspx;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import io.github.captainsoccer.basicmotor.BasicMotor;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;

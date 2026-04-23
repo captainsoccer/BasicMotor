@@ -3,7 +3,7 @@ package io.github.captainsoccer.basicmotor.sim.arm;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.sim.SimSystemInterface;

@@ -1,14 +1,13 @@
 package io.github.captainsoccer.basicmotor.ctre;
 
 import io.github.captainsoccer.basicmotor.ctre.talonfx.BasicTalonFX;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig.MotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig.MotorConfig;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.CANcoder;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import io.github.captainsoccer.basicmotor.ctre.talonfx.BasicTalonFXConfig;
 import io.github.captainsoccer.basicmotor.ctre.talonfx.TalonFXSensors;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;

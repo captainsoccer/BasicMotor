@@ -1,9 +1,8 @@
 package io.github.captainsoccer.basicmotor.sim.motor;
 
 
-import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
 import io.github.captainsoccer.basicmotor.sim.elevator.BasicElevatorSim;

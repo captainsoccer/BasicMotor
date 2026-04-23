@@ -8,7 +8,7 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import io.github.captainsoccer.basicmotor.BasicMotor;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;

@@ -10,7 +10,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Per;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.sim.SimSystemInterface;
 

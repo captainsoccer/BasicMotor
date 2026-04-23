@@ -1,12 +1,15 @@
-package io.github.captainsoccer.basicmotor;
+package io.github.captainsoccer.basicmotor.config;
 
+import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.gains.*;
+import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManagerConfig;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * This class is used to store all relevant data to use the Basic Motor class.
@@ -52,6 +55,13 @@ public class BasicMotorConfig {
      * (kv, ka, moment of inertia, elevator simulation config, arm simulation config)
      */
     public SimulationConfig simulationConfig = new SimulationConfig();
+
+    /**
+     * A custom feedback source can be set by the user.
+     * This will make the pid controller not run on the motor.
+     * This can use any type of sensor as long as it gives the needed measurements.
+     */
+    public Supplier<Measurements.Measurement> customFeedbackSource = null;
 
     /**
      * Bunches up all the configurations into one class

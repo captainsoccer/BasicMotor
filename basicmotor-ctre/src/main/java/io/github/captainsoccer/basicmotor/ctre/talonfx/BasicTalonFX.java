@@ -5,7 +5,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.ctre.CANcoderMeasurements;

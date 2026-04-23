@@ -8,7 +8,7 @@ import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import io.github.captainsoccer.basicmotor.BasicMotor;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;

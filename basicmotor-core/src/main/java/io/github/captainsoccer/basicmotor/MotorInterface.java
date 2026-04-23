@@ -1,5 +1,6 @@
 package io.github.captainsoccer.basicmotor;
 
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;

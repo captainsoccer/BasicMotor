@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.rev.encoders;
 
 import com.revrobotics.RelativeEncoder;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 
 /**

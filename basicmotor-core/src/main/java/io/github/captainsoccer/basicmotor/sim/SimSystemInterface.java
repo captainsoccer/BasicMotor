@@ -1,11 +1,10 @@
 package io.github.captainsoccer.basicmotor.sim;
 
 import io.github.captainsoccer.basicmotor.BasicMotor;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
-import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
 
 /**
  * This is an abstract class that represents a motor interface for simulation systems.

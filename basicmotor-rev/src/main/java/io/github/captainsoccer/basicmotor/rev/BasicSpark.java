@@ -7,7 +7,7 @@ import com.revrobotics.spark.SparkLowLevel;
 import edu.wpi.first.math.system.plant.DCMotor;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;

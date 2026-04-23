@@ -2,7 +2,7 @@ package io.github.captainsoccer.basicmotor.sim.elevator;
 
 
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
 

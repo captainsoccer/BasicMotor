@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.ctre.talonfx;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 
 /**
  * This class represents the configuration for a basic TalonFX motor controller.

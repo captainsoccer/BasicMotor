@@ -4,7 +4,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import io.github.captainsoccer.basicmotor.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
 

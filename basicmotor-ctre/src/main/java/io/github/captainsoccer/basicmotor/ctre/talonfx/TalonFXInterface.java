@@ -8,7 +8,7 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import io.github.captainsoccer.basicmotor.BasicMotor;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
@@ -61,14 +61,14 @@ public class TalonFXInterface extends MotorInterface {
 
     /**
      * Creates a TalonFXInterface with the provided configuration.
-     * If the config is not a {@link BasicTalonFXConfig}, it will use the default can bus name.
+     * If the config is not a {@link BasicTalonFXConfigOld}, it will use the default can bus name.
      * @param config the configuration for the motor
      */
-    public TalonFXInterface(BasicMotorConfig config) {
+    public TalonFXInterface(BasicMotorConfigOld config) {
         super(config);
 
         final CANBus canBus;
-        if (config instanceof BasicTalonFXConfig talonConfig)
+        if (config instanceof BasicTalonFXConfigOld talonConfig)
             canBus = talonConfig.canBus;
         else
             canBus = defaultCanBusName;

@@ -3,7 +3,7 @@ package io.github.captainsoccer.basicmotor.sim.arm;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.sim.SimSystemInterface;
@@ -36,11 +36,11 @@ public class ArmSimInterface extends SimSystemInterface {
 
     /**
      * Creates a BasicSimArm instance with the provided configuration.
-     * the config must have the {@link BasicMotorConfig.SimulationConfig#momentOfInertia} set.
+     * the config must have the {@link BasicMotorConfigOld.SimulationConfig#momentOfInertia} set.
      *
      * @param config The configuration for the arm motor
      */
-    public ArmSimInterface(BasicMotorConfig config) {
+    public ArmSimInterface(BasicMotorConfigOld config) {
         super(config);
 
         // Create the plant model for the arm system based on the motor type, moment of inertia, and gear ratio

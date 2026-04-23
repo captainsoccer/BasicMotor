@@ -9,7 +9,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Per;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.sim.SimSystemInterface;
 
@@ -47,7 +47,7 @@ public class FlyWheelSimInterface extends SimSystemInterface {
      *
      * @param config The configuration for the flywheel motor
      */
-    public FlyWheelSimInterface(BasicMotorConfig config) {
+    public FlyWheelSimInterface(BasicMotorConfigOld config) {
         super(config);
 
         var simConfig = config.simulationConfig;

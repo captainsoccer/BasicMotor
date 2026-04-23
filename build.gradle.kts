@@ -48,6 +48,9 @@ subprojects {
         add("compileOnly", "org.littletonrobotics.akit:akit-java:${advantageKitVersion}")
         add("compileOnly", "us.hebi.quickbuf:quickbuf-runtime:1.3.3")
         add("compileOnly", "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+
+//        add("compileOnly", "org.projectlombok:lombok:1.18.30")
+//        add("annotationProcessor", "org.projectlombok:lombok:1.18.30")
     }
 
     plugins.withType<JavaPlugin> {

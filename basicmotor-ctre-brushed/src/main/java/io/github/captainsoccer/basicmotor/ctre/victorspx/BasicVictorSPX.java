@@ -3,7 +3,7 @@ package io.github.captainsoccer.basicmotor.ctre.victorspx;
 import com.ctre.phoenix.ErrorCode;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
@@ -71,7 +71,7 @@ public class BasicVictorSPX extends BasicMotor {
      * @param config The configuration for the motor controller
      * @param measurements The measurements to use for the motor controller
      */
-    public BasicVictorSPX(BasicMotorConfig config, Measurements measurements) {
+    public BasicVictorSPX(BasicMotorConfigOld config, Measurements measurements) {
         super(new VictorSPXInterface(config, measurements), config);
 
         this.motorInterface = (VictorSPXInterface) super.motorInterface;

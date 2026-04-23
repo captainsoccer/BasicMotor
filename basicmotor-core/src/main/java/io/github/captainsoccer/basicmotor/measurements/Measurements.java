@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.measurements;
 
 import io.github.captainsoccer.basicmotor.BasicMotor;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 
 /**
  * This class is used to get the measurements of the motor. It is used to get the position,
@@ -55,7 +55,7 @@ public abstract class Measurements {
      *                       This will be desired units per rotation.
      *                       For example, if the desired units are meters and the motor has a gear ratio of 2:1,
      *                       then the unit conversion should be 2 * Math.PI (the circumference of a circle with radius 1).
-     *                       More info at {@link BasicMotorConfig.MotorConfig#unitConversion}.
+     *                       More info at {@link BasicMotorConfigOld.MotorConfig#unitConversion}.
      */
     public Measurements(double gearRatio, double unitConversion) {
         if (gearRatio <= 0) {

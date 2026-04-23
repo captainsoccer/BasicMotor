@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.sim.flywheel;
 
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
 
@@ -35,7 +35,7 @@ public class BasicFlywheelSim extends BasicSimSystem {
      *
      * @param config The configuration for the flywheel motor
      */
-    public BasicFlywheelSim(BasicMotorConfig config) {
+    public BasicFlywheelSim(BasicMotorConfigOld config) {
         super(new FlyWheelSimInterface(config), config);
 
         this.flywheelSim = ((FlyWheelSimInterface) super.motorInterface).flywheelSim;

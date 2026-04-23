@@ -4,9 +4,9 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
-import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
+import io.github.captainsoccer.basicmotor.rev.BasicSparkConfigOld.AbsoluteEncoderConfig.AbsoluteEncoderRange;
 
 /**
  * This class represents a basic spark max motor controller.
@@ -80,10 +80,10 @@ public class BasicSparkMAX extends BasicSpark {
      *
      * @param config The configuration for the motor controller.
      */
-    public BasicSparkMAX(BasicMotorConfig config) {
+    public BasicSparkMAX(BasicMotorConfigOld config) {
         super(new SparkMax(config.motorConfig.id, BasicSpark.getMotorType(config)), new SparkMaxConfig(), config);
 
-        if (config instanceof BasicSparkConfig sparkBaseConfig) {
+        if (config instanceof BasicSparkConfigOld sparkBaseConfig) {
             // checks if both absolute and external encoders are being used
             if (sparkBaseConfig.externalEncoderConfig.useExternalEncoder
                     && sparkBaseConfig.absoluteEncoderConfig.useAbsoluteEncoder) {

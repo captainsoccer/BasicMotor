@@ -3,7 +3,7 @@ package io.github.captainsoccer.basicmotor.ctre.victorspx;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import io.github.captainsoccer.basicmotor.BasicMotor;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
@@ -59,7 +59,7 @@ public class VictorSPXInterface extends MotorInterface {
      * @param config the configuration for the motor
      * @param defaultMeasurements The default measurements for the motor controller. If null, EmptyMeasurements will be used.
      */
-    public VictorSPXInterface(BasicMotorConfig config, Measurements defaultMeasurements) {
+    public VictorSPXInterface(BasicMotorConfigOld config, Measurements defaultMeasurements) {
         this(config.motorConfig.id, config.motorConfig.name, defaultMeasurements);
     }
 

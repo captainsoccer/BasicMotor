@@ -2,7 +2,7 @@ package io.github.captainsoccer.basicmotor.sim;
 
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
@@ -40,7 +40,7 @@ public abstract class BasicSimSystem extends BasicMotor {
    * @param motorInterface The motor interface to use for the motor simulation
    * @param config The configuration for the motor simulation
    */
-  public BasicSimSystem(SimSystemInterface motorInterface, BasicMotorConfig config) {
+  public BasicSimSystem(SimSystemInterface motorInterface, BasicMotorConfigOld config) {
     super(motorInterface, config);
     super.setControllerLocation(ControllerLocation.RIO);
   }

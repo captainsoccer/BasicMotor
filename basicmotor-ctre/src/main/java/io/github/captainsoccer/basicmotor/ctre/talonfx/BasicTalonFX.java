@@ -5,7 +5,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.ctre.CANcoderMeasurements;
@@ -109,12 +109,12 @@ public class BasicTalonFX extends BasicMotor {
      *
      * @param motorConfig The configuration for the motor controller.
      */
-    public BasicTalonFX(BasicMotorConfig motorConfig) {
+    public BasicTalonFX(BasicMotorConfigOld motorConfig) {
         super(new TalonFXInterface(motorConfig), motorConfig);
 
         this.motorInterface = (TalonFXInterface) super.motorInterface;
 
-        if(motorConfig instanceof BasicTalonFXConfig talonConfig) {
+        if(motorConfig instanceof BasicTalonFXConfigOld talonConfig) {
 
             setCurrentLimits(talonConfig.currentLimitConfig.getCurrentLimits());
 
@@ -350,7 +350,7 @@ public class BasicTalonFX extends BasicMotor {
      * uses a canCoder from the config
      * @param config the config for the canCoder
      */
-    public void useCanCoder(BasicTalonFXConfig.CanCoderConfig config){
+    public void useCanCoder(BasicTalonFXConfigOld.CanCoderConfig config){
         if(config.canCoderID == 0) throw new IllegalArgumentException("CanCoder ID must be other then 0");
 
         useCanCoder(createCanCoderFromConfig(config), config.sensorToMotorRatio, config.mechanismToSensorRatio, getMeasurements().getUnitConversion(), config.canCoderType);
@@ -361,7 +361,7 @@ public class BasicTalonFX extends BasicMotor {
      * @param config The canCoder config
      * @return The CanCoder created from the config
      */
-    private static CANcoder createCanCoderFromConfig(BasicTalonFXConfig.CanCoderConfig config){
+    private static CANcoder createCanCoderFromConfig(BasicTalonFXConfigOld.CanCoderConfig config){
         CANcoder canCoder = new CANcoder(config.canCoderID, config.canCoderCanBus);
 
         CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();

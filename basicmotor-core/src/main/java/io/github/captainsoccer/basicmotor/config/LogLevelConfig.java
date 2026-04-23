@@ -1,6 +1,6 @@
 package io.github.captainsoccer.basicmotor.config;
 
-public record LogLevel(
+public record LogLevelConfig(
         boolean logSensors,
         boolean logFeedback
 

@@ -2,7 +2,7 @@ package io.github.captainsoccer.basicmotor.sim.arm;
 
 
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
 
@@ -31,11 +31,11 @@ public class BasicArmSim extends BasicSimSystem {
 
     /**
      * Creates a BasicSimArm instance with the provided configuration.
-     * the config must have the {@link BasicMotorConfig.SimulationConfig#momentOfInertia} set.
+     * the config must have the {@link BasicMotorConfigOld.SimulationConfig#momentOfInertia} set.
      *
      * @param config The configuration for the arm motor
      */
-    public BasicArmSim(BasicMotorConfig config) {
+    public BasicArmSim(BasicMotorConfigOld config) {
         super(new ArmSimInterface(config), config);
 
         this.armSim = ((ArmSimInterface) super.motorInterface).armSim;

@@ -115,7 +115,7 @@ public class BasicTalonSRX extends BasicMotor {
      * This constructor is used to create a TalonSRX motor controller with the specified settings.
      * @param motorConfig The configuration for the TalonSRX motor controller.
      */
-    public BasicTalonSRX(BasicTalonSRXConfig motorConfig){
+    public BasicTalonSRX(BasicTalonSRXConfigOld motorConfig){
         super(new TalonSRXInterface(motorConfig), motorConfig);
 
         this.motorInterface = (TalonSRXInterface) super.motorInterface;

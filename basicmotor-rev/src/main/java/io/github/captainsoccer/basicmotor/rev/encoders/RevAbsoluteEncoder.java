@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.rev.encoders;
 
 import com.revrobotics.AbsoluteEncoder;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 
 /**
@@ -39,7 +39,7 @@ public class RevAbsoluteEncoder extends Measurements {
      *                       This will be desired units per rotation.
      *                       For example, if the desired units are meters and the motor has a gear ratio of 2:1,
      *                       then the unit conversion should be 2 * Math.PI (the circumference of a circle with radius 1).
-     *                       More info at {@link BasicMotorConfig.MotorConfig#unitConversion}.
+     *                       More info at {@link BasicMotorConfigOld.MotorConfig#unitConversion}.
      */
     public RevAbsoluteEncoder(AbsoluteEncoder encoder, double gearRatio, double unitConversion) {
         super(gearRatio, unitConversion);

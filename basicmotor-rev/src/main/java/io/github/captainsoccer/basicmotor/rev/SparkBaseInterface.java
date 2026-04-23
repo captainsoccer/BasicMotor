@@ -8,7 +8,7 @@ import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import io.github.captainsoccer.basicmotor.BasicMotor;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
@@ -65,12 +65,12 @@ public class SparkBaseInterface extends MotorInterface {
      * @param config      The configuration for the motor
      * @param motorConfig The configuration for the motor, including name, gear ratio, and unit conversion
      */
-    public SparkBaseInterface(SparkBase motor, SparkBaseConfig config, BasicMotorConfig motorConfig){
+    public SparkBaseInterface(SparkBase motor, SparkBaseConfig config, BasicMotorConfigOld motorConfig){
         super(motorConfig);
         this.motor = motor;
         this.config = config;
         
-        if(!(motorConfig instanceof BasicSparkConfig sparkConfig && !sparkConfig.enableVoltageCompensation))
+        if(!(motorConfig instanceof BasicSparkConfigOld sparkConfig && !sparkConfig.enableVoltageCompensation))
             config.voltageCompensation(MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE); // set the voltage compensation to the idle voltage
         else
             config.disableVoltageCompensation();
@@ -84,7 +84,7 @@ public class SparkBaseInterface extends MotorInterface {
         double gearRatio = motorConfig.motorConfig.gearRatio;
         double unitConversion = motorConfig.motorConfig.unitConversion;
 
-        if (!(motorConfig instanceof BasicSparkConfig sparkBaseConfig)) {
+        if (!(motorConfig instanceof BasicSparkConfigOld sparkBaseConfig)) {
             defaultMeasurements = new RevRelativeEncoder(motor.getEncoder(), gearRatio, unitConversion);
             return;
         }

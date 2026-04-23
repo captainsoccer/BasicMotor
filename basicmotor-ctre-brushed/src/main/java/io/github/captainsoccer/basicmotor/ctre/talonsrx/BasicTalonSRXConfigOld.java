@@ -1,12 +1,12 @@
 package io.github.captainsoccer.basicmotor.ctre.talonsrx;
 
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 
 /**
  * This class represents the configuration for a basic TalonSRX motor controller.
  * It extends the BasicMotorConfig class and provides specific configurations for TalonSRX motors.
  */
-public class BasicTalonSRXConfig extends BasicMotorConfig {
+public class BasicTalonSRXConfigOld extends BasicMotorConfigOld {
     /**
      * The encoder configuration for the TalonSRX motor controller.
      * Use this to configure the encoder type and ticks per revolution.
@@ -21,8 +21,8 @@ public class BasicTalonSRXConfig extends BasicMotorConfig {
     public CurrentLimitConfig currentLimitConfig = new CurrentLimitConfig();
 
     @Override
-    public BasicTalonSRXConfig copy() {
-        var copy = new BasicTalonSRXConfig();
+    public BasicTalonSRXConfigOld copy() {
+        var copy = new BasicTalonSRXConfigOld();
         //Transfer the base configuration
         super.copy(copy);
 
@@ -57,7 +57,7 @@ public class BasicTalonSRXConfig extends BasicMotorConfig {
          * @return A new instance of EncoderConfig with the same values as this instance.
          */
         public EncoderConfig copy() {
-            var copy = new BasicTalonSRXConfig.EncoderConfig();
+            var copy = new BasicTalonSRXConfigOld.EncoderConfig();
 
             copy.type = this.type;
             copy.tickPerRevolution = this.tickPerRevolution;
@@ -107,7 +107,7 @@ public class BasicTalonSRXConfig extends BasicMotorConfig {
          * @return A new instance of CurrentLimitConfig with the same values as this instance.
          */
         public CurrentLimitConfig copy() {
-            var copy = new BasicTalonSRXConfig.CurrentLimitConfig();
+            var copy = new BasicTalonSRXConfigOld.CurrentLimitConfig();
 
             copy.continuousCurrentLimit = this.continuousCurrentLimit;
             copy.peakCurrentLimit = this.peakCurrentLimit;
@@ -123,7 +123,7 @@ public class BasicTalonSRXConfig extends BasicMotorConfig {
          * @return A new instance of CurrentLimitConfig with the values from the provided TalonSRXCurrentLimits.
          */
         public static CurrentLimitConfig fromCurrentLimits(TalonSRXCurrentLimits currentLimits) {
-            var config = new BasicTalonSRXConfig.CurrentLimitConfig();
+            var config = new BasicTalonSRXConfigOld.CurrentLimitConfig();
             config.continuousCurrentLimit = currentLimits.continuousCurrentLimit();
             config.peakCurrentLimit = currentLimits.peakCurrentLimit();
             config.peakCurrentDuration = currentLimits.peakCurrentDuration();

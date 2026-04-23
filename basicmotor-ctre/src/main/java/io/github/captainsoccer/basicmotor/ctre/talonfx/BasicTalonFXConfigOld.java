@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.ctre.talonfx;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 
 /**
  * This class represents the configuration for a basic TalonFX motor controller.
@@ -11,7 +11,7 @@ import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
  * See the <a href="https://github.com/captainsoccer/BasicMotor/wiki/Usage-TalonFX">wiki</a>
  * for more information on how to use this class.
  */
-public class BasicTalonFXConfig extends BasicMotorConfig {
+public class BasicTalonFXConfigOld extends BasicMotorConfigOld {
     /**
      * The current limits configuration for the TalonFX motor controller.
      * Use this to protect the motor from overheating and drawing too much current.
@@ -48,8 +48,8 @@ public class BasicTalonFXConfig extends BasicMotorConfig {
     public boolean waitForAllSignals = false;
 
     @Override
-    public BasicTalonFXConfig copy() {
-        var copy = new BasicTalonFXConfig();
+    public BasicTalonFXConfigOld copy() {
+        var copy = new BasicTalonFXConfigOld();
 
         // Copy the basic motor configuration
         super.copy(copy);

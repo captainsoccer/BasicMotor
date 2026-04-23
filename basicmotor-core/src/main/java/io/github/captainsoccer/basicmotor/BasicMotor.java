@@ -1,6 +1,6 @@
 package io.github.captainsoccer.basicmotor;
 
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
 import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
@@ -128,7 +128,7 @@ public abstract class BasicMotor {
      * Used to store the configuration of the motor controller.
      * May be null if the user goes with a bare minimum configuration.
      */
-    private final BasicMotorConfig config;
+    private final BasicMotorConfigOld config;
 
     /**
      * Creates the motor.
@@ -147,7 +147,7 @@ public abstract class BasicMotor {
      * @param motorInterface The motor interface for the specific motor controller.
      * @param config         The configuration for the motor controller.
      */
-    public BasicMotor(MotorInterface motorInterface, BasicMotorConfig config) {
+    public BasicMotor(MotorInterface motorInterface, BasicMotorConfigOld config) {
         this(motorInterface, config.getControllerGains(), config);
     }
 
@@ -157,7 +157,7 @@ public abstract class BasicMotor {
      * @param controllerGains The gains of the controller (used for PID control, feedforward, and constraints).
      * @param config          The configuration for the motor controller. (used for idle mode, inverted, and current limits)
      */
-    private BasicMotor(MotorInterface motorInterface, ControllerGains controllerGains, BasicMotorConfig config) {
+    private BasicMotor(MotorInterface motorInterface, ControllerGains controllerGains, BasicMotorConfigOld config) {
         // checking for null values
         Objects.requireNonNull(controllerGains);
         Objects.requireNonNull(motorInterface);

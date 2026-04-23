@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.rev.encoders;
 
 import com.revrobotics.RelativeEncoder;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 
 /**
@@ -38,7 +38,7 @@ public class RevRelativeEncoder extends Measurements {
      *                       A number larger than 1 indicates a reduction (e.g., 2:1 gear ratio means the encoder turns twice for every rotation of the mechanism).
      * @param unitConversion The value that will be multiplied by to convert the measurements to the desired units.
      *                       This will be desired units per rotation.
-     *                       More info at {@link BasicMotorConfig.MotorConfig#unitConversion}.
+     *                       More info at {@link BasicMotorConfigOld.MotorConfig#unitConversion}.
      */
     public RevRelativeEncoder(RelativeEncoder encoder, double gearRatio, double unitConversion) {
         super(gearRatio, unitConversion);

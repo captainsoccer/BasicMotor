@@ -4,9 +4,9 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
-import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
+import io.github.captainsoccer.basicmotor.rev.BasicSparkConfigOld.AbsoluteEncoderConfig.AbsoluteEncoderRange;
 
 
 /**
@@ -82,10 +82,10 @@ public class BasicSparkFlex extends BasicSpark {
      *
      * @param config The configuration for the motor controller.
      */
-    public BasicSparkFlex(BasicMotorConfig config) {
+    public BasicSparkFlex(BasicMotorConfigOld config) {
         super(new SparkFlex(config.motorConfig.id, BasicSpark.getMotorType(config)), new SparkFlexConfig(), config);
 
-        if (config instanceof BasicSparkConfig sparkBaseConfig) {
+        if (config instanceof BasicSparkConfigOld sparkBaseConfig) {
             //if the user configured to use an external encoder with an absolute encoder,
             // then we will use the external encoder with the absolute encoder
             if (sparkBaseConfig.externalEncoderConfig.useExternalEncoder

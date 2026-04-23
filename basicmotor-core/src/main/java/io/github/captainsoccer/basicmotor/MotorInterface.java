@@ -1,6 +1,6 @@
 package io.github.captainsoccer.basicmotor;
 
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
@@ -32,7 +32,7 @@ public abstract class MotorInterface {
      * Creates a MotorInterface with the name provided in the configuration.
      * @param config the configuration for the motor
      */
-    protected MotorInterface(BasicMotorConfig config) {
+    protected MotorInterface(BasicMotorConfigOld config) {
         this.name = config.motorConfig.name;
         this.errorHandler = new ErrorHandler(name);
     }

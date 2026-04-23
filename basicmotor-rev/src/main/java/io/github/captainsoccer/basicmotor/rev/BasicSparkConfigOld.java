@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.rev;
 
 
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 
 /**
  * This class represents the configuration for a basic spark base motor controller.
@@ -11,7 +11,7 @@ import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
  * See the <a href="https://github.com/captainsoccer/BasicMotor/wiki/Usage-Spark-Base">wiki</a>
  * for more information on how to use this class.
  */
-public class BasicSparkConfig extends BasicMotorConfig {
+public class BasicSparkConfigOld extends BasicMotorConfigOld {
 
     /**
      * enables voltage compensation for the motor to allow for more consistent operation for different battery loads.
@@ -57,8 +57,8 @@ public class BasicSparkConfig extends BasicMotorConfig {
      * @return A new BasicSparkBaseConfig object with the same values as this instance
      */
     @Override
-    public BasicSparkConfig copy() {
-        BasicSparkConfig copy = new BasicSparkConfig();
+    public BasicSparkConfigOld copy() {
+        BasicSparkConfigOld copy = new BasicSparkConfigOld();
 
         // Copy the basic motor configuration
         super.copy(copy);
@@ -189,7 +189,7 @@ public class BasicSparkConfig extends BasicMotorConfig {
          * Change this to true if you want to use an external encoder.
          * If the encoder is a through-bore encoder and is connected to a spark flex motor controller,
          * you can use the absolute encoder to reset the relative encoder then use the higher quality relative encoder.
-         * To do that, set this flag to true and configure the absolute encoder in {@link BasicSparkConfig#absoluteEncoderConfig}.
+         * To do that, set this flag to true and configure the absolute encoder in {@link BasicSparkConfigOld#absoluteEncoderConfig}.
          */
         public boolean useExternalEncoder = false;
 

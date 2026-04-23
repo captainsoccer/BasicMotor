@@ -2,7 +2,7 @@ package io.github.captainsoccer.basicmotor.sim.elevator;
 
 
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
 import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
 
@@ -36,7 +36,7 @@ public class BasicElevatorSim extends BasicSimSystem {
      *
      * @param config The configuration for the elevator motor
      */
-    public BasicElevatorSim(BasicMotorConfig config) {
+    public BasicElevatorSim(BasicMotorConfigOld config) {
         super(new ElevatorSimInterface(config), config);
 
         this.elevator = ((ElevatorSimInterface) super.motorInterface).elevatorSim;

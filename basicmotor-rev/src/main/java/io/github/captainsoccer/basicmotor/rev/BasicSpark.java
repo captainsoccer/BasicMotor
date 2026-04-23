@@ -7,7 +7,7 @@ import com.revrobotics.spark.SparkLowLevel;
 import edu.wpi.first.math.system.plant.DCMotor;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 import io.github.captainsoccer.basicmotor.LogFrame;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.controllers.Controller;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
@@ -18,7 +18,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import io.github.captainsoccer.basicmotor.rev.encoders.RevAbsoluteEncoder;
 import io.github.captainsoccer.basicmotor.rev.encoders.RevRelativeEncoder;
-import io.github.captainsoccer.basicmotor.rev.BasicSparkConfig.AbsoluteEncoderConfig.AbsoluteEncoderRange;
+import io.github.captainsoccer.basicmotor.rev.BasicSparkConfigOld.AbsoluteEncoderConfig.AbsoluteEncoderRange;
 
 /**
  * A class that includes common functionality for Spark Base motor controllers
@@ -156,7 +156,7 @@ public abstract class BasicSpark extends BasicMotor {
      *                    This should be an empty configuration that will be applied to the motor controller.
      * @param motorConfig The configuration of the motor controller.
      */
-    protected BasicSpark(SparkBase motor, SparkBaseConfig config, BasicMotorConfig motorConfig) {
+    protected BasicSpark(SparkBase motor, SparkBaseConfig config, BasicMotorConfigOld motorConfig) {
         super(new SparkBaseInterface(motor, config, motorConfig), motorConfig);
 
         this.motorInterface = (SparkBaseInterface) super.motorInterface;
@@ -164,7 +164,7 @@ public abstract class BasicSpark extends BasicMotor {
         this.motorEfficiencyFactor =
                 MotorEfficiencyFactor.fromMotorStallTorque(motorConfig.motorConfig.motorType.stallTorqueNewtonMeters);
 
-        if (motorConfig instanceof BasicSparkConfig sparkBaseConfig) {
+        if (motorConfig instanceof BasicSparkConfigOld sparkBaseConfig) {
             setCurrentLimits(sparkBaseConfig.currentLimitConfig.getCurrentLimits());
 
             if (sparkBaseConfig.externalEncoderConfig.useExternalEncoder
@@ -207,8 +207,8 @@ public abstract class BasicSpark extends BasicMotor {
      * @param motorConfig The configuration of the motor controller.
      * @return The type of motor connected to the spark base motor controller.
      */
-    protected static SparkLowLevel.MotorType getMotorType(BasicMotorConfig motorConfig) {
-        if (!(motorConfig instanceof BasicSparkConfig sparkBaseConfig)) {
+    protected static SparkLowLevel.MotorType getMotorType(BasicMotorConfigOld motorConfig) {
+        if (!(motorConfig instanceof BasicSparkConfigOld sparkBaseConfig)) {
             return SparkLowLevel.MotorType.kBrushless;
         }
 
@@ -509,7 +509,7 @@ public abstract class BasicSpark extends BasicMotor {
      *                             This will be desired units per rotation.
      *                             For example, if the desired units are meters and the motor has a gear ratio of 2:1,
      *                             then the unit conversion should be 2 * Math.PI (the circumference of a circle with radius 1).
-     *                             More info at {@link BasicMotorConfig.MotorConfig#unitConversion}.
+     *                             More info at {@link BasicMotorConfigOld.MotorConfig#unitConversion}.
      */
     public void useAbsoluteEncoder(
             boolean inverted,

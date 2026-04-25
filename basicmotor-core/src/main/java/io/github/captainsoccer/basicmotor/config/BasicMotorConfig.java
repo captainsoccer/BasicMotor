@@ -1,10 +1,12 @@
 package io.github.captainsoccer.basicmotor.config;
 
+import io.github.captainsoccer.ImmutableConfigProcessor;
 import io.github.captainsoccer.basicmotor.config.slots.SlotConfig;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 
 import java.util.function.Supplier;
 
+@ImmutableConfigProcessor.Immutable
 public class BasicMotorConfig {
 
     public MotorBasicsConfig motorBasics = new MotorBasicsConfig();
@@ -24,4 +26,8 @@ public class BasicMotorConfig {
     public LoopTimingConfig loopTiming = new LoopTimingConfig();
 
     public Supplier<Measurements.Measurement> customMeasurements = null;
+
+    public ImmutableBasicMotorConfig immutable(){
+        return new ImmutableBasicMotorConfig(this);
+    }
 }

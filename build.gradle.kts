@@ -38,20 +38,23 @@ subprojects {
     // If you want a fallback (for local dev), keep this:
     version = rootProject.version
 
-    dependencies{
-        // WPILib dependencies
-        add("compileOnly", "edu.wpi.first.wpilibj:wpilibj-java:${wpilibVersion}")
-        add("compileOnly", "edu.wpi.first.wpimath:wpimath-java:${wpilibVersion}")
-        add("compileOnly", "edu.wpi.first.wpiutil:wpiutil-java:${wpilibVersion}")
-        add("compileOnly", "edu.wpi.first.wpiunits:wpiunits-java:${wpilibVersion}")
-        add("compileOnly", "edu.wpi.first.hal:hal-java:${wpilibVersion}")
-        add("compileOnly", "org.littletonrobotics.akit:akit-java:${advantageKitVersion}")
-        add("compileOnly", "us.hebi.quickbuf:quickbuf-runtime:1.3.3")
-        add("compileOnly", "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+    if (name != "immutable-annotation") {
+        dependencies{
+            // WPILib dependencies
+            add("compileOnly", "edu.wpi.first.wpilibj:wpilibj-java:${wpilibVersion}")
+            add("compileOnly", "edu.wpi.first.wpimath:wpimath-java:${wpilibVersion}")
+            add("compileOnly", "edu.wpi.first.wpiutil:wpiutil-java:${wpilibVersion}")
+            add("compileOnly", "edu.wpi.first.wpiunits:wpiunits-java:${wpilibVersion}")
+            add("compileOnly", "edu.wpi.first.hal:hal-java:${wpilibVersion}")
+            add("compileOnly", "org.littletonrobotics.akit:akit-java:${advantageKitVersion}")
+            add("compileOnly", "us.hebi.quickbuf:quickbuf-runtime:1.3.3")
+            add("compileOnly", "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
 
-//        add("compileOnly", "org.projectlombok:lombok:1.18.30")
-//        add("annotationProcessor", "org.projectlombok:lombok:1.18.30")
+            add("compileOnly", project(":immutable-annotation"))
+            add("annotationProcessor", project(":immutable-annotation"))
+        }
     }
+
 
     plugins.withType<JavaPlugin> {
         the<JavaPluginExtension>().sourceSets.configureEach {

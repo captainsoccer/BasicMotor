@@ -12,7 +12,7 @@ public class ConstraintsConfig {
 
     public double rampRate = 0;
 
-    private enum ConstraintType{
+    public enum ConstraintType{
         CONTINUOUS,
         LIMITED,
         NONE

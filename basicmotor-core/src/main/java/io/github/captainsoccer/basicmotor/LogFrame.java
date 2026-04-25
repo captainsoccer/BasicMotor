@@ -1,6 +1,6 @@
 package io.github.captainsoccer.basicmotor;
 
-import io.github.captainsoccer.basicmotor.controllers.Controller;
+import io.github.captainsoccer.basicmotor.control.Controller;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;

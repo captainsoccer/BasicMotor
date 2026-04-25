@@ -3,7 +3,7 @@ package frc.robot.subsystems.Drivetrain;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.RobotBase;
 import io.github.captainsoccer.basicmotor.BasicMotor;
-import io.github.captainsoccer.basicmotor.controllers.Controller;
+import io.github.captainsoccer.basicmotor.control.Controller;
 import io.github.captainsoccer.basicmotor.rev.BasicSparkMAX;
 import io.github.captainsoccer.basicmotor.sim.motor.BasicMotorSim;
 

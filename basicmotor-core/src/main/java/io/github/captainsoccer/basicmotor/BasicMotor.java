@@ -1,11 +1,11 @@
 package io.github.captainsoccer.basicmotor;
 
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
+import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
+import io.github.captainsoccer.basicmotor.config.ImmutableBasicMotorConfig;
 import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
 import io.github.captainsoccer.basicmotor.measurements.EmptyMeasurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
-import io.github.captainsoccer.basicmotor.controllers.Controller;
-import io.github.captainsoccer.basicmotor.gains.ControllerGains;
+import io.github.captainsoccer.basicmotor.control.Controller;
 import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager.ControllerLocation;
@@ -128,28 +128,7 @@ public abstract class BasicMotor {
      * Used to store the configuration of the motor controller.
      * May be null if the user goes with a bare minimum configuration.
      */
-    private final BasicMotorConfigOld config;
-
-    /**
-     * Creates the motor.
-     *
-     * @param motorInterface  The motor interface for the specific motor controller.
-     * @param controllerGains The gains of the controller.
-     */
-    public BasicMotor(MotorInterface motorInterface, ControllerGains controllerGains) {
-        // config is null due to the constructor being used for the bare minimum configuration
-        this(motorInterface, controllerGains, null);
-    }
-
-    /**
-     * Creates the motor with the given configuration.
-     *
-     * @param motorInterface The motor interface for the specific motor controller.
-     * @param config         The configuration for the motor controller.
-     */
-    public BasicMotor(MotorInterface motorInterface, BasicMotorConfigOld config) {
-        this(motorInterface, config.getControllerGains(), config);
-    }
+    private final ImmutableBasicMotorConfig config;
 
     /**
      * Creates the motor with the given controller gains, name, and configuration.
@@ -157,9 +136,9 @@ public abstract class BasicMotor {
      * @param controllerGains The gains of the controller (used for PID control, feedforward, and constraints).
      * @param config          The configuration for the motor controller. (used for idle mode, inverted, and current limits)
      */
-    private BasicMotor(MotorInterface motorInterface, ControllerGains controllerGains, BasicMotorConfigOld config) {
+    protected BasicMotor(MotorInterface motorInterface, BasicMotorConfig config) {
         // checking for null values
-        Objects.requireNonNull(controllerGains);
+        Objects.requireNonNull(config);
         Objects.requireNonNull(motorInterface);
 
         this.errorHandler = motorInterface.errorHandler;
@@ -176,13 +155,9 @@ public abstract class BasicMotor {
         controller = new Controller(controllerGains, setHasPIDGainsChanged, setHasConstraintsChanged, errorHandler, this::getMeasurement);
 
 
-        // if the user uses a bare minimum configuration,
-        // then we will not set the idle mode, inverted, or current limits
-        if (config != null) {
-            this.config = config.copy();
-            motorInterface.setIdleMode(config.motorConfig.idleMode);
-            motorInterface.setInverted(config.motorConfig.inverted);
-        } else this.config = null;
+        this.config = config.immutable();
+        motorInterface.setIdleMode(config.motorBasics.idleMode);
+        motorInterface.setInverted(config.motorBasics.inverted);
 
         double gearRatio = motorInterface.getDefaultMeasurements().getGearRatio();
         double unitConversion = motorInterface.getDefaultMeasurements().getUnitConversion();
@@ -648,13 +623,13 @@ public abstract class BasicMotor {
 
         //calculates the motor output
         var motorOutput =
-                runController(measurement, controllerLocation.getSeconds(), controller.getRequest());
+                runController(measurement, controllerLocation.getSeconds(), controller.getLatestFrame());
 
         // updates the log frame with the controller frame
         updateLogFrameData(motorOutput);
 
         // sets the motor output
-        int slot = controller.getRequest().slot();
+        int slot = controller.getLatestFrame().slot();
         if (controllerLocation == ControllerLocation.RIO)
             // all the pid and feedforward outputs are already calculated in the controller frame
             setMotorOutput(motorOutput.totalOutput(), 0, Controller.ControlMode.VOLTAGE, slot);
@@ -846,7 +821,7 @@ public abstract class BasicMotor {
      * @param motorOutput The motor output to update the log frame with.
      */
     private void updateLogFrameData(LogFrame.ControllerFrame motorOutput) {
-        int slot = controller.getRequest().slot();
+        int slot = controller.getLatestFrame().slot();
         double tolerance = controller.getControllerGains().getPidGains(slot).getTolerance();
 
         boolean atSetpoint = Math.abs(motorOutput.error()) <= tolerance;

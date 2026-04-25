@@ -3,7 +3,7 @@ package frc.robot.subsystems.flywheel;
 
 import edu.wpi.first.wpilibj.RobotBase;
 import io.github.captainsoccer.basicmotor.BasicMotor;
-import io.github.captainsoccer.basicmotor.controllers.Controller.ControlMode;
+import io.github.captainsoccer.basicmotor.control.Controller.ControlMode;
 import io.github.captainsoccer.basicmotor.ctre.talonfx.BasicTalonFX;
 import io.github.captainsoccer.basicmotor.sim.flywheel.BasicFlywheelSim;
 

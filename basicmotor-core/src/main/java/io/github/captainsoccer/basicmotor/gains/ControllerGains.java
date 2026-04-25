@@ -2,7 +2,7 @@ package io.github.captainsoccer.basicmotor.gains;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import io.github.captainsoccer.basicmotor.controllers.Controller;
+import io.github.captainsoccer.basicmotor.control.Controller;
 import io.github.captainsoccer.basicmotor.BasicMotor;
 
 import java.util.function.Consumer;

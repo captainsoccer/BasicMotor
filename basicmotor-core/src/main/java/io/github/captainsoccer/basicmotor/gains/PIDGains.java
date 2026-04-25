@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.gains;
 
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
-import io.github.captainsoccer.basicmotor.controllers.BasicPIDController;
+import io.github.captainsoccer.basicmotor.control.BasicPIDController;
 
 /**
  * This class contains the PID gains for a PID controller.

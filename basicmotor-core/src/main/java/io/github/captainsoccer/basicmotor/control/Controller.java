@@ -1,4 +1,4 @@
-package io.github.captainsoccer.basicmotor.controllers;
+package io.github.captainsoccer.basicmotor.control;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -11,7 +11,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
-import io.github.captainsoccer.basicmotor.gains.FeedForwardsGains;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -57,7 +56,7 @@ public class Controller implements Sendable {
      * The latest request of the controller this contains the control mode and the goal.
      * This is set by the user to control the motor.
      */
-    private ControllerRequest request = new ControllerRequest();
+    private ControlFrame controlFrame = new ControlFrame();
     /**
      * The setpoint of the controller.
      * Most of the time it is the same as the goal of the request,
@@ -117,26 +116,26 @@ public class Controller implements Sendable {
      *
      * @param request The new request for the controller
      */
-    public void setControl(ControllerRequest request) {
+    public void setControl(ControlFrame request) {
         Objects.requireNonNull(request);
-        Objects.requireNonNull(request.controlMode);
-        Objects.requireNonNull(request.goal);
+        Objects.requireNonNull(request.controlMode());
+        Objects.requireNonNull(request.goal());
 
-        if (request.slot < 0 || request.slot >= pidController.length) {
-            throw new IllegalArgumentException("Invalid slot: " + request.slot);
+        if (request.slot() < 0 || request.slot() >= pidController.length) {
+            throw new IllegalArgumentException("Invalid slot: " + request.slot());
         }
 
-        if (request.controlMode.isProfiled() && !controllerGains.isProfiled(request.slot)) {
+        if (request.controlMode().isProfiled() && !controllerGains.isProfiled(request.slot())) {
             errorHandler.logWarning("Using a profiled control mode without a profile set in the controller gains. using normal request");
         }
 
-        if (request.controlMode != this.request.controlMode) {
+        if (request.controlMode() != this.controlFrame.controlMode()) {
             Measurements.Measurement measurement = measurementSupplier.get();
-            if (request.controlMode.isVelocityControl()) reset(measurement.velocity(), measurement.acceleration());
+            if (request.controlMode().isVelocityControl()) reset(measurement.velocity(), measurement.acceleration());
             else reset(measurement.position(), measurement.velocity());
         }
 
-        this.request = request;
+        this.controlFrame = request;
     }
 
     /**
@@ -147,7 +146,7 @@ public class Controller implements Sendable {
      * @param slot        Which slot to use for Feedback and Feedforwards.
      */
     public void setControl(double setpoint, ControlMode controlMode, int slot) {
-        setControl(new ControllerRequest(setpoint, controlMode, slot));
+        setControl(new ControlFrame(setpoint, controlMode, slot, 0));
     }
 
     /**
@@ -176,7 +175,7 @@ public class Controller implements Sendable {
             errorHandler.logWarning("Using a function made for profiled control for a non profiled control mode");
         }
 
-        setControl(new ControllerRequest(goal, goalVelocity, controlMode, slot));
+        setControl(new ControlFrame(goal, goalVelocity, controlMode, slot, 0));
     }
 
     /**
@@ -206,7 +205,7 @@ public class Controller implements Sendable {
             errorHandler.logWarning("Using a function made for profiled control for a non profiled control mode");
         }
 
-        setControl(new ControllerRequest(goal, controlMode, slot));
+        setControl(new ControlFrame(goal, controlMode, slot, 0));
     }
 
     /**
@@ -251,7 +250,7 @@ public class Controller implements Sendable {
      * @return The goal of the controller
      */
     public TrapezoidProfile.State getGoal() {
-        return request.goal;
+        return controlFrame.goal();
     }
 
     /**
@@ -262,7 +261,7 @@ public class Controller implements Sendable {
      * @return The goal of the controller as a double
      */
     public double getGoalAsDouble() {
-        return request.goal.position;
+        return controlFrame.goal().position;
     }
 
     /**
@@ -271,7 +270,7 @@ public class Controller implements Sendable {
      * @return The current control mode of the controller
      */
     public ControlMode getControlMode() {
-        return request.controlMode;
+        return controlFrame.controlMode();
     }
 
     /**
@@ -279,8 +278,8 @@ public class Controller implements Sendable {
      *
      * @return The current request of the controller
      */
-    public ControllerRequest getRequest() {
-        return request;
+    public ControlFrame getLatestFrame() {
+        return controlFrame;
     }
 
     /**
@@ -315,7 +314,7 @@ public class Controller implements Sendable {
      * @return The PID output of the controller. (in volts)
      */
     public LogFrame.PIDOutput calculatePID(double measurement, double dt) {
-        return this.pidController[request.slot].calculate(this.setpoint.position, measurement, dt);
+        return this.pidController[controlFrame.slot()].calculate(this.setpoint.position, measurement, dt);
     }
 
     /**
@@ -324,7 +323,7 @@ public class Controller implements Sendable {
      * if using a motion profile, use {@link #calculateProfile(double dt)} to update the setpoint.
      */
     public void setSetpointToGoal() {
-        this.setpoint = request.goal;
+        this.setpoint = controlFrame.goal();
     }
 
     /**
@@ -338,9 +337,9 @@ public class Controller implements Sendable {
      * @return The feed forward of the controller in volts
      */
     public LogFrame.FeedForwardOutput calculateFeedForward(double measurement) {
-        var feedForwards = controllerGains.getControllerFeedForwards(request.slot);
+        var feedForwards = controllerGains.getControllerFeedForwards(controlFrame.slot());
 
-        return feedForwards.calculateFeedForwardOutput(this.setpoint, measurement, request.controlMode, request.arbFeedForward);
+        return feedForwards.calculateFeedForwardOutput(this.setpoint, measurement, controlFrame.controlMode(), controlFrame.arbFeedforward());
     }
 
     /**
@@ -352,9 +351,9 @@ public class Controller implements Sendable {
      * @param dt The time since the last calculation
      */
     public void calculateProfile(double dt) {
-        var profile = this.controllerGains.getMotionProfile(request.slot);
+        var profile = this.controllerGains.getMotionProfile(controlFrame.slot());
 
-        setpoint = profile.calculate(dt, setpoint, request.goal);
+        setpoint = profile.calculate(dt, setpoint, controlFrame.goal());
     }
 
     /**
@@ -377,8 +376,8 @@ public class Controller implements Sendable {
      * @param request     The latest request of the controller. (the function will update the goal in the request if needed)
      */
     public void calculateConstraints(
-            Measurements.Measurement measurement, ControllerRequest request) {
-        this.controllerGains.getControllerConstrains().calculateConstraints(measurement, request);
+            Measurements.Measurement measurement, ControlFrame controlFrame) {
+        this.controllerGains.getControllerConstrains().calculateConstraints(measurement, controlFrame);
     }
 
     // maintenance things
@@ -396,7 +395,7 @@ public class Controller implements Sendable {
 
         //this acts both as the setpoint and the goal of the controller
         builder.addDoubleProperty(setPointName, () -> setpoint.position,
-                (value) -> setControl(value, controlModeChooser.getSelected(), request.slot));
+                (value) -> setControl(value, controlModeChooser.getSelected(), controlFrame.slot()));
 
         SmartDashboard.putData(SendableRegistry.getName(this) + "/controlMode", controlModeChooser);
     }
@@ -409,225 +408,5 @@ public class Controller implements Sendable {
      */
     public void setSendableSlot(int slot) {
         controllerGains.setSendableSlot(slot);
-    }
-
-    /**
-     * An enum that represents the control mode of the controller.
-     */
-    public enum ControlMode {
-        /**
-         * Stops motor output.
-         */
-        STOP(false, false),
-        /**
-         * Control directly the voltage applied to the coils.
-         */
-        VOLTAGE(false, false),
-        /**
-         * Controls the duty cycle of the motor output. (a fraction of the input voltage).
-         * Known as (precent output and duty cycle output)
-         */
-        PERCENT_OUTPUT(false, false),
-        /**
-         * Controls the motor with a closed loop position control.
-         * Needs pid gains to be set in the controller gains.
-         * If you want to use a motion profile, use {@link #PROFILED_POSITION} instead.
-         */
-        POSITION(false, true),
-        /**
-         * Controls the motor with a profiled position output.
-         * This is the same as {@link #POSITION} but uses a motion profile to smooth the movement.
-         * The motion profile is set in the controller gains.
-         * The motion profile is always calculated on the rio (not using the built-in controllers features).
-         */
-        PROFILED_POSITION(true, true),
-        /**
-         * Controls the motor with a closed loop velocity control.
-         * Needs pid gains to be set in the controller gains.
-         * Also recommended to use a setpoint feedforward to help the motor stay in the requested velocity.
-         * If you want to use a motion profile, use {@link #PROFILED_VELOCITY} instead.
-         */
-        VELOCITY(false, true),
-        /**
-         * Controls the motor with a profiled velocity output.
-         * This is the same as {@link #VELOCITY} but uses a motion profile to smooth the movement.
-         * The motion profile is set in the controller gains.
-         * The motion profile is always calculated on the rio (not using the built-in controllers features).
-         */
-        PROFILED_VELOCITY(true, true),
-
-        /**
-         * Controls the motor with a closed loop current control.
-         * Needs pid gains to be set in the controller gains.
-         * This is used to control the current output of the motor.
-         * Will work the same as {@link #TORQUE}.
-         * This is used where a mechanism needs to apply a specific current to the motor.
-         */
-        CURRENT(false, true),
-
-        /**
-         * Controls the motor with a closed loop torque control.
-         * Needs pid gains to be set in the controller gains.
-         * This is used to control the torque output of the motor.
-         * Will work the same as {@link #CURRENT}.
-         * This is used where a mechanism needs to apply a specific torque to the motor.
-         */
-        TORQUE(false, true);
-
-        /**
-         * If the control mode is profiled.
-         */
-        private final boolean profiled;
-
-        /**
-         * If the control mode requires a PID controller.
-         * This is used to check if the controller needs to calculate the PID output.
-         */
-        private final boolean requiresPID;
-
-        ControlMode(boolean profiled, boolean requiresPID) {
-            this.profiled = profiled;
-            this.requiresPID = requiresPID;
-        }
-
-        /**
-         * Checks if the control mode is a position control
-         * This function is used for calculating the constraints of the controller.
-         *
-         * @return True if the control mode is a position control
-         */
-        public boolean isPositionControl() {
-            return this == POSITION || this == PROFILED_POSITION;
-        }
-
-        /**
-         * Checks if the control mode is a velocity control
-         * This function is used for calculating the constraints of the controller.
-         *
-         * @return True if the control mode is a velocity control
-         */
-        public boolean isVelocityControl() {
-            return this == VELOCITY || this == PROFILED_VELOCITY;
-        }
-
-        /**
-         * Checks if the control mode is a current control.
-         * Current control is both CURRENT and TORQUE.
-         *
-         * @return True if the control mode is a current control
-         */
-        public boolean isCurrentControl() {
-            return this == CURRENT || this == TORQUE;
-        }
-
-        /**
-         * Checks if the control mode is a profiled control
-         * This function is used for checking if the controller is using a motion profile.
-         *
-         * @return True if the control mode is a profiled control
-         */
-        public boolean isProfiled() {
-            return this.profiled;
-        }
-
-        /**
-         * Checks if the control mode requires a pid controller
-         * Used to check if there is a need to calculate the PID output.
-         *
-         * @return True if the control mode requires a pid controller
-         */
-        public boolean requiresPID() {
-            return this.requiresPID;
-        }
-    }
-
-    /**
-     * The request used to control the motor.
-     * This will be set by the user to control the motor.
-     *
-     * @param goal           The goal of the controller. (if not using a motion profile, this will be the setpoint).
-     * @param controlMode    The control mode used to control the motor.
-     * @param arbFeedForward A voltage feedforward given by the user that will be added to the motor output.
-     *                       Useful when using outside calculations easily.
-     *                       Similar to the function feedForward in the {@link FeedForwardsGains}
-     * @param slot           Which slot to use for Feedback and Feedforwards.
-     */
-    public record ControllerRequest(
-            TrapezoidProfile.State goal, ControlMode controlMode, double arbFeedForward, int slot) {
-
-        /**
-         * Creates a controller request with a custom goal.
-         * use only when using profiled control.
-         * Use this when you want to control the goal velocity.
-         *
-         * @param goal        The goal of the controller.
-         * @param controlMode The control mode used to control the motor.
-         * @param slot        Which slot to use for Feedback and Feedforwards.
-         */
-        public ControllerRequest(TrapezoidProfile.State goal, ControlMode controlMode, int slot) {
-            this(goal, controlMode, 0, slot);
-        }
-
-        /**
-         * Creates a controller request with a goal.
-         *
-         * @param goal        The new goal (if not using a motion profile, this will be the setpoint).
-         * @param controlMode The new control mode used to control the motor.
-         * @param slot        Which slot to use for Feedback and Feedforwards.
-         */
-        public ControllerRequest(double goal, ControlMode controlMode, int slot) {
-            this(new TrapezoidProfile.State(goal, 0), controlMode, 0, slot);
-        }
-
-
-        /**
-         * Creates a controller request with a goal and a setpoint velocity.
-         * use only when using profiled control.
-         * Use this when you want to control the goal velocity.
-         * Same as {@link #ControllerRequest(TrapezoidProfile.State goal, ControlMode controlMode, int slot)}
-         *
-         * @param goal         The new goal of the controller.
-         * @param goalVelocity The goal velocity of the controller.
-         *                     (i.e. the velocity the motor should be at when reaching the goal)
-         * @param controlMode  The control mode used to control the motor.
-         * @param slot         Which slot to use for Feedback and Feedforwards.
-         */
-        public ControllerRequest(double goal, double goalVelocity, ControlMode controlMode, int slot) {
-            this(new TrapezoidProfile.State(goal, goalVelocity), controlMode, 0, slot);
-        }
-
-        /**
-         * Creates an empty controller request.
-         * Used to stop the motor.
-         */
-        public ControllerRequest() {
-            this(new TrapezoidProfile.State(), ControlMode.STOP, 0);
-        }
-
-        /**
-         * Creates a controller request with a goal and an arbitrary feed forward.
-         *
-         * @param goal           The new goal of the controller. (if not using a motion profile, this will be the setpoint).
-         * @param controlMode    The control mode used to control the motor.
-         * @param arbFeedForward A voltage feedforward given by the user that will be added to the motor output.
-         * @param slot           Which slot to use for Feedback and Feedforwards.
-         */
-        public ControllerRequest(double goal, ControlMode controlMode, double arbFeedForward, int slot) {
-            this(new TrapezoidProfile.State(goal, 0), controlMode, arbFeedForward, slot);
-        }
-
-        /**
-         * Creates a controller request with a goal and an arbitrary feed forward.
-         *
-         * @param goal           The new goal of the controller. (if not using a motion profile, this will be the setpoint).
-         * @param goalVelocity   The goal velocity of the controller.
-         *                       (i.e. the velocity the motor should be at when reaching the goal)
-         * @param controlMode    The control mode used to control the motor.
-         * @param arbFeedForward A voltage feedforward given by the user that will be added to the motor output.
-         * @param slot           Which slot to use for Feedback and Feedforwards.
-         */
-        public ControllerRequest(double goal, double goalVelocity, ControlMode controlMode, double arbFeedForward, int slot) {
-            this(new TrapezoidProfile.State(goal, goalVelocity), controlMode, arbFeedForward, slot);
-        }
     }
 }

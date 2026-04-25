@@ -5,7 +5,8 @@ import java.util.function.Function;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import io.github.captainsoccer.basicmotor.LogFrame;
-import io.github.captainsoccer.basicmotor.controllers.Controller;
+import io.github.captainsoccer.basicmotor.control.ControlMode;
+import io.github.captainsoccer.basicmotor.control.Controller;
 
 /**
  * This class is used to store and calculate feed forward gains for a motor controller.
@@ -304,7 +305,7 @@ public class FeedForwardsGains {
      * @return The feed forward output of the controller.
      */
     public LogFrame.FeedForwardOutput calculateFeedForwardOutput(
-            TrapezoidProfile.State setpoint, double measurement, Controller.ControlMode controlMode, double arbitraryFeedForward) {
+            TrapezoidProfile.State setpoint, double measurement, ControlMode controlMode, double arbitraryFeedForward) {
 
         return new LogFrame.FeedForwardOutput(
                 controlMode.isPositionControl() ? kG.calculate(setpoint.position) : 0,

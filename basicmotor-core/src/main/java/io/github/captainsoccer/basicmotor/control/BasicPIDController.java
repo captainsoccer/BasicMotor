@@ -1,4 +1,4 @@
-package io.github.captainsoccer.basicmotor.controllers;
+package io.github.captainsoccer.basicmotor.control;
 
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.BasicMotor;

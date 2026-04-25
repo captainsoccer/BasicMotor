@@ -12,6 +12,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,6 +23,7 @@ import java.util.Set;
 @AutoService(Processor.class)
 public class ImmutableConfigProcessor extends AbstractProcessor {
 
+    private static HashSet<String> generatedClass = new HashSet<>();
     /**
      * marks a class as needing of an immutable version
      */
@@ -61,9 +63,11 @@ public class ImmutableConfigProcessor extends AbstractProcessor {
         String className = "Immutable" + classElement.getSimpleName();
         String classPackage = getPackageName(classElement);
 
+        if(generatedClass.contains(className)) return;
+
         var typeBuilder = TypeSpec.classBuilder(className).addModifiers(Modifier.PUBLIC);
 
-        var methodBuilder = MethodSpec.constructorBuilder();
+        var methodBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
 
         String paramName = unCapitalize(classElement.getSimpleName().toString());
 
@@ -72,13 +76,32 @@ public class ImmutableConfigProcessor extends AbstractProcessor {
         classElement.getEnclosedElements().stream()
                 .filter((element) -> element.getKind().isField()).forEach(
                         (field) -> {
-                            typeBuilder.addField(
-                                    TypeName.get(field.asType()), field.getSimpleName().toString(), Modifier.PUBLIC, Modifier.FINAL
-                            );
+                            if(needImmutableVersion(field)){
+                                createImmutableClass(processingEnv.getTypeUtils().asElement(field.asType()));
 
-                            methodBuilder.addCode(
-                                    "this." + field.getSimpleName() + " = " + paramName + "." + field.getSimpleName() + ";\n"
-                            );
+                                TypeElement fieldType = (TypeElement) processingEnv.getTypeUtils().asElement(field.asType());
+                                String pkg = processingEnv.getElementUtils().getPackageOf(fieldType).toString();
+                                String immutableName = "Immutable" + fieldType.getSimpleName();
+
+                                ClassName typeName = ClassName.get(pkg, immutableName);
+
+                                typeBuilder.addField(
+                                        typeName, field.getSimpleName().toString(), Modifier.PUBLIC, Modifier.FINAL
+                                );
+
+                                methodBuilder.addCode(
+                                        "this." + field.getSimpleName() + " = new " + immutableName + "(" + paramName + "." + field.getSimpleName() + ");\n"
+                                );
+                            }
+                            else {
+                                typeBuilder.addField(
+                                        TypeName.get(field.asType()), field.getSimpleName().toString(), Modifier.PUBLIC, Modifier.FINAL
+                                );
+
+                                methodBuilder.addCode(
+                                        "this." + field.getSimpleName() + " = " + paramName + "." + field.getSimpleName() + ";\n"
+                                );
+                            }
                         }
                 );
 
@@ -94,6 +117,18 @@ public class ImmutableConfigProcessor extends AbstractProcessor {
                     .printMessage(Diagnostic.Kind.ERROR, "Failed to write class", classElement);
             e.  printStackTrace();
         }
+
+        generatedClass.add(className);
+    }
+
+    private boolean needImmutableVersion(Element fieldElement){
+        var element = processingEnv.getTypeUtils().asElement(fieldElement.asType());
+        if(element != null) {
+            if(element.getKind() != ElementKind.CLASS){
+                return false;
+            }
+        }
+        return fieldElement.asType().toString().contains("basicmotor");
     }
 
     /**

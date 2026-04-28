@@ -1,9 +1,6 @@
 package io.github.captainsoccer.basicmotor;
 
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfig;
-import io.github.captainsoccer.basicmotor.config.ConstraintsConfig;
-import io.github.captainsoccer.basicmotor.config.FollowerConfig;
-import io.github.captainsoccer.basicmotor.config.MotorBasicsConfig;
+import io.github.captainsoccer.basicmotor.config.*;
 import io.github.captainsoccer.basicmotor.config.slots.FeedForwardConfig;
 import io.github.captainsoccer.basicmotor.config.slots.MotionProfileConfig;
 import io.github.captainsoccer.basicmotor.config.slots.PIDConfig;
@@ -22,9 +19,9 @@ import java.util.Objects;
 public abstract class MotorInterface {
 
     /**
-     * The error handler for the motor interface
+     * The config of the motor
      */
-    public BasicMotorConfig config;
+    private BasicMotorConfig config;
 
     protected final ErrorHandler errorHandler;
 
@@ -46,41 +43,133 @@ public abstract class MotorInterface {
      */
     public abstract Measurements getDefaultMeasurements();
 
-    public abstract void setMotorOutput(ControlFrame controlFrame);
+    /**
+     * sets the output of the motor
+     * @param controlFrame the output to set
+     * @return the answer from the motor (error code if there was)
+     */
+    public abstract BasicError setMotorOutput(ControlFrame controlFrame);
 
+    /**
+     * sets the output of the motor, used by voltage control mode / when running pid on a custom measurements
+     * @param volts how many volts to apply
+     * @return the answer from the motor (error code if there was)
+     */
+    public abstract BasicError setMotorOutput(double volts);
+
+    /**
+     * logs an error through the error handler
+     * @param error the error to log
+     * @param printStackTrace if to print the stack trace (use when error is linked to an action that happened
+     */
     public void logError(BasicError error, boolean printStackTrace) {
         errorHandler.logError(error.getName(), printStackTrace);
     }
 
+    /**
+     * logs an error through the error handaler
+     * @param error the error to log
+     */
     public void logError(BasicError error) {
         logError(error, false);
     }
 
+    /**
+     * checks if the motor is alive and connected to the canbus
+     * @return if the motor is alive or not
+     */
     public abstract boolean isMotorConnected();
 
+    /**
+     * gets the latest data of the sensors of the motor
+     * @return the newest data from the motor sensors
+     */
     public abstract LogFrame.SensorData getLatestSensorData();
 
+    /**
+     * gets the latest pid output of the motor.
+     * not supported on all motors, used to log the pid calculations that are done on the motor controller itself.
+     * @return the pid output data
+     */
     public abstract LogFrame.PIDOutput getLatestPIDOutput();
 
+    /**
+     * @return the config of the motor
+     */
+    public BasicMotorConfig getConfig() {
+        return config;
+    }
+
+    /**
+     * @return the motor basics config
+     */
+    public MotorBasicsConfig getMotorBasicsConfig() {
+        return config.motorBasics;
+    }
+
+    /**
+     * @return the constraints of the motor
+     */
+    public ConstraintsConfig getConstraintsConfig() {
+        return config.constraints;
+    }
+
+    /**
+     * @param slot which slot to get
+     * @return the slot config
+     */
+    public SlotConfig getSlotConfig(int slot){
+        return switch (slot){
+            case 0 -> config.slot0;
+            case 1 -> config.slot1;
+            case 2 -> config.slot2;
+            default -> throw new IllegalStateException("Ivalid slot value: " + slot);
+        };
+    }
+
+    /**
+     * @return gets the follower config
+     */
+    public FollowerConfig getFollowerConfig(){
+        return config.follower;
+    }
+
+    /**
+     * @param config the config to set
+     * @return the message back from the motor, can be an error
+     */
     public BasicError setConfig(BasicMotorConfig config) {
         checkBasicMotorConfig(config);
         this.config = config;
         return applyConfig(config);
     }
 
-    public BasicError setMotorBasicsConfig(MotorBasicsConfig config) {
-        checkMotorBasicsConfig(config);
+    /**
+     * @param config the config to set
+     * @return the message back from the motor, can be an error
+     */
+    public BasicError setConfig(MotorBasicsConfig config) {
+        checkMotorBasicsConfig(config, this.config.motorBasics);
         this.config.motorBasics = config;
         return applyConfig(config);
     }
 
-    public BasicError setConstraintsConfig(ConstraintsConfig config) {
+    /**
+     * @param config the config to set
+     * @return the message back from the motor, can be an error
+     */
+    public BasicError setConfig(ConstraintsConfig config) {
         checkConstraintsConfig(config);
         this.config.constraints = config;
         return applyConfig(config);
     }
 
-    public BasicError setSlotConfig(SlotConfig config, int slot) {
+    /**
+     * @param config the config to set
+     * @param slot the slot to set
+     * @return the message back from the motor, can be an error
+     */
+    public BasicError setConfig(SlotConfig config, int slot) {
         checkSlotConfig(config, slot);
         switch (slot) {
             case 0:
@@ -93,10 +182,25 @@ public abstract class MotorInterface {
         return applyConfig(config, slot);
     }
 
-    public BasicError setFollowerConfig(FollowerConfig config) {
-        checkFollowerConfig(config);
+    /**
+     * @param config the config to set
+     * @return the message back from the motor, can be an error
+     */
+    protected BasicError setConfig(FollowerConfig config) {
+        checkFollowerConfig(config, this.config.motorBasics);
         this.config.follower = config;
         return applyConfig(config);
+    }
+
+    /**
+     * @param config the config to set
+     * @return the message back from the motor, can be an error
+     */
+    protected BasicError setConfig(LoopTimingConfig config) {
+        checkLoopTimingConfig(config);
+        this.config.loopTiming = config;
+        double measurementsHz = this.config.customMeasurements == null ? config.mainLoopFrequency : 0;
+        return applyConfig(measurementsHz, config.sensorLoopFrequency);
     }
 
     protected abstract BasicError applyConfig(BasicMotorConfig config);
@@ -109,6 +213,8 @@ public abstract class MotorInterface {
 
     protected abstract BasicError applyConfig(FollowerConfig config);
 
+    protected abstract BasicError applyConfig(double measurementsHz, double sensorHz);
+
     private void checkBasicMotorConfig(BasicMotorConfig config) {
         checkConstraintsConfig(config.constraints);
 
@@ -116,7 +222,7 @@ public abstract class MotorInterface {
         checkSlotConfig(config.slot1, 1);
         checkSlotConfig(config.slot2, 2);
 
-        checkMotorBasicsConfig(config.motorBasics);
+        checkMotorBasicsConfig(config.motorBasics, this.config.motorBasics);
 
         checkConstraintsConfig(config.constraints);
     }
@@ -185,5 +291,14 @@ public abstract class MotorInterface {
     private void checkFollowerConfig(FollowerConfig config, MotorBasicsConfig motorBasicsConfig) {
         if(config.masterID < 0 || motorBasicsConfig.CANID == config.masterID)
             throw new IllegalArgumentException("master ID cannot be negative or the same as this motor");
+    }
+
+    private void checkLoopTimingConfig(LoopTimingConfig config) {
+        if(config.feedbackLoopFrequency < 0)
+            throw new IllegalArgumentException("feedbackLoopFrequency cannot be negative");
+        if(config.mainLoopFrequency  < 0)
+            throw new IllegalArgumentException("mainLoopFrequency cannot be negative");
+        if(config.sensorLoopFrequency  < 0)
+            throw new IllegalArgumentException("sensorLoopFrequency cannot be negative");
     }
 }

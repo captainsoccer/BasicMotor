@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.wpilibj.Filesystem;
 import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
 import io.github.captainsoccer.basicmotor.LogFrame;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import edu.wpi.first.wpilibj.DriverStation;
 
 import java.io.File;
@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 /**
- * This class is used to manage the {@link BasicMotor} instances.
+ * This class is used to manage the {@link BasicMotorOld} instances.
  * It handles each motor's threads for the PID loop and sensor loop.
  * It also periodically logs the data of the motors.
  * You need to call the {@link #periodic()} method in the periodic method of your robot.java.
@@ -122,7 +122,7 @@ public class MotorManager {
      * Sets the location of the controller for a specific motor.
      * This updates the motor's main loop to run at the specified frequency.
      * This should not be used in the user code!,
-     * only by the {@link BasicMotor#setControllerLocation(ControllerLocation)} function.
+     * only by the {@link BasicMotorOld#setControllerLocation(ControllerLocation)} function.
      * @param name The name of the motor to set the location for.
      * @param location The location of the pid loop.
      */

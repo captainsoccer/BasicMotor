@@ -2,7 +2,7 @@ package io.github.captainsoccer.basicmotor.control;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.errorHandling.ErrorHandler;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * This class is used to control the {@link BasicMotor}.
+ * This class is used to control the {@link BasicMotorOld}.
  * It handles the PID loop, feedforward, constraints, and profiling of the motor.
  */
 public class Controller implements Sendable {
@@ -27,12 +27,6 @@ public class Controller implements Sendable {
      * This is used to log errors and warnings of the controller.
      */
     private final ErrorHandler errorHandler;
-
-    /**
-     * The supplier of the current measurement of the motor.
-     * This is used to reset the controller if needed.
-     */
-    private final Supplier<Measurements.Measurement> measurementSupplier;
 
     /**
      * The gains of the controller.

@@ -15,7 +15,7 @@ import io.github.captainsoccer.basicmotor.rev.BasicSparkConfigOld.AbsoluteEncode
  * functionality specific to the Spark Flex motor controller.
  * This class assumes that the motor is brushless.
  */
-public class BasicSparkFlex extends BasicSpark {
+public class BasicSparkFlexOld extends BasicSparkOld {
     /**
      * Creates a basic spark flex motor controller with the given gains, id, name, gear ratio,
      *
@@ -34,7 +34,7 @@ public class BasicSparkFlex extends BasicSpark {
      *                       The unit for this value is desired position unit per rotation.
 
      */
-    public BasicSparkFlex(
+    public BasicSparkFlexOld(
             ControllerGains gains,
             int id,
             boolean brushless,
@@ -67,7 +67,7 @@ public class BasicSparkFlex extends BasicSpark {
      * @param gearRatio The gear ratio of the motor controller (how many rotations of the motor are a rotation of the mechanism)
 
      */
-    public BasicSparkFlex(
+    public BasicSparkFlexOld(
             ControllerGains gains,
             int id,
             boolean brushless,
@@ -82,8 +82,8 @@ public class BasicSparkFlex extends BasicSpark {
      *
      * @param config The configuration for the motor controller.
      */
-    public BasicSparkFlex(BasicMotorConfigOld config) {
-        super(new SparkFlex(config.motorConfig.id, BasicSpark.getMotorType(config)), new SparkFlexConfig(), config);
+    public BasicSparkFlexOld(BasicMotorConfigOld config) {
+        super(new SparkFlex(config.motorConfig.id, BasicSparkOld.getMotorType(config)), new SparkFlexConfig(), config);
 
         if (config instanceof BasicSparkConfigOld sparkBaseConfig) {
             //if the user configured to use an external encoder with an absolute encoder,

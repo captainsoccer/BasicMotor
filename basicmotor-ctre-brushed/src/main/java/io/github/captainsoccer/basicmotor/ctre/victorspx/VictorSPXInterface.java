@@ -2,7 +2,7 @@ package io.github.captainsoccer.basicmotor.ctre.victorspx;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
@@ -74,7 +74,7 @@ public class VictorSPXInterface extends MotorInterface {
     }
 
     @Override
-    public void setIdleMode(BasicMotor.IdleMode mode) {
+    public void setIdleMode(BasicMotorOld.IdleMode mode) {
         NeutralMode idleMode = switch (mode) {
             case COAST -> NeutralMode.Coast;
             case BRAKE -> NeutralMode.Brake;

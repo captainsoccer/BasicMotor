@@ -7,7 +7,7 @@ import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.config.SparkBaseConfig;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
@@ -46,7 +46,7 @@ public class SparkBaseInterface extends MotorInterface {
         this.motor = motor;
 
         this.config = motorConfig.voltageCompensation(MotorManager.getConfig().DEFAULT_IDEAL_VOLTAGE); // set the voltage compensation to the idle voltage
-        config.encoder.velocityConversionFactor(BasicSpark.RPM_TO_RPS_CONVERSION);
+        config.encoder.velocityConversionFactor(BasicSparkOld.RPM_TO_RPS_CONVERSION);
         // all configs should be stored in code and not on motor
         applyConfig();
 
@@ -75,7 +75,7 @@ public class SparkBaseInterface extends MotorInterface {
         else
             config.disableVoltageCompensation();
 
-        config.encoder.velocityConversionFactor(BasicSpark.RPM_TO_RPS_CONVERSION);
+        config.encoder.velocityConversionFactor(BasicSparkOld.RPM_TO_RPS_CONVERSION);
         // all configs should be stored in code and not on motor
         applyConfig();
 
@@ -114,7 +114,7 @@ public class SparkBaseInterface extends MotorInterface {
     }
 
     @Override
-    public void setIdleMode(BasicMotor.IdleMode mode) {
+    public void setIdleMode(BasicMotorOld.IdleMode mode) {
         SparkBaseConfig.IdleMode value =
                 switch (mode) {
                     case BRAKE -> SparkBaseConfig.IdleMode.kBrake;
@@ -171,7 +171,7 @@ public class SparkBaseInterface extends MotorInterface {
         }
 
         if (constraints.getVoltageDeadband() != 0) {
-            errorHandler.logAndReportWarning(
+            errorHandler.logWarning(
                     "Spark motor controllers do not use voltage deadband (works on RIO PID controller), so it is ignored: ");
         }
 
@@ -219,8 +219,10 @@ public class SparkBaseInterface extends MotorInterface {
                         ResetMode.kResetSafeParameters,
                         PersistMode.kNoPersistParameters);
 
+        REVLibError
+
         if (okSignal != REVLibError.kOk) {
-            errorHandler.logAndReportError("Failed to apply configuration to Spark motor, Error: " + okSignal.name());
+            errorHandler.logError("Failed to apply configuration to Spark motor, Error: " + okSignal.name());
         }
     }
 }

@@ -40,7 +40,7 @@ public class BasicTalonSRXConfigOld extends BasicMotorConfigOld {
         /**
          * The type of encoder used with the TalonSRX motor controller.
          */
-        public BasicTalonSRX.EncoderType type = BasicTalonSRX.EncoderType.NONE;
+        public BasicTalonSRXOld.EncoderType type = BasicTalonSRXOld.EncoderType.NONE;
 
         /**
          * The number of ticks per revolution for the encoder.

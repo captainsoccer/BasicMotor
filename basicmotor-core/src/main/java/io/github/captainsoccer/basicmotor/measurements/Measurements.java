@@ -1,12 +1,12 @@
 package io.github.captainsoccer.basicmotor.measurements;
 
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 
 /**
  * This class is used to get the measurements of the motor. It is used to get the position,
  * velocity, and acceleration of the motor. It is used to get the measurements of the motor. this
- * class is used by {@link BasicMotor} to get the measurements of the motor.
+ * class is used by {@link BasicMotorOld} to get the measurements of the motor.
  * Different encoders will extend this class to provide their own implementation of the measurements.
  */
 public abstract class Measurements {

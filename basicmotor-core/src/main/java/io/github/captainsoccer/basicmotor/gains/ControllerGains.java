@@ -3,7 +3,7 @@ package io.github.captainsoccer.basicmotor.gains;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import io.github.captainsoccer.basicmotor.control.Controller;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 
 import java.util.function.Consumer;
 
@@ -26,7 +26,7 @@ public class ControllerGains {
 
     /**
      * The function that is called when the constraints are changed.
-     * Used to set a flag in the {@link BasicMotor} to update the constraints on the slower thread.
+     * Used to set a flag in the {@link BasicMotorOld} to update the constraints on the slower thread.
      */
     private Runnable setHasConstraintsChanged;
 

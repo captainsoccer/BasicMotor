@@ -1,6 +1,6 @@
 package io.github.captainsoccer.basicmotor.config;
 
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.gains.*;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManagerConfig;
@@ -174,7 +174,7 @@ public class BasicMotorConfigOld {
          * The idle mode of the motor controller COAST means the motor will not try to hold its position
          * when not powered BRAKE means the motor will try to hold its position when not powered
          */
-        public BasicMotor.IdleMode idleMode = BasicMotor.IdleMode.COAST;
+        public BasicMotorOld.IdleMode idleMode = BasicMotorOld.IdleMode.COAST;
 
         /**
          * The type of motor that the controller is connected to.

@@ -21,7 +21,7 @@ public class BasicTalonFXConfigOld extends BasicMotorConfigOld {
     /**
      * The configuration for the canCoder.
      * Use this to create automatically a canCoder for the motor.
-     * you can access the created canCoder with the {@link BasicTalonFX#getActiveCanCoder()}.
+     * you can access the created canCoder with the {@link BasicTalonFXOld#getActiveCanCoder()}.
      */
     public CanCoderConfig canCoderConfig = new CanCoderConfig();
 

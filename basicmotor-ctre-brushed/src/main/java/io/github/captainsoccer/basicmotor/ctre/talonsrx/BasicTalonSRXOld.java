@@ -5,7 +5,7 @@ import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.MotorInterface;
@@ -20,7 +20,7 @@ import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
  * This class provides a simple interface to control the TalonSRX motor controller
  * and provides methods to set the PID gains, current limits, idle mode, and more.
  */
-public class BasicTalonSRX extends BasicMotor {
+public class BasicTalonSRXOld extends BasicMotorOld {
     /**
      * The type of encoder that is connected directly to the TalonSRX motor controller.
      * This is used to configure the TalonSRX motor controller to use the correct encoder
@@ -89,7 +89,7 @@ public class BasicTalonSRX extends BasicMotor {
      * @param id The ID of the TalonSRX motor controller
      * @param name The name of the motor controller
      */
-    public BasicTalonSRX(int id, String name){
+    public BasicTalonSRXOld(int id, String name){
         super(new TalonSRXInterface(id, name), new ControllerGains());
 
         this.motorInterface = (TalonSRXInterface) super.motorInterface;
@@ -104,7 +104,7 @@ public class BasicTalonSRX extends BasicMotor {
      * @param encoderType The type of encoder that is connected to the TalonSRX motor controller.
      * @param tickPerRevolution The number of ticks per revolution of the encoder.
      */
-    public BasicTalonSRX(int id, String name, ControllerGains controllerGains, EncoderType encoderType, int tickPerRevolution) {
+    public BasicTalonSRXOld(int id, String name, ControllerGains controllerGains, EncoderType encoderType, int tickPerRevolution) {
         super(new TalonSRXInterface(id, name, encoderType, tickPerRevolution), controllerGains);
 
         this.motorInterface = (TalonSRXInterface) super.motorInterface;
@@ -115,7 +115,7 @@ public class BasicTalonSRX extends BasicMotor {
      * This constructor is used to create a TalonSRX motor controller with the specified settings.
      * @param motorConfig The configuration for the TalonSRX motor controller.
      */
-    public BasicTalonSRX(BasicTalonSRXConfigOld motorConfig){
+    public BasicTalonSRXOld(BasicTalonSRXConfigOld motorConfig){
         super(new TalonSRXInterface(motorConfig), motorConfig);
 
         this.motorInterface = (TalonSRXInterface) super.motorInterface;
@@ -197,7 +197,7 @@ public class BasicTalonSRX extends BasicMotor {
             case PERCENT_OUTPUT ->  motor.set(TalonSRXControlMode.PercentOutput, setpoint);
 
             case CURRENT, TORQUE -> {
-                errorHandler.logAndReportError("talonSRX does not support current or torque control");
+                errorHandler.logError("talonSRX does not support current or torque control");
                 stopMotorOutput();
             }
         }
@@ -209,7 +209,7 @@ public class BasicTalonSRX extends BasicMotor {
                 isAlive = false;
             }
 
-            errorHandler.logAndReportError("Failed to set closed loop output, error: " + error.name());
+            errorHandler.logError("Failed to set closed loop output, error: " + error.name());
         }
         else
             isAlive = true;

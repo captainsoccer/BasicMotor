@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.ctre.victorspx;
 
 import com.ctre.phoenix.ErrorCode;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
@@ -19,7 +19,7 @@ import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
  * This class has limitation due to the fact that the victorSPX does not have a built-in encoder
  * If you want full functionality, provide a measurements object.
  */
-public class BasicVictorSPX extends BasicMotor {
+public class BasicVictorSPXOld extends BasicMotorOld {
 
     private final VictorSPXInterface motorInterface;
 
@@ -35,9 +35,9 @@ public class BasicVictorSPX extends BasicMotor {
      * You can add a measurements object later using the {@link #setMeasurements(Measurements)} method.
      * @param id The ID of the VictorSPX motor controller
      * @param name The name of the motor controller
-     * @see #BasicVictorSPX(int, String, Measurements, ControllerGains)
+     * @see #BasicVictorSPXOld(int, String, Measurements, ControllerGains)
      */
-    public BasicVictorSPX(int id, String name) {
+    public BasicVictorSPXOld(int id, String name) {
         super(new VictorSPXInterface(id, name), new ControllerGains());
 
         this.motorInterface = (VictorSPXInterface) super.motorInterface;
@@ -52,13 +52,13 @@ public class BasicVictorSPX extends BasicMotor {
      * @param measurements The measurements to use for the motor controller
      * @param controllerGains The controller gains to use for the motor controller
      */
-    public BasicVictorSPX(int id, String name, Measurements measurements, ControllerGains controllerGains) {
+    public BasicVictorSPXOld(int id, String name, Measurements measurements, ControllerGains controllerGains) {
         super(new VictorSPXInterface(id, name, measurements), controllerGains);
 
         this.motorInterface = (VictorSPXInterface) super.motorInterface;
 
         if(measurements instanceof EmptyMeasurements) {
-            errorHandler.logAndReportError("Provided empty measurements", true);
+            errorHandler.logError("Provided empty measurements", true);
         }
         else{
             setControllerLocation(MotorManager.ControllerLocation.RIO);
@@ -71,13 +71,13 @@ public class BasicVictorSPX extends BasicMotor {
      * @param config The configuration for the motor controller
      * @param measurements The measurements to use for the motor controller
      */
-    public BasicVictorSPX(BasicMotorConfigOld config, Measurements measurements) {
+    public BasicVictorSPXOld(BasicMotorConfigOld config, Measurements measurements) {
         super(new VictorSPXInterface(config, measurements), config);
 
         this.motorInterface = (VictorSPXInterface) super.motorInterface;
 
         if(measurements instanceof EmptyMeasurements) {
-            errorHandler.logAndReportError("Provided empty measurements", true);
+            errorHandler.logError("Provided empty measurements", true);
         }
         else{
             setControllerLocation(MotorManager.ControllerLocation.RIO);
@@ -86,7 +86,7 @@ public class BasicVictorSPX extends BasicMotor {
 
     @Override
     public void setCurrentLimits(CurrentLimits currentLimits) {
-        errorHandler.logAndReportError("Current limits not supported for victorSPX", true);
+        errorHandler.logError("Current limits not supported for victorSPX", true);
     }
 
     @Override
@@ -129,7 +129,7 @@ public class BasicVictorSPX extends BasicMotor {
         // it cannot support direct PID control.
         // but it can support percent output, voltage, current, and torque control modes.
         if(mode.requiresPID()){
-            errorHandler.logAndReportError("VictorSPX does not support direct PID control", true);
+            errorHandler.logError("VictorSPX does not support direct PID control", true);
         }
 
         var motor = this.motorInterface.motor;
@@ -149,7 +149,7 @@ public class BasicVictorSPX extends BasicMotor {
                 isAlive = false;
             }
 
-            errorHandler.logAndReportError("Failed to set closed loop output, error: " + error.name());
+            errorHandler.logError("Failed to set closed loop output, error: " + error.name());
         }
         else
             isAlive = true;

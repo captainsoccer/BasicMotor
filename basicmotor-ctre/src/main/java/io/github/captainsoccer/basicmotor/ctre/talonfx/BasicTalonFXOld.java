@@ -3,7 +3,7 @@ package io.github.captainsoccer.basicmotor.ctre.talonfx;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
@@ -25,7 +25,7 @@ import java.util.Optional;
  * It extends the BasicMotor class and provides
  * functionality specific to the TalonFX motor controller.
  */
-public class BasicTalonFX extends BasicMotor {
+public class BasicTalonFXOld extends BasicMotorOld {
 
     /**
      * The interface that houses the motor itself.
@@ -82,7 +82,7 @@ public class BasicTalonFX extends BasicMotor {
      *                           This will be desired units per rotation.
      *                           This will be multiplied after the gear ratio is applied.
      */
-    public BasicTalonFX(ControllerGains controllerGains, String name, int id, double gearRatio, double unitConversion) {
+    public BasicTalonFXOld(ControllerGains controllerGains, String name, int id, double gearRatio, double unitConversion) {
         super(new TalonFXInterface(name, id, gearRatio, unitConversion), controllerGains);
 
         motorInterface = (TalonFXInterface) super.motorInterface;
@@ -99,7 +99,7 @@ public class BasicTalonFX extends BasicMotor {
      *                           e.g., a 10 gear ratio means the motor turns 10 times for every rotation of the mechanism.
      * @param name               The name of the motor controller (used for logging and debugging).
      */
-    public BasicTalonFX(ControllerGains controllerGains, String name, int id, double gearRatio) {
+    public BasicTalonFXOld(ControllerGains controllerGains, String name, int id, double gearRatio) {
         this(controllerGains, name, id, gearRatio, 1);
     }
 
@@ -109,7 +109,7 @@ public class BasicTalonFX extends BasicMotor {
      *
      * @param motorConfig The configuration for the motor controller.
      */
-    public BasicTalonFX(BasicMotorConfigOld motorConfig) {
+    public BasicTalonFXOld(BasicMotorConfigOld motorConfig) {
         super(new TalonFXInterface(motorConfig), motorConfig);
 
         this.motorInterface = (TalonFXInterface) super.motorInterface;
@@ -188,7 +188,7 @@ public class BasicTalonFX extends BasicMotor {
                 };
 
         if (error != StatusCode.OK) {
-            errorHandler.logAndReportError("Failed to set motor output, StatusCode: " + error.name());
+            errorHandler.logError("Failed to set motor output, StatusCode: " + error.name());
         }
     }
 

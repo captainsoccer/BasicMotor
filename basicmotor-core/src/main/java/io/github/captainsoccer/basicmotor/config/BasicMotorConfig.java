@@ -25,6 +25,8 @@ public class BasicMotorConfig {
 
     public LoopTimingConfig loopTiming = new LoopTimingConfig();
 
+    public FollowerConfig follower = new FollowerConfig();
+
     public Supplier<Measurements.Measurement> customMeasurements = null;
 
     public ImmutableBasicMotorConfig immutable(){

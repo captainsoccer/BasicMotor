@@ -1,6 +1,6 @@
 package io.github.captainsoccer.basicmotor.sim;
 
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
@@ -34,7 +34,7 @@ public abstract class SimSystemInterface extends MotorInterface {
     }
 
     @Override
-    public void setIdleMode(BasicMotor.IdleMode mode) {
+    public void setIdleMode(BasicMotorOld.IdleMode mode) {
         // Does nothing as this is a simulation
     }
 

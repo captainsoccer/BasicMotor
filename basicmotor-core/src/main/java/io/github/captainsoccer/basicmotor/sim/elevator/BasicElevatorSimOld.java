@@ -4,7 +4,7 @@ package io.github.captainsoccer.basicmotor.sim.elevator;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.gains.ControllerGains;
-import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
+import io.github.captainsoccer.basicmotor.sim.BasicSimSystemOld;
 
 /**
  * A class that simulates an elevator system using the ElevatorSim class. It is part of the
@@ -12,7 +12,7 @@ import io.github.captainsoccer.basicmotor.sim.BasicSimSystem;
  * Use this when you want to simulate an elevator in your robot code.
  * Its units are meters and cannot be changed.
  */
-public class BasicElevatorSim extends BasicSimSystem {
+public class BasicElevatorSimOld extends BasicSimSystemOld {
     /**
      * The elevator simulation instance used by this BasicSimElevator.
      */
@@ -25,7 +25,7 @@ public class BasicElevatorSim extends BasicSimSystem {
      * @param name     The name of the elevator simulation
      * @param gains    The controller gains to use for the elevator simulation
      */
-    public BasicElevatorSim(ElevatorSim elevator, String name, ControllerGains gains) {
+    public BasicElevatorSimOld(ElevatorSim elevator, String name, ControllerGains gains) {
         super(new ElevatorSimInterface(elevator, name), gains);
         this.elevator = elevator;
     }
@@ -36,7 +36,7 @@ public class BasicElevatorSim extends BasicSimSystem {
      *
      * @param config The configuration for the elevator motor
      */
-    public BasicElevatorSim(BasicMotorConfigOld config) {
+    public BasicElevatorSimOld(BasicMotorConfigOld config) {
         super(new ElevatorSimInterface(config), config);
 
         this.elevator = ((ElevatorSimInterface) super.motorInterface).elevatorSim;

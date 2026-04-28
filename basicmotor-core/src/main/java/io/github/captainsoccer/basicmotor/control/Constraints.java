@@ -1,17 +1,22 @@
 package io.github.captainsoccer.basicmotor.control;
 
 import edu.wpi.first.math.MathUtil;
-import io.github.captainsoccer.basicmotor.config.ConstraintsConfig;
+import io.github.captainsoccer.basicmotor.config.ImmutableBasicMotorConfig;
 import io.github.captainsoccer.basicmotor.config.ImmutableConstraintsConfig;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 
-public class Constraints extends ImmutableConstraintsConfig {
-    public Constraints(ConstraintsConfig constraintsConfig) {
-        super(constraintsConfig);
+/**
+ * A class representing the constraints of the motor and houses the config and the calculations
+ */
+public class Constraints {
+    public final ImmutableConstraintsConfig constraints;
+
+    public Constraints(ImmutableBasicMotorConfig config){
+        this.constraints = config.constraints;
     }
 
     public void calculate(Measurements.Measurement measurement, ControlFrame controlFrame) {
-        switch (constraint.type()) {
+        switch (constraints.constraint.type()) {
             case NONE -> nothing();
             case LIMITED -> calculateLimited(measurement, controlFrame);
             case CONTINUOUS -> calculateContinuous(measurement, controlFrame);
@@ -28,13 +33,13 @@ public class Constraints extends ImmutableConstraintsConfig {
         // check if the request is a position control (then apply the limits to the setpoint)
         if (controlMode.isPositionControl()) {
             // check if the request is in the limits of the motor
-            if (controlFrame.goal().position >= constraint.maxValue()) {
-                controlFrame.goal().position = constraint.maxValue();
+            if (controlFrame.goal().position >= constraints.constraint.maxValue()) {
+                controlFrame.goal().position = constraints.constraint.maxValue();
                 //resets the velocity to make sure a motion profile doesn't continue.
                 controlFrame.goal().velocity = 0;
             }
-            if (controlFrame.goal().position <= constraint.minValue()) {
-                controlFrame.goal().position = constraint.minValue();
+            if (controlFrame.goal().position <= constraints.constraint.minValue()) {
+                controlFrame.goal().position = constraints.constraint.minValue();
                 //resets the velocity to make sure a motion profile doesn't continue.
                 controlFrame.goal().velocity = 0;
             }
@@ -45,11 +50,11 @@ public class Constraints extends ImmutableConstraintsConfig {
         // and make sure the direction is back to the zone
         else {
             //if below soft limit and moving backwards, set to zero
-            if (measurement.position() <= constraint.minValue() && controlFrame.goal().position < 0) {
+            if (measurement.position() <= constraints.constraint.minValue() && controlFrame.goal().position < 0) {
                 controlFrame.goal().position = 0;
             }
             //if above soft limit and moving forwards, set to zero
-            if (measurement.position() >= constraint.maxValue() && controlFrame.goal().position > 0) {
+            if (measurement.position() >= constraints.constraint.maxValue() && controlFrame.goal().position > 0) {
                 controlFrame.goal().position = 0;
             }
         }
@@ -60,7 +65,7 @@ public class Constraints extends ImmutableConstraintsConfig {
         // control)
         if (!controlFrame.controlMode().isPositionControl()) return;
 
-        double errorBound = (constraint.maxValue() - constraint.minValue()) / 2.0;
+        double errorBound = (constraints.constraint.maxValue() - constraints.constraint.minValue()) / 2.0;
 
         double originalPosition = controlFrame.goal().position;
 

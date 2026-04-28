@@ -1,6 +1,6 @@
 package io.github.captainsoccer.basicmotor.sim;
 
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
@@ -10,15 +10,15 @@ import io.github.captainsoccer.basicmotor.gains.CurrentLimits;
 import io.github.captainsoccer.basicmotor.measurements.Measurements;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager.ControllerLocation;
 import edu.wpi.first.wpilibj.RobotController;
-import io.github.captainsoccer.basicmotor.sim.arm.BasicArmSim;
-import io.github.captainsoccer.basicmotor.sim.elevator.BasicElevatorSim;
+import io.github.captainsoccer.basicmotor.sim.arm.BasicArmSimOld;
+import io.github.captainsoccer.basicmotor.sim.elevator.BasicElevatorSimOld;
 
 /**
  * This is an abstract class that represents a basic simulation system for motors.
  * This ignores some of the functionality of a basic motor, as it is meant to be used in a simulation.
- * Use specific mechanisms like {@link BasicElevatorSim} or {@link BasicArmSim} when possible.
+ * Use specific mechanisms like {@link BasicElevatorSimOld} or {@link BasicArmSimOld} when possible.
  */
-public abstract class BasicSimSystem extends BasicMotor {
+public abstract class BasicSimSystemOld extends BasicMotorOld {
   /** The voltage output of the motor */
   private double voltageOutput = 0.0;
 
@@ -28,7 +28,7 @@ public abstract class BasicSimSystem extends BasicMotor {
    * @param motorInterface The motor interface to use for the motor simulation
    * @param gains The controller gains to use for the motor simulation
    */
-  public BasicSimSystem(SimSystemInterface motorInterface, ControllerGains gains) {
+  public BasicSimSystemOld(SimSystemInterface motorInterface, ControllerGains gains) {
     super(motorInterface, gains);
     super.setControllerLocation(ControllerLocation.RIO);
   }
@@ -40,7 +40,7 @@ public abstract class BasicSimSystem extends BasicMotor {
    * @param motorInterface The motor interface to use for the motor simulation
    * @param config The configuration for the motor simulation
    */
-  public BasicSimSystem(SimSystemInterface motorInterface, BasicMotorConfigOld config) {
+  public BasicSimSystemOld(SimSystemInterface motorInterface, BasicMotorConfigOld config) {
     super(motorInterface, config);
     super.setControllerLocation(ControllerLocation.RIO);
   }

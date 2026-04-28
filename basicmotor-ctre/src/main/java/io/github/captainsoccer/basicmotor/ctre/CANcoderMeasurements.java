@@ -1,6 +1,6 @@
 package io.github.captainsoccer.basicmotor.ctre;
 
-import io.github.captainsoccer.basicmotor.ctre.talonfx.BasicTalonFX;
+import io.github.captainsoccer.basicmotor.ctre.talonfx.BasicTalonFXOld;
 import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld.MotorConfig;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -16,7 +16,7 @@ import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
  * A class that provides measurements for the CANCoder sensor.
  * Used for using the CANCoder as a measurement source in the BasicMotor library.
  * If you want to use a CANCoder with a TalonFX motor,
- * please use the {@link BasicTalonFX#useRemoteCanCoder(CANcoder, double, double)}
+ * please use the {@link BasicTalonFXOld#useRemoteCanCoder(CANcoder, double, double)}
  */
 public class CANcoderMeasurements extends Measurements {
     /**

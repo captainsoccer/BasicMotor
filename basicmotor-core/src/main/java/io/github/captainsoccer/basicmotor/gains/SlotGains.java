@@ -2,12 +2,12 @@ package io.github.captainsoccer.basicmotor.gains;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 
 /**
  * This class is used to store and manage the gains for a motor controller slot.
  * This includes PID gains, feed forward gains, and motion profile constraints.
- * Values here can be updated from the dashboard through the {@link BasicMotor}.
+ * Values here can be updated from the dashboard through the {@link BasicMotorOld}.
  * You can create multiple slots with different gains to switch between different control modes.
  * For example, you can have one slot for position control and another for velocity control.
  * Or one slot for a mechanism that needs high torque and another for a mechanism that needs high speed.
@@ -17,7 +17,7 @@ public class SlotGains {
     /**
      * The default slot gains.
      * This will include default PID gains, feed forwards, and motion profile constraints.
-     * This is used to initialize the slot gains in the {@link BasicMotor}.
+     * This is used to initialize the slot gains in the {@link BasicMotorOld}.
      * @return an array of 3 SlotGains with default values.
      */
     public static SlotGains[] getDefaultSlotGains(){
@@ -176,7 +176,7 @@ public class SlotGains {
 
     /**
      * The function that is called when the PID gains are changed.
-     * Used to set a flag in the {@link BasicMotor} to update the PID gains on the slower thread.
+     * Used to set a flag in the {@link BasicMotorOld} to update the PID gains on the slower thread.
      */
     private Runnable setHasPIDGainsChanged;
 
@@ -190,7 +190,7 @@ public class SlotGains {
 
     /**
      * Sets the function that is called when the PID gains are changed.
-     * Used to set a flag in the {@link BasicMotor} to update the PID gains on the slower thread.
+     * Used to set a flag in the {@link BasicMotorOld} to update the PID gains on the slower thread.
      * Only sets the function if it is not already set.
      * @param runnable the function that is called when the PID gains are changed.
      */

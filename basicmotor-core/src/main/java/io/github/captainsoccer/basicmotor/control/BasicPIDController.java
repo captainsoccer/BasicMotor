@@ -1,7 +1,7 @@
 package io.github.captainsoccer.basicmotor.control;
 
 import io.github.captainsoccer.basicmotor.LogFrame;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import edu.wpi.first.math.MathUtil;
 
@@ -9,7 +9,7 @@ import edu.wpi.first.math.MathUtil;
  * This is a very simplified PID controller.
  * It is used to calculate the output of the PID algorithm.
  * It checks for I-zone, integral clamping, and tolerance.
- * It used mainly for the {@link BasicMotor} in the {@link Controller}.
+ * It used mainly for the {@link BasicMotorOld} in the {@link Controller}.
  */
 public class BasicPIDController {
     /**

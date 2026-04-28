@@ -1,13 +1,12 @@
 package io.github.captainsoccer.basicmotor.ctre.talonfx;
 
 import com.ctre.phoenix6.CANBus;
-import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
@@ -99,7 +98,7 @@ public class TalonFXInterface extends MotorInterface {
     }
 
     @Override
-    public void setIdleMode(BasicMotor.IdleMode mode) {
+    public void setIdleMode(BasicMotorOld.IdleMode mode) {
         config.MotorOutput.NeutralMode =
                 switch (mode) {
                     case COAST -> NeutralModeValue.Coast;
@@ -141,13 +140,13 @@ public class TalonFXInterface extends MotorInterface {
         // https://v6.docs.ctr-electronics.com/en/latest/docs/migration/migration-guide/feature-replacements-guide.html#integral-zone-and-max-integral-accumulator
 
         if (pidGains.getI_MaxAccum() != MotorManager.getConfig().DEFAULT_MAX_OUTPUT)
-            errorHandler.logAndReportWarning("TalonFX does not use i max accum therefore not used (check phoenix 6 docs)");
+            errorHandler.logWarning("TalonFX does not use i max accum therefore not used (check phoenix 6 docs)");
 
         if (pidGains.getTolerance() != 0)
-            errorHandler.logAndReportWarning("TalonFX does not use tolerance therefore not used (check phoenix 6 docs)");
+            errorHandler.logWarning("TalonFX does not use tolerance therefore not used (check phoenix 6 docs)");
 
         if (pidGains.getI_Zone() != 0)
-            errorHandler.logAndReportWarning("TalonFX does not use i zone therefore not used (check phoenix 6 docs)");
+            errorHandler.logWarning("TalonFX does not use i zone therefore not used (check phoenix 6 docs)");
 
 
         applyConfig();
@@ -224,10 +223,10 @@ public class TalonFXInterface extends MotorInterface {
      * If the configuration fails to apply, it will report an error to the driver station.
      */
     public void applyConfig() {
-        var error = motor.getConfigurator().apply(config);
+        var error = BasicCTREError.createError(motor.getConfigurator().apply(config));
 
-        if (error != StatusCode.OK) {
-            errorHandler.logAndReportError("Failed to apply config to motor: " + super.name + " Error: " + error.name());
+        if (error.getError().isOK()) {
+            errorHandler.logError("Failed to apply config to motor: " + super.name + " Error: " + error.name());
         }
     }
 }

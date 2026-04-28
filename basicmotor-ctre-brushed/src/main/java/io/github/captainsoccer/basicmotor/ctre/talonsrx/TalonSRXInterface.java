@@ -2,7 +2,7 @@ package io.github.captainsoccer.basicmotor.ctre.talonsrx;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
@@ -52,7 +52,7 @@ public class TalonSRXInterface extends MotorInterface {
      * @param encoderType The type of encoder that is connected to the TalonSRX motor controller.
      * @param tickPerRevolution The number of ticks per revolution of the encoder.
      */
-    public TalonSRXInterface(int id, String name, BasicTalonSRX.EncoderType encoderType, int tickPerRevolution) {
+    public TalonSRXInterface(int id, String name, BasicTalonSRXOld.EncoderType encoderType, int tickPerRevolution) {
         super(name);
 
         this.motor = new TalonSRX(id);
@@ -95,7 +95,7 @@ public class TalonSRXInterface extends MotorInterface {
     public void applyConfig(){
         var error = motor.configAllSettings(config);
         if (error.value != 0) {
-            errorHandler.logAndReportError("could not apply config, error: " + error.name());
+            errorHandler.logError("could not apply config, error: " + error.name());
         }
     }
 
@@ -110,7 +110,7 @@ public class TalonSRXInterface extends MotorInterface {
     }
 
     @Override
-    public void setIdleMode(BasicMotor.IdleMode mode) {
+    public void setIdleMode(BasicMotorOld.IdleMode mode) {
         var idleMode = switch (mode) {
             case COAST -> com.ctre.phoenix.motorcontrol.NeutralMode.Coast;
             case BRAKE -> com.ctre.phoenix.motorcontrol.NeutralMode.Brake;

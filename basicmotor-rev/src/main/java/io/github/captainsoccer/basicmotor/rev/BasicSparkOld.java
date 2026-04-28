@@ -5,7 +5,7 @@ import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
 import edu.wpi.first.math.system.plant.DCMotor;
-import io.github.captainsoccer.basicmotor.BasicMotor;
+import io.github.captainsoccer.basicmotor.BasicMotorOld;
 import io.github.captainsoccer.basicmotor.LogFrame;
 import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
 import io.github.captainsoccer.basicmotor.MotorInterface;
@@ -25,7 +25,7 @@ import io.github.captainsoccer.basicmotor.rev.BasicSparkConfigOld.AbsoluteEncode
  * (e.g., SparkFlex, SparkMax, etc.).
  * This class assumes that the motor is brushless.
  */
-public abstract class BasicSpark extends BasicMotor {
+public abstract class BasicSparkOld extends BasicMotorOld {
     /**
      * an enum that stores the efficiency of rev Motors.
      * This is used to convert the power output of the motor to the power draw.
@@ -133,7 +133,7 @@ public abstract class BasicSpark extends BasicMotor {
      * @param unitConversion The conversion factor for the motor's position units.
      *                       This will be multiplied by the motor's rotation to get the position with the desired units.
      */
-    protected BasicSpark(
+    protected BasicSparkOld(
             SparkBase motor,
             SparkBaseConfig config,
             ControllerGains gains,
@@ -156,7 +156,7 @@ public abstract class BasicSpark extends BasicMotor {
      *                    This should be an empty configuration that will be applied to the motor controller.
      * @param motorConfig The configuration of the motor controller.
      */
-    protected BasicSpark(SparkBase motor, SparkBaseConfig config, BasicMotorConfigOld motorConfig) {
+    protected BasicSparkOld(SparkBase motor, SparkBaseConfig config, BasicMotorConfigOld motorConfig) {
         super(new SparkBaseInterface(motor, config, motorConfig), motorConfig);
 
         this.motorInterface = (SparkBaseInterface) super.motorInterface;
@@ -198,7 +198,7 @@ public abstract class BasicSpark extends BasicMotor {
                         externalEncoderConfig.mechanismToSensorRatio);
             }
         } else
-            errorHandler.logAndReportWarning("Not using specific spark base config for configuration, defaulting to brushless motor type.", true);
+            errorHandler.logWarning("Not using specific spark base config for configuration, defaulting to brushless motor type.", true);
     }
 
     /**
@@ -301,7 +301,7 @@ public abstract class BasicSpark extends BasicMotor {
 
         //if there was an error setting the closed loop output, report it
         if (errorSignal != REVLibError.kOk) {
-            errorHandler.logAndReportError("Failed to set closed loop output, error: " + errorSignal.name());
+            errorHandler.logError("Failed to set closed loop output, error: " + errorSignal.name());
 
             if(errorSignal == REVLibError.kCANDisconnected || errorSignal == REVLibError.kTimeout)
                 isAlive = false;
@@ -379,7 +379,7 @@ public abstract class BasicSpark extends BasicMotor {
 
             config.smartCurrentLimit(currentLimits.getCurrentLimit());
 
-            errorHandler.logAndReportWarning("using non Spark Base current limits for motor: ");
+            errorHandler.logWarning("using non Spark Base current limits for motor: ");
         }
 
         motorInterface.applyConfig();

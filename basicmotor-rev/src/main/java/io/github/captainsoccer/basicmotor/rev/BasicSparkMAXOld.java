@@ -14,7 +14,7 @@ import io.github.captainsoccer.basicmotor.rev.BasicSparkConfigOld.AbsoluteEncode
  * functionality specific to the Spark Max motor controller.
  * This class assumes that the motor is brushless.
  */
-public class BasicSparkMAX extends BasicSpark {
+public class BasicSparkMAXOld extends BasicSparkOld {
     /**
      * Creates a basic spark max motor controller with the given gains, id, name, gear ratio,
      *
@@ -32,7 +32,7 @@ public class BasicSparkMAX extends BasicSpark {
      *                       This will be multiplied by the motor's rotation to get the position with the desired units.
      *                       The unit for this value is desired position unit per rotation.
      */
-    public BasicSparkMAX(
+    public BasicSparkMAXOld(
             ControllerGains gains,
             int id,
             boolean brushless,
@@ -65,7 +65,7 @@ public class BasicSparkMAX extends BasicSpark {
      * @param gearRatio The gear ratio of the motor controller (how many rotations of the motor are a rotation of the mechanism)
      *
      */
-    public BasicSparkMAX(
+    public BasicSparkMAXOld(
             ControllerGains gains,
             int id,
             boolean brushless,
@@ -80,8 +80,8 @@ public class BasicSparkMAX extends BasicSpark {
      *
      * @param config The configuration for the motor controller.
      */
-    public BasicSparkMAX(BasicMotorConfigOld config) {
-        super(new SparkMax(config.motorConfig.id, BasicSpark.getMotorType(config)), new SparkMaxConfig(), config);
+    public BasicSparkMAXOld(BasicMotorConfigOld config) {
+        super(new SparkMax(config.motorConfig.id, BasicSparkOld.getMotorType(config)), new SparkMaxConfig(), config);
 
         if (config instanceof BasicSparkConfigOld sparkBaseConfig) {
             // checks if both absolute and external encoders are being used

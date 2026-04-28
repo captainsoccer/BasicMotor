@@ -19,6 +19,8 @@ public class BasicMotorConfig {
 
     public ConstraintsConfig constraints = new ConstraintsConfig();
 
+    public CurrentLimitConfig currentLimit = new CurrentLimitConfig();
+
     public SimulationConfig simulation = new SimulationConfig();
 
     public LogLevelConfig logLevel;

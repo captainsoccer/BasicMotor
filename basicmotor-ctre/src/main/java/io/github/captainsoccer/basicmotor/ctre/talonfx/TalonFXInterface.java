@@ -6,9 +6,15 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import io.github.captainsoccer.basicmotor.BasicError;
 import io.github.captainsoccer.basicmotor.BasicMotorOld;
-import io.github.captainsoccer.basicmotor.config.BasicMotorConfigOld;
+import io.github.captainsoccer.basicmotor.LogFrame;
+import io.github.captainsoccer.basicmotor.config.*;
 import io.github.captainsoccer.basicmotor.MotorInterface;
+import io.github.captainsoccer.basicmotor.config.slots.SlotConfig;
+import io.github.captainsoccer.basicmotor.control.ControlFrame;
+import io.github.captainsoccer.basicmotor.ctre.talonfx.config.BasicTalonFXConfig;
+import io.github.captainsoccer.basicmotor.ctre.talonfx.config.FOCMode;
 import io.github.captainsoccer.basicmotor.gains.ConstraintsGains;
 import io.github.captainsoccer.basicmotor.gains.PIDGains;
 import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
@@ -18,12 +24,6 @@ import io.github.captainsoccer.basicmotor.motorManager.MotorManager;
  * This class handles the configuration and communication with the TalonFX motor controller.
  */
 public class TalonFXInterface extends MotorInterface {
-    /**
-     * The name of the default can bus chain.
-     * This is the can bus chain built into the robo rio.
-     */
-    public static final CANBus defaultCanBusName = CANBus.roboRIO();
-
     /** The TalonFX motor controller. */
     public final TalonFX motor;
 
@@ -33,51 +33,24 @@ public class TalonFXInterface extends MotorInterface {
     /** The sensors for the TalonFX motor controller. */
     public final TalonFXSensors sensors;
 
-    /** The default measurements for the TalonFX motor controller. */
-    private final TalonFXMeasurements defaultMeasurements;
-
-    /**
-     * Creates a TalonFXInterface with the provided name, id, gear ratio, and unit conversion.
-     * @param name the name of the motor
-     * @param id the CAN ID of the motor
-     * @param gearRatio the gear ratio of the motor
-     * @param unitConversion the unit conversion factor for the motor
-     */
-    public TalonFXInterface(String name, int id, double gearRatio, double unitConversion) {
-        super(name);
-
-        motor = new TalonFX(id);
-        config = new TalonFXConfiguration();
-
-        sensors = new TalonFXSensors(motor);
-
-        applyConfig();
-
-        defaultMeasurements = new TalonFXMeasurements(motor, gearRatio, unitConversion);
-
-        motor.optimizeBusUtilization();
-    }
+    public final TalonFXOutputManager outputManager;
 
     /**
      * Creates a TalonFXInterface with the provided configuration.
      * If the config is not a {@link BasicTalonFXConfigOld}, it will use the default can bus name.
      * @param config the configuration for the motor
      */
-    public TalonFXInterface(BasicMotorConfigOld config) {
+    public TalonFXInterface(BasicMotorConfig config) {
         super(config);
 
-        final CANBus canBus;
-        if (config instanceof BasicTalonFXConfigOld talonConfig)
-            canBus = talonConfig.canBus;
-        else
-            canBus = defaultCanBusName;
-
-        motor = new TalonFX(config.motorConfig.id, canBus);
+        motor = new TalonFX(config.motorBasics.CANID, new CANBus(config.motorBasics.CANNetworkName));
         this.config = new TalonFXConfiguration();
 
         applyConfig();
 
-        defaultMeasurements = new TalonFXMeasurements(motor, config.motorConfig.gearRatio, config.motorConfig.unitConversion);
+        outputManager = new TalonFXOutputManager(
+                config instanceof BasicTalonFXConfig talonFXConfig ? talonFXConfig.focMode : FOCMode.OFF
+        );
 
         sensors = new TalonFXSensors(motor);
 
@@ -86,7 +59,62 @@ public class TalonFXInterface extends MotorInterface {
 
     @Override
     public TalonFXMeasurements getDefaultMeasurements() {
-        return defaultMeasurements;
+        return new TalonFXMeasurements(motor, getConfig().motorBasics.gearRatio, getConfig().motorBasics.unitConversion);
+    }
+
+    @Override
+    public BasicError setMotorOutput(ControlFrame controlFrame) {
+
+    }
+
+    @Override
+    public BasicError setMotorOutput(double volts) {
+        return null;
+    }
+
+    @Override
+    public boolean isMotorConnected() {
+        return false;
+    }
+
+    @Override
+    public LogFrame.SensorData getLatestSensorData() {
+        return null;
+    }
+
+    @Override
+    public LogFrame.PIDOutput getLatestPIDOutput() {
+        return null;
+    }
+
+    @Override
+    protected BasicError applyConfig(BasicMotorConfig config) {
+        return null;
+    }
+
+    @Override
+    protected BasicError applyConfig(MotorBasicsConfig config) {
+        return null;
+    }
+
+    @Override
+    protected BasicError applyConfig(SlotConfig slotConfig, int slot) {
+        return null;
+    }
+
+    @Override
+    protected BasicError applyConfig(ConstraintsConfig config) {
+        return null;
+    }
+
+    @Override
+    protected BasicError applyConfig(FollowerConfig config) {
+        return null;
+    }
+
+    @Override
+    protected BasicError applyConfig(double measurementsHz, double sensorHz) {
+        return null;
     }
 
     @Override
@@ -103,7 +131,7 @@ public class TalonFXInterface extends MotorInterface {
                 switch (mode) {
                     case COAST -> NeutralModeValue.Coast;
                     case BRAKE -> NeutralModeValue.Brake;
-                }; 
+                };
 
         applyConfig();
     }
